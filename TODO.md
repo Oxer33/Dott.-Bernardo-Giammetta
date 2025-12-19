@@ -138,12 +138,19 @@
 - [ ] Lighthouse optimization
 - [ ] Image optimization con placeholder blur
 
-### Integrazioni
+### Integrazioni ✅
 - [ ] Google Maps per sede (placeholder pronto)
 - [x] Google Analytics 4 (componente creato)
 - [ ] Google Search Console (da configurare)
 - [x] Schema.org per tutte le pagine
 - [ ] CMS (Sanity o Contentful) per blog
+- [x] NutriBot AI Assistant (OpenRouter + DeepSeek)
+
+### Area Personale ✅
+- [x] Dashboard Master (accomodationlapulena@gmail.com)
+- [x] Dashboard Pazienti (whitelist)
+- [x] Vista Guest (non autenticati)
+- [x] Logica ruoli differenziati
 
 ### Testing ✅
 - [x] Unit tests per utility functions (jest.config.js, utils.test.ts)
@@ -170,7 +177,7 @@
 ## 💡 IDEE FUTURE
 
 - [ ] Sistema recensioni integrato
-- [ ] Chat bot per FAQ
+- [x] Chat bot per FAQ (NutriBot implementato!)
 - [ ] App mobile (React Native)
 - [ ] Integrazione con calendari esterni (Google Calendar sync)
 - [ ] Sistema di notifiche push
@@ -178,7 +185,7 @@
 - [ ] Multilingua (IT/EN)
 - [ ] Sistema di pagamento online per prenotazioni
 - [ ] Video consulenze online
-- [ ] Area riservata pazienti con storico visite
+- [x] Area riservata pazienti con storico visite
 
 ---
 
@@ -204,4 +211,4 @@
 
 ---
 
-*Ultimo aggiornamento: 19 Gennaio 2026*
+*Ultimo aggiornamento: 19 Dicembre 2026*
