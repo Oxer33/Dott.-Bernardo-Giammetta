@@ -118,13 +118,20 @@ export function NutriBot() {
       } else {
         throw new Error(data.error || 'Errore sconosciuto');
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Chat error:', error);
       setHasError(true);
+      
+      // Mostra messaggio di errore più specifico
+      let errorContent = OFFLINE_MESSAGE;
+      if (error?.message?.includes('API key')) {
+        errorContent = `⚠️ Il servizio NutriBot non è configurato correttamente.\n\nPer assistenza immediata:\n📞 Chiama: +39 392 0979135\n📧 Scrivi: info@bernardogiammetta.com`;
+      }
+      
       const errorMessage: Message = {
         id: `error-${Date.now()}`,
         role: 'assistant',
-        content: OFFLINE_MESSAGE,
+        content: errorContent,
         timestamp: new Date(),
       };
       setMessages(prev => [...prev, errorMessage]);
