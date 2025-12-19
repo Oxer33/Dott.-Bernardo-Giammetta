@@ -9,6 +9,26 @@
 @tailwind utilities;
 
 /* =============================================================================
+   FONT CUSTOM - ADINE KIRNBERG (CORSIVO) & JANE AUSTEN (FIRMA)
+   ============================================================================= */
+
+@font-face {
+  font-family: 'Adine Kirnberg';
+  src: url('/fonts/AdineKirnberg.ttf') format('truetype');
+  font-weight: normal;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Jane Austen';
+  src: url('/fonts/JaneAusten.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* =============================================================================
    CSS CUSTOM PROPERTIES (VARIABILI CSS)
    ============================================================================= */
 

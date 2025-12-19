@@ -159,10 +159,19 @@ export async function chatWithNutriBot(
 ): Promise<NutriBotResponse> {
   const key = apiKey || process.env.OPENROUTER_API_KEY;
   
+  // Debug: log se la chiave è presente (solo primi/ultimi caratteri per sicurezza)
+  if (process.env.NODE_ENV === 'development') {
+    console.log('OPENROUTER_API_KEY presente:', !!key);
+    if (key) {
+      console.log('Key preview:', key.substring(0, 10) + '...' + key.substring(key.length - 5));
+    }
+  }
+  
   if (!key) {
+    console.error('OPENROUTER_API_KEY non trovata nelle variabili d\'ambiente');
     return {
       success: false,
-      error: 'API key non configurata. Contatta l\'amministratore.',
+      error: 'API key non configurata. Verifica che OPENROUTER_API_KEY sia impostata correttamente su AWS.',
     };
   }
 
@@ -192,10 +201,22 @@ export async function chatWithNutriBot(
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
-      console.error('OpenRouter error:', errorData);
+      console.error('OpenRouter error status:', response.status);
+      console.error('OpenRouter error data:', JSON.stringify(errorData));
+      
+      // Messaggio più dettagliato basato sul codice errore
+      let errorMessage = 'Servizio temporaneamente non disponibile.';
+      if (response.status === 401) {
+        errorMessage = 'API key non valida o scaduta. Verifica OPENROUTER_API_KEY.';
+      } else if (response.status === 429) {
+        errorMessage = 'Troppe richieste. Riprova tra qualche secondo.';
+      } else if (response.status >= 500) {
+        errorMessage = 'Servizio OpenRouter non disponibile. Riprova tra poco.';
+      }
+      
       return {
         success: false,
-        error: 'Servizio temporaneamente non disponibile. Riprova tra poco.',
+        error: errorMessage,
       };
     }
 

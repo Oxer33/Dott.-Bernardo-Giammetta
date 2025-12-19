@@ -126,12 +126,27 @@ export function SplashScreen() {
               </div>
             </motion.div>
 
+            {/* Firma con font Jane Austen */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 1.3, duration: 0.6 }}
+              className="mt-8"
+            >
+              <p 
+                className="text-4xl md:text-5xl lg:text-6xl text-white/90"
+                style={{ fontFamily: "'Jane Austen', cursive" }}
+              >
+                Bernardo Giammetta
+              </p>
+            </motion.div>
+
             {/* Indicatore di caricamento */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              transition={{ delay: 1.5 }}
-              className="mt-10"
+              transition={{ delay: 1.8 }}
+              className="mt-8"
             >
               <div className="flex justify-center gap-2">
                 {[0, 1, 2].map((i) => (

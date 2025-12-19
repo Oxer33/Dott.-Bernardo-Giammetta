@@ -133,6 +133,21 @@ export function CTASection() {
               <span>info@bernardogiammetta.com</span>
             </a>
           </motion.div>
+
+          {/* Firma con font Jane Austen */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={isInView ? { opacity: 1, y: 0 } : {}}
+            transition={{ delay: 0.7, duration: 0.6 }}
+            className="mt-12"
+          >
+            <p 
+              className="text-5xl md:text-6xl lg:text-7xl text-white/80"
+              style={{ fontFamily: "'Jane Austen', cursive" }}
+            >
+              Bernardo Giammetta
+            </p>
+          </motion.div>
         </div>
       </div>
     </section>

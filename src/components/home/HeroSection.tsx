@@ -134,7 +134,7 @@ export function HeroSection() {
             {/* Subtitle */}
             <motion.p 
               variants={itemVariants}
-              className="text-lg sm:text-xl text-sage-100 leading-relaxed mb-8 max-w-xl"
+              className="text-xl sm:text-2xl lg:text-3xl text-sage-100 leading-relaxed mb-8 max-w-xl font-medium"
             >
               Biologo Nutrizionista specializzato in <em className="text-orange-200">nutrizione funzionale</em> e{' '}
               <em className="text-lavender-300">metabolismo</em>. 

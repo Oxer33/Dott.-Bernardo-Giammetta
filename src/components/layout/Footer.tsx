@@ -21,17 +21,17 @@ import {
 const socialLinks = [
   { 
     icon: Instagram, 
-    href: 'https://instagram.com/dott.bernardogiammetta', 
+    href: 'https://www.instagram.com/dott_bernardogiammetta/', 
     label: 'Instagram' 
   },
   { 
     icon: Facebook, 
-    href: 'https://facebook.com/dott.bernardogiammetta', 
+    href: 'https://www.facebook.com/BernardoGiammetta', 
     label: 'Facebook' 
   },
   { 
     icon: Linkedin, 
-    href: 'https://linkedin.com/in/bernardogiammetta', 
+    href: 'https://www.linkedin.com/feed/', 
     label: 'LinkedIn' 
   },
 ];
@@ -179,13 +179,34 @@ export function Footer() {
                 </a>
               </li>
               <li>
-                <div className="flex items-start gap-3 text-sage-300">
-                  <MapPin className="w-5 h-5 mt-0.5 text-sage-400 flex-shrink-0" />
+                <a
+                  href="https://maps.google.com/?q=Via+Daniele+Manin+10,+40129+Bologna"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-start gap-3 text-sage-300 hover:text-white transition-colors duration-300 group"
+                >
+                  <MapPin className="w-5 h-5 mt-0.5 text-sage-400 group-hover:text-sage-300 flex-shrink-0" />
                   <span className="text-sm">
-                    Via Example, 123<br />
-                    00100 Roma (RM)
+                    <strong>Studio Bologna</strong><br />
+                    Via Daniele Manin 10<br />
+                    40129 Bologna (BO)
                   </span>
-                </div>
+                </a>
+              </li>
+              <li>
+                <a
+                  href="https://maps.google.com/?q=Via+Eraclea+10,+91016+Erice+TP"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-start gap-3 text-sage-300 hover:text-white transition-colors duration-300 group"
+                >
+                  <MapPin className="w-5 h-5 mt-0.5 text-sage-400 group-hover:text-sage-300 flex-shrink-0" />
+                  <span className="text-sm">
+                    <strong>Studio Erice</strong><br />
+                    Via Eraclea 10<br />
+                    90016 Erice (TP)
+                  </span>
+                </a>
               </li>
             </ul>
           </div>
