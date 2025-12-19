@@ -90,13 +90,13 @@ export function HeroSection() {
         variants={floatingVariants}
         initial="initial"
         animate="animate"
-        className="absolute top-1/4 right-10 w-64 h-64 bg-sage-400/10 rounded-full blur-3xl"
+        className="absolute top-1/4 right-10 w-64 h-64 bg-lavender-400/20 rounded-full blur-3xl"
       />
       <motion.div
         variants={floatingVariants}
         initial="initial"
         animate="animate"
-        className="absolute bottom-1/4 left-10 w-96 h-96 bg-blush-200/10 rounded-full blur-3xl"
+        className="absolute bottom-1/4 left-10 w-96 h-96 bg-orange-300/15 rounded-full blur-3xl"
         style={{ animationDelay: '2s' }}
       />
 
@@ -113,8 +113,8 @@ export function HeroSection() {
             {/* Badge */}
             <motion.div variants={itemVariants} className="mb-6">
               <span className="inline-flex items-center gap-2 px-4 py-2 bg-white/10 backdrop-blur-sm rounded-full text-sm font-medium border border-white/20">
-                <Sparkles className="w-4 h-4 text-blush-200" />
-                <span>Percorsi personalizzati di <em className="text-blush-200">nutrizione</em></span>
+                <Sparkles className="w-4 h-4 text-orange-300" />
+                <span>Percorsi personalizzati di <em className="text-orange-300">nutrizione</em></span>
               </span>
             </motion.div>
 
@@ -124,7 +124,7 @@ export function HeroSection() {
               className="text-4xl sm:text-5xl lg:text-6xl xl:text-7xl font-display font-bold leading-tight mb-6"
             >
               Il tuo{' '}
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-sage-300 to-blush-200">
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-lavender-300 to-orange-300">
                 benessere
               </span>
               <br />
@@ -136,10 +136,10 @@ export function HeroSection() {
               variants={itemVariants}
               className="text-lg sm:text-xl text-sage-100 leading-relaxed mb-8 max-w-xl"
             >
-              Biologo Nutrizionista specializzato in <em className="text-blush-200">nutrizione funzionale</em> e{' '}
-              <em className="text-blush-200">metabolismo</em>. 
+              Biologo Nutrizionista specializzato in <em className="text-orange-200">nutrizione funzionale</em> e{' '}
+              <em className="text-lavender-300">metabolismo</em>. 
               Insieme costruiremo il percorso ideale per raggiungere i tuoi obiettivi di{' '}
-              <em className="text-blush-200">salute</em> e <em className="text-blush-200">equilibrio</em>.
+              <em className="text-orange-200">salute</em> e <em className="text-lavender-300">equilibrio</em>.
             </motion.p>
 
             {/* CTA Buttons */}

@@ -19,8 +19,8 @@ import { cn } from '@/lib/utils';
 const testimonials = [
   {
     id: 1,
-    name: 'Maria Rossi',
-    role: 'Imprenditrice',
+    name: 'Valentina Marchetti',
+    role: 'Avvocato',
     image: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200&q=80',
     rating: 5,
     text: 'Il Dott. Giammetta ha cambiato completamente il mio approccio all\'alimentazione. Non si tratta di una dieta, ma di un vero percorso di consapevolezza. Ho perso 15 kg in modo sano e sostenibile, senza mai sentirmi privata di nulla.',
@@ -28,8 +28,8 @@ const testimonials = [
   },
   {
     id: 2,
-    name: 'Marco Bianchi',
-    role: 'Atleta Professionista',
+    name: 'Alessandro Rinaldi',
+    role: 'Personal Trainer',
     image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&q=80',
     rating: 5,
     text: 'Come atleta, avevo bisogno di un professionista che capisse le mie esigenze specifiche. Il Dott. Giammetta ha ottimizzato la mia nutrizione sportiva e le mie performance sono migliorate notevolmente.',
@@ -37,8 +37,8 @@ const testimonials = [
   },
   {
     id: 3,
-    name: 'Elena Verdi',
-    role: 'Neo-mamma',
+    name: 'Chiara Benedetti',
+    role: 'Architetto',
     image: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=200&q=80',
     rating: 5,
     text: 'Durante la gravidanza e l\'allattamento mi sono affidata completamente al Dott. Giammetta. La sua competenza e umanità mi hanno accompagnata in un momento così importante della mia vita.',
@@ -46,8 +46,8 @@ const testimonials = [
   },
   {
     id: 4,
-    name: 'Giuseppe Ferrari',
-    role: 'Manager',
+    name: 'Lorenzo Santini',
+    role: 'Consulente Finanziario',
     image: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=200&q=80',
     rating: 5,
     text: 'Soffrivo di problemi digestivi da anni. Il Dott. Giammetta ha identificato le cause e con un piano alimentare mirato ho finalmente ritrovato il mio equilibrio. Professionalità e risultati concreti.',
@@ -55,8 +55,8 @@ const testimonials = [
   },
   {
     id: 5,
-    name: 'Francesca Neri',
-    role: 'Insegnante',
+    name: 'Giulia Moretti',
+    role: 'Professoressa Universitaria',
     image: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=200&q=80',
     rating: 5,
     text: 'Cercavo un approccio plant-based bilanciato e il Dott. Giammetta mi ha guidata con competenza. Ora ho più energia che mai e so esattamente come nutrirmi in modo completo e sostenibile.',

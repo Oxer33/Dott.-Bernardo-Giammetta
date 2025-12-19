@@ -64,7 +64,7 @@ export function CTASection() {
             className="text-display-md lg:text-display-lg text-white mb-6"
           >
             Inizia il tuo percorso verso il{' '}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-sage-300 to-blush-200">
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-lavender-300 to-orange-300">
               benessere
             </span>
           </motion.h2>
@@ -77,8 +77,8 @@ export function CTASection() {
             className="text-sage-100 text-lg leading-relaxed mb-8"
           >
             Prenota una consulenza e scopri come un percorso di{' '}
-            <em className="text-blush-200">nutrizione personalizzata</em> può 
-            trasformare la tua vita. Insieme troveremo l'<em className="text-blush-200">equilibrio</em> perfetto 
+            <em className="text-orange-300">nutrizione personalizzata</em> può 
+            trasformare la tua vita. Insieme troveremo l'<em className="text-lavender-300">equilibrio</em> perfetto 
             per il tuo corpo e la tua mente.
           </motion.p>
 
@@ -118,11 +118,11 @@ export function CTASection() {
             className="flex flex-col sm:flex-row items-center justify-center gap-6 text-sage-200"
           >
             <a 
-              href="tel:+39XXXXXXXXXX" 
+              href="tel:+393920979135" 
               className="flex items-center gap-2 hover:text-white transition-colors"
             >
               <Phone className="w-4 h-4" />
-              <span>+39 XXX XXX XXXX</span>
+              <span>+39 392 0979135</span>
             </a>
             <span className="hidden sm:block text-sage-500">•</span>
             <a 

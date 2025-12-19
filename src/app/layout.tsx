@@ -13,6 +13,7 @@ import { Toaster } from '@/components/ui/Toaster';
 import { ScrollToTop } from '@/components/ui/ScrollToTop';
 import { CookieConsent } from '@/components/ui/CookieConsent';
 import { NutriBot } from '@/components/chat/NutriBot';
+import { SplashScreen } from '@/components/ui/SplashScreen';
 
 // =============================================================================
 // CONFIGURAZIONE FONT
@@ -195,6 +196,9 @@ export default function RootLayout({
           
           {/* NutriBot AI Assistant */}
           <NutriBot />
+          
+          {/* Splash Screen */}
+          <SplashScreen />
         </Providers>
       </body>
     </html>

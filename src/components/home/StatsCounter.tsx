@@ -113,7 +113,7 @@ function StatCard({ stat, index, isInView }: StatCardProps) {
         <span className="text-4xl lg:text-5xl font-display font-bold text-white">
           {displayValue}
         </span>
-        <span className="text-3xl lg:text-4xl font-display font-bold text-blush-200">
+        <span className="text-3xl lg:text-4xl font-display font-bold text-orange-300">
           {stat.suffix}
         </span>
       </div>
@@ -157,7 +157,7 @@ export function StatsCounter() {
 
       {/* Decorative blurs */}
       <div className="absolute top-0 left-1/4 w-64 h-64 bg-sage-300/20 rounded-full blur-3xl" />
-      <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-blush-200/10 rounded-full blur-3xl" />
+      <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-lavender-300/15 rounded-full blur-3xl" />
 
       <div className="container-custom relative z-10">
         {/* Header */}
@@ -172,7 +172,7 @@ export function StatsCounter() {
           </h2>
           <p className="text-sage-100 text-lg max-w-2xl mx-auto">
             Anni di esperienza, dedizione e risultati concreti nel campo della{' '}
-            <em className="text-blush-200">nutrizione</em> e del <em className="text-blush-200">benessere</em>.
+            <em className="text-orange-300">nutrizione</em> e del <em className="text-lavender-300">benessere</em>.
           </p>
         </motion.div>
 

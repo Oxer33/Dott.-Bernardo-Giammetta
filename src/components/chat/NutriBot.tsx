@@ -14,7 +14,6 @@ import {
   Bot,
   User,
   Loader2,
-  Minimize2,
   Sparkles
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -37,8 +36,7 @@ interface Message {
 
 export function NutriBot() {
   const [isOpen, setIsOpen] = useState(false);
-  const [isMinimized, setIsMinimized] = useState(false);
-  const [messages, setMessages] = useState<Message[]>([]);
+    const [messages, setMessages] = useState<Message[]>([]);
   const [inputValue, setInputValue] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [hasError, setHasError] = useState(false);
@@ -57,10 +55,10 @@ export function NutriBot() {
 
   // Focus sull'input quando si apre la chat
   useEffect(() => {
-    if (isOpen && !isMinimized) {
+    if (isOpen) {
       setTimeout(() => inputRef.current?.focus(), 300);
     }
-  }, [isOpen, isMinimized]);
+  }, [isOpen]);
 
   // Messaggio di benvenuto all'apertura
   useEffect(() => {
@@ -179,7 +177,7 @@ export function NutriBot() {
               opacity: 1, 
               y: 0, 
               scale: 1,
-              height: isMinimized ? 'auto' : '500px'
+              height: '500px'
             }}
             exit={{ opacity: 0, y: 20, scale: 0.95 }}
             transition={{ duration: 0.3 }}
@@ -204,27 +202,17 @@ export function NutriBot() {
                   <p className="text-lavender-100 text-xs">Assistente virtuale</p>
                 </div>
               </div>
-              <div className="flex items-center gap-1">
-                <button
-                  onClick={() => setIsMinimized(!isMinimized)}
-                  className="p-2 hover:bg-white/20 rounded-lg transition-colors"
-                  aria-label={isMinimized ? 'Espandi' : 'Minimizza'}
-                >
-                  <Minimize2 className="w-4 h-4 text-white" />
-                </button>
-                <button
-                  onClick={() => setIsOpen(false)}
-                  className="p-2 hover:bg-white/20 rounded-lg transition-colors"
-                  aria-label="Chiudi chat"
-                >
-                  <X className="w-4 h-4 text-white" />
-                </button>
-              </div>
+              <button
+                onClick={() => setIsOpen(false)}
+                className="p-2 hover:bg-white/20 rounded-lg transition-colors"
+                aria-label="Chiudi chat"
+              >
+                <X className="w-5 h-5 text-white" />
+              </button>
             </div>
 
-            {/* Corpo chat (nascosto se minimizzato) */}
-            {!isMinimized && (
-              <>
+            {/* Corpo chat */}
+            <>
                 {/* Messaggi */}
                 <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-cream-50">
                   {messages.map((message) => (
@@ -322,7 +310,6 @@ export function NutriBot() {
                   </p>
                 </div>
               </>
-            )}
           </motion.div>
         )}
       </AnimatePresence>
