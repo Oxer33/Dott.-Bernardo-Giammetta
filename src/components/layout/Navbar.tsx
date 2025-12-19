@@ -66,8 +66,8 @@ export function Navbar() {
         className={cn(
           'fixed top-0 left-0 right-0 z-50 transition-all duration-500',
           isScrolled
-            ? 'bg-white/80 backdrop-blur-xl shadow-soft py-3'
-            : 'bg-transparent py-5'
+            ? 'bg-white/95 backdrop-blur-xl shadow-soft py-3'
+            : 'bg-sage-900/30 backdrop-blur-sm py-5'
         )}
       >
         <nav className="container-custom">
@@ -89,10 +89,16 @@ export function Navbar() {
                 
                 {/* Logo text - nascosto su mobile piccolo */}
                 <div className="hidden sm:block">
-                  <p className="font-display font-semibold text-sage-900 text-lg leading-tight">
+                  <p className={cn(
+                      "font-display font-semibold text-lg leading-tight transition-colors",
+                      isScrolled ? "text-sage-900" : "text-white"
+                    )}>
                     Dott. Giammetta
                   </p>
-                  <p className="text-sage-600 text-xs tracking-wide">
+                  <p className={cn(
+                      "text-xs tracking-wide transition-colors",
+                      isScrolled ? "text-sage-600" : "text-orange-100"
+                    )}>
                     Biologo Nutrizionista
                   </p>
                 </div>
@@ -108,8 +114,12 @@ export function Navbar() {
                   className={cn(
                     'px-4 py-2 rounded-full text-sm font-medium transition-all duration-300',
                     pathname === link.href
-                      ? 'text-sage-700 bg-sage-100'
-                      : 'text-sage-600 hover:text-sage-900 hover:bg-sage-50'
+                      ? isScrolled 
+                        ? 'text-sage-700 bg-sage-100'
+                        : 'text-white bg-white/20'
+                      : isScrolled
+                        ? 'text-sage-600 hover:text-sage-900 hover:bg-sage-50'
+                        : 'text-orange-100 hover:text-white hover:bg-white/10'
                   )}
                 >
                   {link.label}

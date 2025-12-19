@@ -26,9 +26,13 @@ import { it } from 'date-fns/locale';
 
 // Orari di apertura studio (24h format)
 export const STUDIO_HOURS = {
-  start: 8,  // 08:00
-  end: 20,   // 20:00
+  startHour: 8,     // Ora inizio
+  startMinute: 30,  // Minuto inizio (08:30)
+  end: 20,          // 20:00
 };
+
+// Email account master che può fare tutto
+export const MASTER_EMAIL = 'accomodationlapulena@gmail.com';
 
 // Durata fasce orarie in minuti
 export const SLOT_DURATION = 30;
@@ -71,8 +75,16 @@ export function generateBaseTimeSlots(date: Date): TimeSlot[] {
   const slots: TimeSlot[] = [];
   const dayStart = startOfDay(date);
   
-  for (let hour = STUDIO_HOURS.start; hour < STUDIO_HOURS.end; hour++) {
+  // Inizia da 08:30
+  let isFirstSlot = true;
+  
+  for (let hour = STUDIO_HOURS.startHour; hour < STUDIO_HOURS.end; hour++) {
     for (let minute = 0; minute < 60; minute += SLOT_DURATION) {
+      // Salta 08:00 - inizia da 08:30
+      if (hour === STUDIO_HOURS.startHour && minute < STUDIO_HOURS.startMinute) {
+        continue;
+      }
+      
       const datetime = setMinutes(setHours(dayStart, hour), minute);
       slots.push({
         time: format(datetime, 'HH:mm'),
@@ -212,53 +224,59 @@ export async function getDayAvailability(
 export async function canUserBook(
   userId: string,
   startTime: Date,
-  duration: number
+  duration: number,
+  userEmail?: string
 ): Promise<{ canBook: boolean; reason?: string }> {
   // 1. Verifica che l'utente sia in whitelist
   const user = await db.user.findUnique({
     where: { id: userId },
-    select: { isWhitelisted: true, role: true },
+    select: { isWhitelisted: true, role: true, email: true },
   });
   
   if (!user) {
     return { canBook: false, reason: 'Utente non trovato' };
   }
   
-  // Admin può sempre prenotare (per conto dei pazienti)
-  if (user.role !== 'ADMIN' && !user.isWhitelisted) {
+  // Verifica se è l'account master
+  const isMaster = user.email === MASTER_EMAIL || userEmail === MASTER_EMAIL;
+  
+  // Admin/Master può sempre prenotare (per conto dei pazienti)
+  if (user.role !== 'ADMIN' && !isMaster && !user.isWhitelisted) {
     return { 
       canBook: false, 
       reason: 'Devi essere un paziente registrato per prenotare. Contatta lo studio.' 
     };
   }
   
-  // 2. Verifica preavviso minimo (48h)
+  // 2. Verifica preavviso minimo (48h) - Master esente
   const now = new Date();
   const hoursUntilAppointment = differenceInHours(startTime, now);
   
-  if (hoursUntilAppointment < MIN_BOOKING_NOTICE_HOURS) {
+  if (!isMaster && hoursUntilAppointment < MIN_BOOKING_NOTICE_HOURS) {
     return { 
       canBook: false, 
       reason: `Devi prenotare con almeno ${MIN_BOOKING_NOTICE_HOURS} ore di anticipo` 
     };
   }
   
-  // 3. Verifica che l'utente non abbia già un appuntamento attivo
-  const existingAppointment = await db.appointment.findFirst({
-    where: {
-      userId,
-      status: 'CONFIRMED',
-      startTime: {
-        gte: now,
+  // 3. Verifica che l'utente non abbia già un appuntamento attivo - Master esente
+  if (!isMaster) {
+    const existingAppointment = await db.appointment.findFirst({
+      where: {
+        userId,
+        status: 'CONFIRMED',
+        startTime: {
+          gte: now,
+        },
       },
-    },
-  });
-  
-  if (existingAppointment && user.role !== 'ADMIN') {
-    return { 
-      canBook: false, 
-      reason: 'Hai già un appuntamento prenotato. Puoi avere solo una prenotazione attiva alla volta.' 
-    };
+    });
+    
+    if (existingAppointment && user.role !== 'ADMIN') {
+      return { 
+        canBook: false, 
+        reason: 'Hai già un appuntamento prenotato. Puoi avere solo una prenotazione attiva alla volta.' 
+      };
+    }
   }
   
   // 4. Verifica disponibilità dello slot
@@ -281,7 +299,85 @@ export async function canUserBook(
     };
   }
   
+  // 5. LOGICA ANTI-BUCHI: evita buchi di 30 min nell'agenda - Master esente
+  // Se c'è un appuntamento che finisce prima, l'utente deve prenotare subito dopo
+  // Se c'è un appuntamento che inizia dopo, l'utente deve prenotare subito prima
+  if (!isMaster) {
+    const antiGapCheck = await checkNoGapPolicy(startTime, duration, dayAvailability);
+    if (!antiGapCheck.allowed) {
+      return {
+        canBook: false,
+        reason: antiGapCheck.reason || 'Orario non disponibile per evitare buchi nell\'agenda'
+      };
+    }
+  }
+  
   return { canBook: true };
+}
+
+// =============================================================================
+// LOGICA ANTI-BUCHI
+// Evita che gli utenti lascino buchi di 30 minuti nell'agenda
+// =============================================================================
+
+async function checkNoGapPolicy(
+  startTime: Date,
+  duration: number,
+  dayAvailability: DayAvailability
+): Promise<{ allowed: boolean; reason?: string }> {
+  const startTimeStr = format(startTime, 'HH:mm');
+  const endTime = addMinutes(startTime, duration);
+  const endTimeStr = format(endTime, 'HH:mm');
+  
+  // Trova tutti gli slot occupati (appuntamenti) nel giorno
+  const occupiedSlots = dayAvailability.slots.filter(
+    slot => !slot.isAvailable && slot.blockType === 'appointment'
+  );
+  
+  // Se non ci sono appuntamenti, qualsiasi orario va bene
+  if (occupiedSlots.length === 0) {
+    return { allowed: true };
+  }
+  
+  // Trova il primo e ultimo slot occupato
+  const occupiedTimes = occupiedSlots.map(s => s.time).sort();
+  
+  // Cerca appuntamenti adiacenti
+  for (const occupiedTime of occupiedTimes) {
+    // Se c'è un appuntamento che finisce 30 min prima del nostro inizio = buco!
+    // Esempio: appuntamento finisce 14:30, utente vuole 15:00 = buco di 30 min
+    const thirtyMinAfterOccupied = format(addMinutes(parseTimeToDate(occupiedTime, startTime), SLOT_DURATION), 'HH:mm');
+    
+    if (thirtyMinAfterOccupied === startTimeStr) {
+      // C'è un buco di 30 minuti! L'utente dovrebbe prenotare alle occupiedTime
+      // o 1 ora dopo
+      return {
+        allowed: false,
+        reason: `Per ottimizzare l'agenda, prenota alle ${occupiedTime} (subito dopo l'appuntamento precedente) oppure alle ${format(addMinutes(parseTimeToDate(startTimeStr, startTime), SLOT_DURATION), 'HH:mm')}`
+      };
+    }
+  }
+  
+  // Verifica anche se la fine della prenotazione crea un buco
+  for (const occupiedTime of occupiedTimes) {
+    // Se c'è un appuntamento che inizia 30 min dopo la nostra fine = buco!
+    const thirtyMinAfterEnd = format(addMinutes(parseTimeToDate(endTimeStr, startTime), SLOT_DURATION), 'HH:mm');
+    
+    if (occupiedTime === thirtyMinAfterEnd) {
+      return {
+        allowed: false,
+        reason: `Per ottimizzare l'agenda, prenota alle ${format(addMinutes(parseTimeToDate(startTimeStr, startTime), -SLOT_DURATION), 'HH:mm')} o alle ${format(addMinutes(parseTimeToDate(startTimeStr, startTime), SLOT_DURATION), 'HH:mm')}`
+      };
+    }
+  }
+  
+  return { allowed: true };
+}
+
+// Helper per convertire stringa orario in Date
+function parseTimeToDate(timeStr: string, referenceDate: Date): Date {
+  const [hours, minutes] = timeStr.split(':').map(Number);
+  return setMinutes(setHours(startOfDay(referenceDate), hours), minutes);
 }
 
 // =============================================================================

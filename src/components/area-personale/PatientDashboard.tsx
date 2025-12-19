@@ -1,0 +1,234 @@
+// =============================================================================
+// PATIENT DASHBOARD - AREA PERSONALE
+// Dashboard per pazienti in whitelist
+// =============================================================================
+
+'use client';
+
+import { useState } from 'react';
+import Link from 'next/link';
+import { motion } from 'framer-motion';
+import { 
+  Calendar, 
+  Clock, 
+  User, 
+  Phone, 
+  Mail,
+  MapPin,
+  FileText,
+  ChevronRight,
+  AlertCircle,
+  CheckCircle
+} from 'lucide-react';
+import { Button } from '@/components/ui/Button';
+import { format, isPast, isFuture } from 'date-fns';
+import { it } from 'date-fns/locale';
+
+// =============================================================================
+// TIPI
+// =============================================================================
+
+interface Appointment {
+  id: string;
+  startTime: Date;
+  duration: number;
+  type: string;
+  status: string;
+  notes?: string | null;
+}
+
+interface PatientDashboardProps {
+  user: {
+    id: string;
+    name: string | null;
+    email: string | null;
+    appointments: Appointment[];
+  };
+}
+
+// =============================================================================
+// COMPONENTE
+// =============================================================================
+
+export function PatientDashboard({ user }: PatientDashboardProps) {
+  const upcomingAppointments = user.appointments.filter(a => 
+    isFuture(new Date(a.startTime))
+  );
+  const pastAppointments = user.appointments.filter(a => 
+    isPast(new Date(a.startTime))
+  );
+
+  return (
+    <div className="min-h-screen bg-gradient-to-b from-cream-50 to-lavender-50 py-12">
+      <div className="container-custom">
+        {/* Header */}
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-8"
+        >
+          <div className="flex items-center gap-4 mb-2">
+            <div className="w-14 h-14 rounded-full bg-gradient-to-br from-sage-400 to-sage-600 flex items-center justify-center text-white font-bold text-xl">
+              {user.name?.charAt(0) || 'U'}
+            </div>
+            <div>
+              <h1 className="text-2xl font-display font-bold text-sage-900">
+                Benvenuto, {user.name?.split(' ')[0] || 'Paziente'}!
+              </h1>
+              <p className="text-sage-600">{user.email}</p>
+            </div>
+          </div>
+        </motion.div>
+
+        <div className="grid lg:grid-cols-3 gap-8">
+          {/* Colonna principale */}
+          <div className="lg:col-span-2 space-y-6">
+            {/* Prossimi appuntamenti */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
+              className="bg-white rounded-2xl p-6 shadow-soft border border-lavender-100"
+            >
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-xl font-semibold text-sage-800 flex items-center gap-2">
+                  <Calendar className="w-5 h-5 text-lavender-500" />
+                  Prossimi Appuntamenti
+                </h2>
+                <Link href="/agenda">
+                  <Button variant="secondary" size="sm">
+                    <span>Prenota</span>
+                    <ChevronRight className="w-4 h-4" />
+                  </Button>
+                </Link>
+              </div>
+
+              {upcomingAppointments.length > 0 ? (
+                <div className="space-y-4">
+                  {upcomingAppointments.map((appointment) => (
+                    <div
+                      key={appointment.id}
+                      className="flex items-center gap-4 p-4 bg-sage-50 rounded-xl border border-sage-100"
+                    >
+                      <div className="w-12 h-12 rounded-xl bg-sage-100 flex items-center justify-center">
+                        <Calendar className="w-6 h-6 text-sage-600" />
+                      </div>
+                      <div className="flex-1">
+                        <p className="font-medium text-sage-800">
+                          {appointment.type === 'FIRST_VISIT' ? 'Prima Visita' : 'Controllo'}
+                        </p>
+                        <p className="text-sm text-sage-600">
+                          {format(new Date(appointment.startTime), "EEEE d MMMM 'alle' HH:mm", { locale: it })}
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-2 text-sm text-sage-500">
+                        <Clock className="w-4 h-4" />
+                        {appointment.duration} min
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-8">
+                  <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-lavender-100 flex items-center justify-center">
+                    <Calendar className="w-8 h-8 text-lavender-400" />
+                  </div>
+                  <p className="text-sage-600 mb-4">Nessun appuntamento in programma</p>
+                  <Link href="/agenda">
+                    <Button className="bg-lavender-500 hover:bg-lavender-600">
+                      Prenota una Visita
+                    </Button>
+                  </Link>
+                </div>
+              )}
+            </motion.div>
+
+            {/* Storico appuntamenti */}
+            {pastAppointments.length > 0 && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 }}
+                className="bg-white rounded-2xl p-6 shadow-soft border border-sage-100"
+              >
+                <h2 className="text-xl font-semibold text-sage-800 flex items-center gap-2 mb-6">
+                  <FileText className="w-5 h-5 text-sage-500" />
+                  Storico Visite
+                </h2>
+                <div className="space-y-3">
+                  {pastAppointments.slice(0, 5).map((appointment) => (
+                    <div
+                      key={appointment.id}
+                      className="flex items-center gap-4 p-3 bg-cream-50 rounded-lg"
+                    >
+                      <CheckCircle className="w-5 h-5 text-sage-400" />
+                      <div className="flex-1">
+                        <p className="text-sm font-medium text-sage-700">
+                          {appointment.type === 'FIRST_VISIT' ? 'Prima Visita' : 'Controllo'}
+                        </p>
+                        <p className="text-xs text-sage-500">
+                          {format(new Date(appointment.startTime), "d MMMM yyyy", { locale: it })}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </motion.div>
+            )}
+          </div>
+
+          {/* Sidebar */}
+          <div className="space-y-6">
+            {/* Info contatto */}
+            <motion.div
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.3 }}
+              className="bg-white rounded-2xl p-6 shadow-soft border border-lavender-100"
+            >
+              <h3 className="font-semibold text-sage-800 mb-4">Contatta lo Studio</h3>
+              <div className="space-y-4">
+                <a
+                  href="tel:+393920979135"
+                  className="flex items-center gap-3 text-sage-600 hover:text-sage-900 transition-colors"
+                >
+                  <div className="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center">
+                    <Phone className="w-5 h-5 text-orange-500" />
+                  </div>
+                  <span className="text-sm">+39 392 0979135</span>
+                </a>
+                <a
+                  href="mailto:info@bernardogiammetta.com"
+                  className="flex items-center gap-3 text-sage-600 hover:text-sage-900 transition-colors"
+                >
+                  <div className="w-10 h-10 rounded-full bg-sage-100 flex items-center justify-center">
+                    <Mail className="w-5 h-5 text-sage-500" />
+                  </div>
+                  <span className="text-sm">info@bernardogiammetta.com</span>
+                </a>
+              </div>
+            </motion.div>
+
+            {/* Note */}
+            <motion.div
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.4 }}
+              className="bg-gradient-to-br from-lavender-100 to-lavender-50 rounded-2xl p-6 border border-lavender-200"
+            >
+              <div className="flex items-start gap-3">
+                <AlertCircle className="w-5 h-5 text-lavender-600 flex-shrink-0 mt-0.5" />
+                <div>
+                  <h4 className="font-medium text-lavender-800 mb-1">Promemoria</h4>
+                  <p className="text-sm text-lavender-700">
+                    Per cancellare o modificare un appuntamento, contatta lo studio almeno 24 ore prima.
+                  </p>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}

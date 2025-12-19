@@ -12,6 +12,7 @@ import { Providers } from '@/components/providers/Providers';
 import { Toaster } from '@/components/ui/Toaster';
 import { ScrollToTop } from '@/components/ui/ScrollToTop';
 import { CookieConsent } from '@/components/ui/CookieConsent';
+import { NutriBot } from '@/components/chat/NutriBot';
 
 // =============================================================================
 // CONFIGURAZIONE FONT
@@ -191,6 +192,9 @@ export default function RootLayout({
           
           {/* Cookie consent banner GDPR */}
           <CookieConsent />
+          
+          {/* NutriBot AI Assistant */}
+          <NutriBot />
         </Providers>
       </body>
     </html>

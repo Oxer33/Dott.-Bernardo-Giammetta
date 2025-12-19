@@ -5,6 +5,9 @@
 // =============================================================================
 
 import { NextRequest, NextResponse } from 'next/server';
+
+// Force dynamic rendering per evitare errori di static generation
+export const dynamic = 'force-dynamic';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { getWeekAvailability, getDayAvailability } from '@/lib/agenda';
