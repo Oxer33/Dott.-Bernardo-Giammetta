@@ -1,7 +1,7 @@
 // =============================================================================
 // PRISMA SCHEMA - DOTT. BERNARDO GIAMMETTA
 // Database schema per gestione utenti, appuntamenti, whitelist e email
-// NOTA: SQLite non supporta enum, quindi usiamo String con valori documentati
+// Configurato per PostgreSQL su AWS RDS Aurora
 // =============================================================================
 
 generator client {
@@ -9,7 +9,7 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"  // Cambiare in "postgresql" per produzione AWS
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
