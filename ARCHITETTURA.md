@@ -16,7 +16,7 @@ Design ultra-moderno ispirato a metodo-ongaro.com con sistema di prenotazione av
 | **TypeScript** | 5+ | Type Safety |
 | **Tailwind CSS** | 3.4+ | Styling utility-first |
 | **Framer Motion** | 11+ | Animazioni fluide |
-| **Prisma** | 5+ | ORM per database |
+| **Prisma** | 5+ | ORM per database (PostgreSQL su AWS RDS) |
 | **NextAuth** | 4+ | Autenticazione OAuth |
 | **Resend** | 3+ | Email transazionali |
 | **date-fns** | 3+ | Manipolazione date |
@@ -34,8 +34,13 @@ src/
 │   │   ├── agenda/        # Gestione appuntamenti
 │   │   │   ├── availability/   # GET disponibilità
 │   │   │   └── appointments/   # CRUD appuntamenti
-│   │   └── cron/          # Job schedulati (reminders)
+│   │   ├── cron/          # Job schedulati (reminders)
+│   │   └── db/            # Endpoint diagnosi database
+│   │       └── init/      # GET verifica connessione DB
 │   ├── agenda/            # Pagina prenotazioni
+│   ├── privacy/           # Privacy Policy
+│   ├── cookie/            # Cookie Policy
+│   ├── termini/           # Termini e Condizioni
 │   ├── chi-sono/          # Pagina about (TODO)
 │   ├── servizi/           # Pagina servizi (TODO)
 │   ├── blog/              # Sistema blog (TODO)
@@ -70,7 +75,11 @@ src/
 │   ├── db.ts              # Prisma client singleton
 │   ├── auth.ts            # NextAuth configurazione
 │   ├── agenda.ts          # Logica gestione agenda
-│   └── email.ts           # Sistema email con template
+│   ├── email.ts           # Sistema email con template
+│   └── nutribot.ts        # NutriBot AI (OpenRouter + DeepSeek)
+│
+scripts/
+└── setup-database.js      # Script auto-setup DB per build Amplify
 │
 └── types/                 # TypeScript types (TODO)
     └── index.ts
@@ -217,11 +226,23 @@ npx prisma db push
 npm run dev
 ```
 
-### Produzione (AWS/Vercel):
-1. Configura variabili ambiente
-2. Cambia DATABASE_URL a PostgreSQL
-3. Push su GitHub
-4. Deploy automatico
+### Produzione (AWS Amplify):
+```bash
+# Variabili ambiente richieste su Amplify:
+DATABASE_URL=postgresql://...  # AWS RDS Aurora PostgreSQL
+OPENROUTER_API_KEY=sk-or-v1-...  # Per NutriBot
+NEXTAUTH_SECRET=...  # Chiave segreta sessioni
+NEXTAUTH_URL=https://...amplifyapp.com
+GOOGLE_CLIENT_ID=...  # OAuth
+GOOGLE_CLIENT_SECRET=...  # OAuth
+```
+
+### Creazione Tabelle Database:
+```bash
+# Da EC2 nella stessa VPC del database:
+export DATABASE_URL="postgresql://..."
+npx prisma db push
+```
 
 ---
 
@@ -250,4 +271,4 @@ npm run dev
 
 ---
 
-*Ultimo aggiornamento: Gennaio 2026*
+*Ultimo aggiornamento: 20 Dicembre 2024*

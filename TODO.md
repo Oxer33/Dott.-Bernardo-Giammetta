@@ -76,13 +76,17 @@
 
 ## 🔄 IN CORSO
 
-### Installazione e Test ✅ COMPLETATO
-- [x] npm install dipendenze
-- [x] prisma generate
-- [x] prisma db push
-- [x] Test build dev
-- [x] Fix errori (font, resend null checks, tipi)
-- [x] Server avviato su http://localhost:3000
+### Deploy AWS Amplify
+- [x] Configurazione Prisma per PostgreSQL
+- [x] Modello NutriBot cambiato a deepseek/deepseek-r1-0528:free
+- [x] Fix pagina /accedi (auth.ts configurato correttamente)
+- [x] Script setup-database per build Amplify
+- [x] Endpoint /api/db/init per diagnosi database
+- [x] Pagine legali (privacy, cookie, termini)
+- [x] Icona SVG per manifest PWA
+- [ ] **Creare tabelle su AWS RDS** (richiede EC2 nella stessa VPC)
+- [ ] Configurare variabili ambiente su Amplify
+- [ ] Test finale su produzione
 
 ---
 
@@ -170,7 +174,13 @@
 
 ## 🐛 BUG NOTI
 
-*Nessun bug noto al momento - dipendenze non ancora installate*
+### Database AWS (IN RISOLUZIONE)
+- CloudShell non può raggiungere Aurora Serverless v2
+- Soluzione: usare EC2 temporaneo nella stessa VPC per eseguire `prisma db push`
+- Le tabelle non sono ancora create nel database
+
+### NutriBot
+- Cambiato modello a `deepseek/deepseek-r1-0528:free` - da testare dopo redeploy
 
 ---
 
@@ -211,4 +221,4 @@
 
 ---
 
-*Ultimo aggiornamento: 19 Dicembre 2026*
+*Ultimo aggiornamento: 20 Dicembre 2024*
