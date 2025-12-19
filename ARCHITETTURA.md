@@ -1,0 +1,253 @@
+# 🏗️ ARCHITETTURA PROGETTO - Dott. Bernardo Giammetta
+
+## 📋 Panoramica
+
+Sito web professionale per il Dott. Bernardo Giammetta, Biologo Nutrizionista.
+Design ultra-moderno ispirato a metodo-ongaro.com con sistema di prenotazione avanzato.
+
+---
+
+## 🛠️ Stack Tecnologico
+
+| Tecnologia | Versione | Scopo |
+|------------|----------|-------|
+| **Next.js** | 14+ | Framework React con App Router |
+| **React** | 18+ | UI Library |
+| **TypeScript** | 5+ | Type Safety |
+| **Tailwind CSS** | 3.4+ | Styling utility-first |
+| **Framer Motion** | 11+ | Animazioni fluide |
+| **Prisma** | 5+ | ORM per database |
+| **NextAuth** | 4+ | Autenticazione OAuth |
+| **Resend** | 3+ | Email transazionali |
+| **date-fns** | 3+ | Manipolazione date |
+| **Zod** | 3+ | Validazione schema |
+
+---
+
+## 📁 Struttura Cartelle
+
+```
+src/
+├── app/                    # Next.js App Router
+│   ├── api/               # API Routes
+│   │   ├── auth/          # NextAuth endpoints
+│   │   ├── agenda/        # Gestione appuntamenti
+│   │   │   ├── availability/   # GET disponibilità
+│   │   │   └── appointments/   # CRUD appuntamenti
+│   │   └── cron/          # Job schedulati (reminders)
+│   ├── agenda/            # Pagina prenotazioni
+│   ├── chi-sono/          # Pagina about (TODO)
+│   ├── servizi/           # Pagina servizi (TODO)
+│   ├── blog/              # Sistema blog (TODO)
+│   ├── contatti/          # Form contatti (TODO)
+│   ├── admin/             # Pannello admin (TODO)
+│   ├── layout.tsx         # Root layout con providers
+│   ├── page.tsx           # Homepage
+│   └── globals.css        # Stili globali
+│
+├── components/            # Componenti React
+│   ├── home/              # Componenti homepage
+│   │   ├── HeroSection.tsx
+│   │   ├── AboutPreview.tsx
+│   │   ├── ServicesGrid.tsx
+│   │   ├── StatsCounter.tsx
+│   │   ├── TestimonialsCarousel.tsx
+│   │   ├── BlogPreview.tsx
+│   │   └── CTASection.tsx
+│   ├── layout/            # Layout components
+│   │   ├── Navbar.tsx
+│   │   └── Footer.tsx
+│   ├── agenda/            # Componenti agenda
+│   │   └── AgendaCalendar.tsx
+│   ├── ui/                # Componenti UI riutilizzabili
+│   │   ├── Button.tsx
+│   │   └── Toaster.tsx
+│   └── providers/         # Context providers
+│       └── Providers.tsx
+│
+├── lib/                   # Utilities e configurazioni
+│   ├── utils.ts           # Funzioni helper generiche
+│   ├── db.ts              # Prisma client singleton
+│   ├── auth.ts            # NextAuth configurazione
+│   ├── agenda.ts          # Logica gestione agenda
+│   └── email.ts           # Sistema email con template
+│
+└── types/                 # TypeScript types (TODO)
+    └── index.ts
+
+prisma/
+└── schema.prisma          # Database schema
+
+public/                    # Asset statici (TODO)
+├── images/
+└── fonts/
+```
+
+---
+
+## 🗄️ Database Schema
+
+### Modelli Principali
+
+1. **User** - Utenti (pazienti e admin)
+   - Autenticazione Google OAuth
+   - Flag whitelist per prenotazioni
+   - Ruolo (ADMIN/PATIENT)
+
+2. **Appointment** - Appuntamenti
+   - Collegato a User
+   - Durata: 60min (controllo) / 90min (prima visita)
+   - Stati: CONFIRMED, CANCELLED, COMPLETED, NO_SHOW
+
+3. **TimeBlock** - Blocchi orari
+   - RECURRING: impegni settimanali ricorrenti
+   - OCCASIONAL: impegni una tantum
+   - Note private per admin
+
+4. **EmailLog** - Log email inviate
+   - Tracking template usati
+   - Evita duplicati
+
+5. **BlogPost** - Articoli blog (preparato per CMS)
+
+6. **ContactMessage** - Messaggi form contatti
+
+---
+
+## 🔐 Sistema Autenticazione
+
+- **Provider**: Google OAuth via NextAuth
+- **Sessioni**: Database-backed (Prisma Adapter)
+- **Whitelist**: Solo utenti approvati possono prenotare
+- **Ruoli**: ADMIN (dottore) / PATIENT (paziente)
+
+### Flusso Autenticazione:
+1. Utente clicca "Accedi con Google"
+2. NextAuth gestisce OAuth flow
+3. Account creato/aggiornato in database
+4. Sessione salvata con dati custom (role, whitelist)
+
+---
+
+## 📅 Sistema Agenda
+
+### Regole Business:
+- **Fasce orarie**: 30 minuti ciascuna
+- **Prima visita**: 90 min (3 slot consecutivi)
+- **Visita controllo**: 60 min (2 slot consecutivi)
+- **Preavviso minimo**: 48 ore
+- **Limite prenotazioni**: 1 per utente alla volta
+- **Orari studio**: 08:00 - 20:00
+
+### Tipi di Blocco:
+1. **Ricorrente**: stesso orario ogni settimana (es. ogni mercoledì 10-12)
+2. **Occasionale**: specifica data e ora (es. 15 gennaio 14-16)
+
+### Privacy:
+- Vista pubblica: mostra slot liberi/occupati senza nomi
+- Vista admin: mostra dettagli pazienti e note
+
+---
+
+## 📧 Sistema Email
+
+### Template Variati (50+ varianti)
+Per sembrare scritte a mano, ogni tipo di email ha multiple varianti:
+
+1. **Conferma prenotazione** (10 varianti)
+2. **Cancellazione** (10 varianti)
+3. **Reminder 1 settimana** (10 varianti)
+4. **Reminder 1 giorno** (10 varianti)
+5. **Followup 25 giorni** (10 varianti)
+6. **Urgente 60 giorni** (10 varianti)
+
+### Cron Job:
+- Endpoint: `/api/cron/reminders`
+- Da chiamare giornalmente (Vercel Cron o esterno)
+- Invia reminder automatici basati su date appuntamenti
+
+---
+
+## 🎨 Design System
+
+### Palette Colori:
+```css
+--sage-500: #86A788   /* Verde salvia principale */
+--cream-50: #FFFDEC   /* Crema sfondo */
+--blush-200: #FFE2E2  /* Rosa tenue */
+--rose-300: #FFCFCF   /* Rosa accento */
+```
+
+### Typography:
+- **Display**: Playfair Display (headings)
+- **Body**: Inter (testo)
+- **Accent**: Clash Display (per variazioni)
+
+### Effetti:
+- Glassmorphism per cards e navbar
+- Gradienti sottili
+- Ombre morbide (shadow-soft)
+- Animazioni Framer Motion
+
+---
+
+## 🔄 Flusso Dati
+
+```
+[Client] 
+    ↓ fetch API
+[API Route]
+    ↓ validate con Zod
+[Lib functions (agenda.ts, email.ts)]
+    ↓ query
+[Prisma ORM]
+    ↓
+[Database SQLite/PostgreSQL]
+```
+
+---
+
+## 🚀 Deploy
+
+### Sviluppo Locale:
+```bash
+npm install
+npx prisma generate
+npx prisma db push
+npm run dev
+```
+
+### Produzione (AWS/Vercel):
+1. Configura variabili ambiente
+2. Cambia DATABASE_URL a PostgreSQL
+3. Push su GitHub
+4. Deploy automatico
+
+---
+
+## ⚠️ Note Importanti
+
+1. **Variabili Ambiente**: Copiare `.env.example` in `.env.local`
+2. **Database**: SQLite in dev, PostgreSQL in prod
+3. **OAuth**: Configurare Google Cloud Console per credenziali
+4. **Email**: Configurare dominio su Resend
+5. **Cron**: Configurare job esterno per reminders
+
+---
+
+## 👤 Ruoli e Permessi
+
+| Azione | PATIENT | ADMIN |
+|--------|---------|-------|
+| Vedere agenda pubblica | ✅ | ✅ |
+| Prenotare (se whitelist) | ✅ | ✅ |
+| Cancellare proprio appuntamento | ✅ | ✅ |
+| Vedere tutti gli appuntamenti | ❌ | ✅ |
+| Modificare appuntamenti | ❌ | ✅ |
+| Gestire blocchi orari | ❌ | ✅ |
+| Gestire whitelist | ❌ | ✅ |
+| Creare prima visita | ❌ | ✅ |
+
+---
+
+*Ultimo aggiornamento: Gennaio 2026*

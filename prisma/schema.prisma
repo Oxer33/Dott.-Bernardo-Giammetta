@@ -1,0 +1,257 @@
+// =============================================================================
+// PRISMA SCHEMA - DOTT. BERNARDO GIAMMETTA
+// Database schema per gestione utenti, appuntamenti, whitelist e email
+// NOTA: SQLite non supporta enum, quindi usiamo String con valori documentati
+// =============================================================================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"  // Cambiare in "postgresql" per produzione AWS
+  url      = env("DATABASE_URL")
+}
+
+// =============================================================================
+// MODELLO UTENTE
+// Gestisce autenticazione Google e dati utente
+// =============================================================================
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  name          String?
+  image         String?
+  phone         String?
+  
+  // Stato whitelist - solo utenti in whitelist possono prenotare
+  isWhitelisted Boolean   @default(false)
+  whitelistedAt DateTime?
+  
+  // Ruolo utente: "ADMIN" | "PATIENT"
+  role          String    @default("PATIENT")
+  
+  // Relazioni
+  appointments  Appointment[]
+  emailLogs     EmailLog[]
+  
+  // NextAuth fields
+  emailVerified DateTime?
+  accounts      Account[]
+  sessions      Session[]
+  
+  // Timestamps
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  
+  // Data ultima visita per tracking reminder
+  lastVisitAt   DateTime?
+}
+
+// Role values: "ADMIN" (Dottore), "PATIENT" (Paziente)
+
+// =============================================================================
+// MODELLI NEXTAUTH
+// Per autenticazione OAuth
+// =============================================================================
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+  
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+  
+  @@unique([identifier, token])
+}
+
+// =============================================================================
+// MODELLO APPUNTAMENTO
+// Gestisce prenotazioni visite con fasce orarie da 30 min
+// =============================================================================
+
+model Appointment {
+  id          String            @id @default(cuid())
+  
+  // Riferimento utente (paziente)
+  userId      String
+  user        User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Data e ora inizio
+  startTime   DateTime
+  
+  // Durata in minuti (60 per visite normali, 90 per prima visita)
+  duration    Int               @default(60)
+  
+  // Tipo di appuntamento: "FIRST_VISIT" | "FOLLOW_UP"
+  type        String            @default("FOLLOW_UP")
+  
+  // Stato appuntamento: "CONFIRMED" | "CANCELLED" | "COMPLETED" | "NO_SHOW"
+  status      String            @default("CONFIRMED")
+  
+  // Note (visibili solo al dottore)
+  notes       String?
+  
+  // Timestamps
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+  cancelledAt DateTime?
+  
+  @@index([startTime])
+  @@index([userId])
+  @@index([status])
+}
+
+// AppointmentType values: "FIRST_VISIT" (90 min), "FOLLOW_UP" (60 min)
+// AppointmentStatus values: "CONFIRMED", "CANCELLED", "COMPLETED", "NO_SHOW"
+
+// =============================================================================
+// MODELLO BLOCCO ORARIO
+// Per impegni ricorrenti settimanali e occasionali del dottore
+// =============================================================================
+
+model TimeBlock {
+  id          String        @id @default(cuid())
+  
+  // Tipo di blocco: "RECURRING" | "OCCASIONAL"
+  type        String
+  
+  // Per blocchi RICORRENTI: giorno della settimana (0=Dom, 1=Lun, ..., 6=Sab)
+  dayOfWeek   Int?
+  
+  // Ora inizio e fine (formato "HH:MM")
+  startTime   String
+  endTime     String
+  
+  // Per blocchi OCCASIONALI: data specifica
+  specificDate DateTime?
+  
+  // Note private (visibili solo al dottore)
+  note        String?
+  
+  // Se attivo
+  isActive    Boolean       @default(true)
+  
+  // Timestamps
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  
+  @@index([type])
+  @@index([dayOfWeek])
+  @@index([specificDate])
+}
+
+// TimeBlockType values: "RECURRING" (settimanale), "OCCASIONAL" (una tantum)
+
+// =============================================================================
+// MODELLO LOG EMAIL
+// Traccia tutte le email inviate per evitare duplicati e per analytics
+// =============================================================================
+
+model EmailLog {
+  id          String    @id @default(cuid())
+  
+  // Destinatario
+  userId      String?
+  user        User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
+  toEmail     String
+  
+  // Tipo di email (stringa)
+  type        String
+  
+  // Template usato (per variare i messaggi)
+  templateId  Int
+  
+  // Riferimento appuntamento (se applicabile)
+  appointmentId String?
+  
+  // Stato invio: "SENT" | "FAILED" | "BOUNCED"
+  status      String      @default("SENT")
+  
+  // Contenuto (per debug/log)
+  subject     String
+  
+  // Timestamp
+  sentAt      DateTime    @default(now())
+  
+  @@index([userId])
+  @@index([type])
+  @@index([sentAt])
+}
+
+// EmailType values: "BOOKING_CONFIRMATION", "BOOKING_NOTIFICATION", 
+// "CANCELLATION_CONFIRMATION", "CANCELLATION_NOTIFICATION", "REMINDER_1_WEEK",
+// "REMINDER_1_DAY", "FOLLOWUP_25_DAYS", "URGENT_60_DAYS", "WELCOME", "WHITELIST_APPROVED"
+// EmailStatus values: "SENT", "FAILED", "BOUNCED"
+
+// =============================================================================
+// MODELLO ARTICOLO BLOG
+// Per gestione contenuti blog
+// =============================================================================
+
+model BlogPost {
+  id           String   @id @default(cuid())
+  slug         String   @unique
+  title        String
+  excerpt      String
+  content      String   // Markdown
+  coverImage   String
+  category     String
+  tags         String   // JSON array serializzato
+  readingTime  Int
+  published    Boolean  @default(false)
+  publishedAt  DateTime?
+  
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  
+  @@index([slug])
+  @@index([published])
+  @@index([category])
+}
+
+// =============================================================================
+// MODELLO CONTATTO
+// Per messaggi dal form contatti
+// =============================================================================
+
+model ContactMessage {
+  id        String   @id @default(cuid())
+  name      String
+  email     String
+  phone     String?
+  subject   String
+  message   String
+  read      Boolean  @default(false)
+  
+  createdAt DateTime @default(now())
+  
+  @@index([read])
+  @@index([createdAt])
+}

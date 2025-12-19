@@ -1,0 +1,14 @@
+# =============================================================================
+# ROBOTS.TXT - DOTT. BERNARDO GIAMMETTA
+# Istruzioni per i crawler dei motori di ricerca
+# =============================================================================
+
+User-agent: *
+Allow: /
+
+# Blocca pagine admin e API
+Disallow: /admin
+Disallow: /api/
+
+# Sitemap
+Sitemap: https://www.bernardogiammetta.com/sitemap.xml
