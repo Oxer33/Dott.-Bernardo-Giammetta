@@ -147,7 +147,7 @@ export interface NutriBotResponse {
 // =============================================================================
 
 const OPENROUTER_API_URL = 'https://openrouter.ai/api/v1/chat/completions';
-const MODEL = 'tngtech/deepseek-r1t2-chimera:free';
+const MODEL = 'deepseek/deepseek-r1-0528:free';
 
 // =============================================================================
 // FUNZIONE PRINCIPALE CHAT

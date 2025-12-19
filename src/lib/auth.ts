@@ -70,8 +70,8 @@ export const authOptions: NextAuthOptions = {
   
   // Pagine custom
   pages: {
-    signIn: '/login',
-    error: '/login',
+    signIn: '/accedi',
+    error: '/accedi',
   },
   
   // Opzioni sessione
