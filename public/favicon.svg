@@ -1,12 +1,31 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
-  <!-- Sfondo quadrato con bordi molto arrotondati -->
-  <rect x="0" y="0" width="100" height="100" rx="22" ry="22" fill="#FEFEFE"/>
-  <!-- G corsiva elegante - stile calligrafico -->
-  <text x="50" y="78" 
-        font-family="'Brush Script MT', 'Segoe Script', 'Lucida Handwriting', cursive" 
-        font-size="85" 
-        font-weight="bold"
-        font-style="italic"
-        fill="#1a1a1a" 
-        text-anchor="middle">G</text>
+  <!-- Sfondo quadrato con bordi arrotondati -->
+  <rect x="0" y="0" width="100" height="100" rx="20" ry="20" fill="#FAFAFA"/>
+  <!-- G calligrafica stile firma medico - path disegnato a mano -->
+  <path d="M72 28 
+           C65 22 55 20 45 22 
+           C30 26 20 40 20 55 
+           C20 72 32 82 50 82 
+           C58 82 65 80 70 76 
+           L70 55 L52 55 
+           C52 55 52 50 52 48 
+           L75 48 
+           C75 48 75 78 75 80 
+           C68 86 58 90 46 90 
+           C25 90 10 74 10 52 
+           C10 30 28 14 52 14 
+           C62 14 72 18 78 24 
+           L72 28 Z
+           M70 55 L70 72 C66 76 58 78 50 78 C36 78 26 68 26 55 C26 42 36 30 50 28 C58 26 65 28 70 32"
+        fill="none" 
+        stroke="#1a1a1a" 
+        stroke-width="3.5"
+        stroke-linecap="round"
+        stroke-linejoin="round"/>
+  <!-- Tratto decorativo della firma -->
+  <path d="M75 85 Q82 82 88 78" 
+        fill="none" 
+        stroke="#1a1a1a" 
+        stroke-width="2"
+        stroke-linecap="round"/>
 </svg>
