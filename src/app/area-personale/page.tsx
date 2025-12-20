@@ -8,6 +8,7 @@ import { redirect } from 'next/navigation';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { db } from '@/lib/db';
+import { isMasterAccount } from '@/lib/config';
 import { MasterDashboard } from '@/components/area-personale/MasterDashboard';
 import { PatientDashboard } from '@/components/area-personale/PatientDashboard';
 import { GuestView } from '@/components/area-personale/GuestView';
@@ -22,12 +23,6 @@ export const metadata = {
 };
 
 // =============================================================================
-// COSTANTI
-// =============================================================================
-
-const MASTER_EMAIL = 'accomodationlapulena@gmail.com';
-
-// =============================================================================
 // PAGE COMPONENT
 // =============================================================================
 
@@ -39,9 +34,12 @@ export default async function AreaPersonalePage() {
     return <GuestView />;
   }
   
+  const email = session.user.email!;
+  const isMaster = isMasterAccount(email);
+  
   // Recupera o crea utente nel database
   let user = await db.user.findUnique({
-    where: { email: session.user.email! },
+    where: { email },
     select: {
       id: true,
       name: true,
@@ -73,19 +71,16 @@ export default async function AreaPersonalePage() {
     },
   });
   
-  // Se l'utente non esiste nel DB, crealo (può succedere con JWT session)
+  // Se l'utente non esiste nel DB, crealo
   if (!user) {
     try {
-      // Verifica se è account master
-      const isMasterEmail = session.user.email === MASTER_EMAIL;
-      
       user = await db.user.create({
         data: {
-          email: session.user.email!,
+          email,
           name: session.user.name,
           image: session.user.image,
-          role: isMasterEmail ? 'ADMIN' : 'PATIENT',
-          isWhitelisted: isMasterEmail, // Master sempre in whitelist
+          role: isMaster ? 'ADMIN' : 'PATIENT',
+          isWhitelisted: isMaster, // Master sempre in whitelist
         },
         select: {
           id: true,
@@ -115,8 +110,41 @@ export default async function AreaPersonalePage() {
     }
   }
   
-  // Verifica se è l'account master
-  const isMaster = user.email === MASTER_EMAIL || user.role === 'ADMIN';
+  // Se è master ma non ha ruolo ADMIN nel DB, aggiornalo automaticamente
+  if (isMaster && (user.role !== 'ADMIN' || !user.isWhitelisted)) {
+    try {
+      user = await db.user.update({
+        where: { email },
+        data: {
+          role: 'ADMIN',
+          isWhitelisted: true,
+        },
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          role: true,
+          isWhitelisted: true,
+          firstName: true,
+          lastName: true,
+          phone: true,
+          birthDate: true,
+          birthPlace: true,
+          birthProvince: true,
+          gender: true,
+          codiceFiscale: true,
+          address: true,
+          addressNumber: true,
+          city: true,
+          province: true,
+          cap: true,
+          appointments: true,
+        },
+      });
+    } catch (error) {
+      console.error('Errore aggiornamento master:', error);
+    }
+  }
   
   // Master -> dashboard completa
   if (isMaster) {

@@ -48,6 +48,12 @@ const clash = Plus_Jakarta_Sans({
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://www.bernardogiammetta.com'),
+  // Favicon PNG con G calligrafica elegante
+  icons: {
+    icon: '/favicon.png',
+    shortcut: '/favicon.png',
+    apple: '/favicon.png',
+  },
   title: {
     default: 'Dott. Bernardo Giammetta | Biologo Nutrizionista',
     template: '%s | Dott. Bernardo Giammetta',

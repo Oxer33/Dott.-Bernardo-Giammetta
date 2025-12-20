@@ -32,7 +32,7 @@ export const STUDIO_HOURS = {
 };
 
 // Email account master che può fare tutto
-export const MASTER_EMAIL = 'accomodationlapulena@gmail.com';
+export const MASTER_EMAIL = 'papa.danilo91tp@gmail.com';
 
 // Durata fasce orarie in minuti
 export const SLOT_DURATION = 30;
