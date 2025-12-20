@@ -78,14 +78,17 @@
 
 ### Deploy AWS Amplify
 - [x] Configurazione Prisma per PostgreSQL
-- [x] Modello NutriBot cambiato a deepseek/deepseek-r1-0528:free
-- [x] Fix pagina /accedi (auth.ts configurato correttamente)
+- [x] Modello NutriBot: deepseek/deepseek-r1-0528:free
+- [x] Fix pagina /accedi (auth.ts JWT senza database)
 - [x] Script setup-database per build Amplify
 - [x] Endpoint /api/db/init per diagnosi database
+- [x] Endpoint /api/test-nutribot per debug completo
 - [x] Pagine legali (privacy, cookie, termini)
-- [x] Icona SVG per manifest PWA
+- [x] Favicon SVG rotonda con logo BG
+- [x] Creato amplify.yml per configurazione deploy
+- [x] Esposto variabili env in next.config.js per Amplify
+- [x] Variabili ambiente configurate su Amplify Console
 - [ ] **Creare tabelle su AWS RDS** (richiede EC2 nella stessa VPC)
-- [ ] Configurare variabili ambiente su Amplify
 - [ ] Test finale su produzione
 
 ---
