@@ -1,11 +1,11 @@
 // =============================================================================
 // WHITELIST MANAGER - DOTT. BERNARDO GIAMMETTA
-// Gestione whitelist pazienti per admin
+// Gestione whitelist pazienti per admin (con API reali)
 // =============================================================================
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { 
   Search, 
@@ -14,68 +14,135 @@ import {
   UserX,
   Mail,
   Calendar,
-  MoreVertical
+  MoreVertical,
+  Trash2,
+  RefreshCw,
+  Loader2,
+  AlertCircle
 } from 'lucide-react';
 
 // =============================================================================
-// DATI MOCK
+// TIPI
 // =============================================================================
 
-const mockUsers = [
-  {
-    id: '1',
-    name: 'Mario Rossi',
-    email: 'mario@email.com',
-    isWhitelisted: true,
-    whitelistedAt: '2024-01-10',
-    lastVisit: '2024-01-15',
-  },
-  {
-    id: '2',
-    name: 'Laura Bianchi',
-    email: 'laura@email.com',
-    isWhitelisted: true,
-    whitelistedAt: '2024-01-05',
-    lastVisit: '2024-01-12',
-  },
-  {
-    id: '3',
-    name: 'Giuseppe Verdi',
-    email: 'giuseppe@email.com',
-    isWhitelisted: false,
-    whitelistedAt: null,
-    lastVisit: null,
-  },
-  {
-    id: '4',
-    name: 'Anna Neri',
-    email: 'anna@email.com',
-    isWhitelisted: true,
-    whitelistedAt: '2023-12-20',
-    lastVisit: '2024-01-18',
-  },
-];
+interface Patient {
+  id: string;
+  name: string | null;
+  email: string;
+  firstName: string | null;
+  lastName: string | null;
+  phone: string | null;
+  isWhitelisted: boolean;
+  whitelistedAt: string | null;
+  codiceFiscale: string | null;
+  city: string | null;
+  createdAt: string;
+  lastVisitAt: string | null;
+  _count: { appointments: number };
+}
+
+interface Stats {
+  total: number;
+  whitelisted: number;
+  pending: number;
+}
 
 // =============================================================================
 // COMPONENTE WHITELIST MANAGER
 // =============================================================================
 
 export function WhitelistManager() {
+  const [patients, setPatients] = useState<Patient[]>([]);
+  const [stats, setStats] = useState<Stats>({ total: 0, whitelisted: 0, pending: 0 });
   const [searchQuery, setSearchQuery] = useState('');
   const [filter, setFilter] = useState<'all' | 'whitelisted' | 'pending'>('all');
-  
-  const filteredUsers = mockUsers.filter(user => {
-    const matchesSearch = user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         user.email.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesFilter = filter === 'all' || 
-                         (filter === 'whitelisted' && user.isWhitelisted) ||
-                         (filter === 'pending' && !user.isWhitelisted);
-    return matchesSearch && matchesFilter;
-  });
-  
-  const whitelistedCount = mockUsers.filter(u => u.isWhitelisted).length;
-  const pendingCount = mockUsers.filter(u => !u.isWhitelisted).length;
-  
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [actionLoading, setActionLoading] = useState<string | null>(null);
+  const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
+
+  // Carica pazienti dal database
+  const loadPatients = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const params = new URLSearchParams();
+      params.set('filter', filter);
+      if (searchQuery.length >= 2) params.set('search', searchQuery);
+      
+      const res = await fetch(`/api/admin/patients?${params}`);
+      const data = await res.json();
+      
+      if (data.success) {
+        setPatients(data.patients);
+        setStats(data.stats);
+      } else {
+        setError(data.error || 'Errore nel caricamento');
+      }
+    } catch (err) {
+      setError('Errore di connessione');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Carica al mount e quando cambiano i filtri
+  useEffect(() => {
+    loadPatients();
+  }, [filter]);
+
+  // Ricerca con debounce
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (searchQuery.length === 0 || searchQuery.length >= 2) {
+        loadPatients();
+      }
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
+  // Azioni paziente
+  const handleWhitelist = async (patientId: string, action: 'whitelist' | 'unwhitelist') => {
+    setActionLoading(patientId);
+    try {
+      const res = await fetch('/api/admin/patients', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ patientId, action }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        loadPatients();
+      } else {
+        alert(data.error || 'Errore');
+      }
+    } catch (err) {
+      alert('Errore di connessione');
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  const handleDelete = async (patientId: string) => {
+    setActionLoading(patientId);
+    try {
+      const res = await fetch(`/api/admin/patients?id=${patientId}`, {
+        method: 'DELETE',
+      });
+      const data = await res.json();
+      if (data.success) {
+        setDeleteConfirm(null);
+        loadPatients();
+      } else {
+        alert(data.error || 'Errore');
+      }
+    } catch (err) {
+      alert('Errore di connessione');
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
   return (
     <div className="space-y-6">
       {/* Stats rapide */}
@@ -86,7 +153,7 @@ export function WhitelistManager() {
               <UserCheck className="w-5 h-5 text-sage-600" />
             </div>
             <div>
-              <div className="text-2xl font-bold text-sage-900">{whitelistedCount}</div>
+              <div className="text-2xl font-bold text-sage-900">{stats.whitelisted}</div>
               <div className="text-sm text-sage-600">In Whitelist</div>
             </div>
           </div>
@@ -97,7 +164,7 @@ export function WhitelistManager() {
               <UserPlus className="w-5 h-5 text-yellow-600" />
             </div>
             <div>
-              <div className="text-2xl font-bold text-sage-900">{pendingCount}</div>
+              <div className="text-2xl font-bold text-sage-900">{stats.pending}</div>
               <div className="text-sm text-sage-600">In Attesa</div>
             </div>
           </div>
@@ -108,8 +175,8 @@ export function WhitelistManager() {
               <Mail className="w-5 h-5 text-blue-600" />
             </div>
             <div>
-              <div className="text-2xl font-bold text-sage-900">{mockUsers.length}</div>
-              <div className="text-sm text-sage-600">Utenti Totali</div>
+              <div className="text-2xl font-bold text-sage-900">{stats.total}</div>
+              <div className="text-sm text-sage-600">Pazienti Totali</div>
             </div>
           </div>
         </div>
@@ -141,63 +208,132 @@ export function WhitelistManager() {
               {f === 'all' ? 'Tutti' : f === 'whitelisted' ? 'Approvati' : 'In Attesa'}
             </button>
           ))}
+          <button
+            onClick={loadPatients}
+            className="p-2 bg-white border border-sage-200 rounded-xl hover:bg-sage-50 transition-colors"
+            title="Aggiorna"
+          >
+            <RefreshCw className={`w-5 h-5 text-sage-600 ${loading ? 'animate-spin' : ''}`} />
+          </button>
         </div>
       </div>
+
+      {/* Errore */}
+      {error && (
+        <div className="bg-red-50 border border-red-200 rounded-xl p-4 flex items-center gap-3">
+          <AlertCircle className="w-5 h-5 text-red-500" />
+          <span className="text-red-700">{error}</span>
+        </div>
+      )}
       
-      {/* Lista utenti */}
+      {/* Lista pazienti */}
       <div className="bg-white rounded-xl border border-sage-100 divide-y divide-sage-50">
-        {filteredUsers.map((user, index) => (
-          <motion.div
-            key={user.id}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: index * 0.05 }}
-            className="p-4 flex items-center justify-between hover:bg-sage-50 transition-colors"
-          >
-            <div className="flex items-center gap-4">
-              <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                user.isWhitelisted ? 'bg-green-100' : 'bg-yellow-100'
-              }`}>
-                {user.isWhitelisted ? (
-                  <UserCheck className="w-5 h-5 text-green-600" />
-                ) : (
-                  <UserPlus className="w-5 h-5 text-yellow-600" />
-                )}
-              </div>
-              <div>
-                <div className="font-medium text-sage-800">{user.name}</div>
-                <div className="text-sm text-sage-500">{user.email}</div>
-              </div>
-            </div>
-            
-            <div className="flex items-center gap-6">
-              {user.whitelistedAt && (
-                <div className="hidden sm:block text-sm text-sage-500">
-                  <div className="flex items-center gap-1">
-                    <Calendar className="w-4 h-4" />
-                    Approvato: {new Date(user.whitelistedAt).toLocaleDateString('it-IT')}
-                  </div>
+        {loading ? (
+          <div className="p-8 text-center">
+            <Loader2 className="w-8 h-8 text-sage-400 animate-spin mx-auto mb-2" />
+            <p className="text-sage-600">Caricamento pazienti...</p>
+          </div>
+        ) : patients.length === 0 ? (
+          <div className="p-8 text-center">
+            <UserX className="w-12 h-12 text-sage-300 mx-auto mb-2" />
+            <p className="text-sage-600">Nessun paziente trovato</p>
+            <p className="text-sm text-sage-500">I pazienti appariranno qui dopo la registrazione</p>
+          </div>
+        ) : (
+          patients.map((patient, index) => (
+            <motion.div
+              key={patient.id}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: index * 0.03 }}
+              className="p-4 flex items-center justify-between hover:bg-sage-50 transition-colors"
+            >
+              <div className="flex items-center gap-4">
+                <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                  patient.isWhitelisted ? 'bg-green-100' : 'bg-yellow-100'
+                }`}>
+                  {patient.isWhitelisted ? (
+                    <UserCheck className="w-5 h-5 text-green-600" />
+                  ) : (
+                    <UserPlus className="w-5 h-5 text-yellow-600" />
+                  )}
                 </div>
-              )}
-              
-              <div className="flex items-center gap-2">
-                {!user.isWhitelisted && (
-                  <button className="px-3 py-1 bg-green-500 text-white text-sm rounded-lg hover:bg-green-600 transition-colors">
-                    Approva
-                  </button>
-                )}
-                {user.isWhitelisted && (
-                  <button className="px-3 py-1 bg-red-100 text-red-600 text-sm rounded-lg hover:bg-red-200 transition-colors">
-                    Rimuovi
-                  </button>
-                )}
-                <button className="p-1 hover:bg-sage-100 rounded transition-colors">
-                  <MoreVertical className="w-4 h-4 text-sage-600" />
-                </button>
+                <div>
+                  <div className="font-medium text-sage-800">
+                    {patient.firstName && patient.lastName 
+                      ? `${patient.firstName} ${patient.lastName}`
+                      : patient.name || 'Nome non specificato'}
+                  </div>
+                  <div className="text-sm text-sage-500">{patient.email}</div>
+                  {patient.phone && (
+                    <div className="text-xs text-sage-400">{patient.phone}</div>
+                  )}
+                </div>
               </div>
-            </div>
-          </motion.div>
-        ))}
+              
+              <div className="flex items-center gap-4">
+                {/* Info aggiuntive */}
+                <div className="hidden md:block text-right text-sm">
+                  {patient._count.appointments > 0 && (
+                    <div className="text-sage-600">{patient._count.appointments} appuntamenti</div>
+                  )}
+                  {patient.whitelistedAt && (
+                    <div className="text-sage-400 text-xs">
+                      Approvato: {new Date(patient.whitelistedAt).toLocaleDateString('it-IT')}
+                    </div>
+                  )}
+                </div>
+                
+                {/* Azioni */}
+                <div className="flex items-center gap-2">
+                  {actionLoading === patient.id ? (
+                    <Loader2 className="w-5 h-5 text-sage-400 animate-spin" />
+                  ) : deleteConfirm === patient.id ? (
+                    <>
+                      <button
+                        onClick={() => handleDelete(patient.id)}
+                        className="px-3 py-1 bg-red-500 text-white text-sm rounded-lg hover:bg-red-600 transition-colors"
+                      >
+                        Conferma
+                      </button>
+                      <button
+                        onClick={() => setDeleteConfirm(null)}
+                        className="px-3 py-1 bg-gray-200 text-gray-700 text-sm rounded-lg hover:bg-gray-300 transition-colors"
+                      >
+                        Annulla
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      {!patient.isWhitelisted ? (
+                        <button
+                          onClick={() => handleWhitelist(patient.id, 'whitelist')}
+                          className="px-3 py-1 bg-green-500 text-white text-sm rounded-lg hover:bg-green-600 transition-colors"
+                        >
+                          Approva
+                        </button>
+                      ) : (
+                        <button
+                          onClick={() => handleWhitelist(patient.id, 'unwhitelist')}
+                          className="px-3 py-1 bg-orange-100 text-orange-600 text-sm rounded-lg hover:bg-orange-200 transition-colors"
+                        >
+                          Rimuovi
+                        </button>
+                      )}
+                      <button
+                        onClick={() => setDeleteConfirm(patient.id)}
+                        className="p-1.5 hover:bg-red-100 rounded transition-colors"
+                        title="Elimina paziente"
+                      >
+                        <Trash2 className="w-4 h-4 text-red-500" />
+                      </button>
+                    </>
+                  )}
+                </div>
+              </div>
+            </motion.div>
+          ))
+        )}
       </div>
     </div>
   );

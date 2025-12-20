@@ -27,6 +27,28 @@ export function SplashScreen() {
       return;
     }
 
+    // Precarica risorse durante lo splash per migliorare fluidità
+    const preloadResources = async () => {
+      try {
+        // Precarica sessione utente
+        fetch('/api/auth/session');
+        // Precarica dati comuni
+        fetch('/api/comuni?q=roma&limit=1');
+        // Precarica immagini critiche con link preload
+        const preloadImages = ['/images/hero-bg.jpg', '/images/dott-giammetta.jpg'];
+        preloadImages.forEach(src => {
+          const link = document.createElement('link');
+          link.rel = 'preload';
+          link.as = 'image';
+          link.href = src;
+          document.head.appendChild(link);
+        });
+      } catch (e) {
+        // Ignora errori di precaricamento
+      }
+    };
+    preloadResources();
+
     // Nascondi dopo 3.5 secondi
     const timer = setTimeout(() => {
       setIsVisible(false);

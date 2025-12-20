@@ -300,8 +300,9 @@ export function Navbar() {
                   </Link>
                   
                   {session ? (
-                    <div className="flex items-center justify-between p-3 bg-sage-50 rounded-xl">
-                      <div className="flex items-center gap-3">
+                    <div className="space-y-3">
+                      {/* Info utente */}
+                      <div className="flex items-center gap-3 p-3 bg-sage-50 rounded-xl">
                         {session.user?.image ? (
                           <img
                             src={session.user.image}
@@ -313,7 +314,7 @@ export function Navbar() {
                             <User className="w-5 h-5 text-sage-600" />
                           </div>
                         )}
-                        <div>
+                        <div className="flex-1">
                           <p className="font-medium text-sage-900 text-sm">
                             {session.user?.name}
                           </p>
@@ -322,11 +323,31 @@ export function Navbar() {
                           </p>
                         </div>
                       </div>
+                      
+                      {/* Link menu mobile */}
+                      <Link 
+                        href="/area-personale" 
+                        className="flex items-center gap-3 px-4 py-3 bg-sage-100 rounded-xl text-sage-800 hover:bg-sage-200 transition-colors"
+                      >
+                        <User className="w-5 h-5" />
+                        <span className="font-medium">Area Personale</span>
+                      </Link>
+                      
+                      <Link 
+                        href="/agenda" 
+                        className="flex items-center gap-3 px-4 py-3 bg-lavender-100 rounded-xl text-lavender-800 hover:bg-lavender-200 transition-colors"
+                      >
+                        <Calendar className="w-5 h-5" />
+                        <span className="font-medium">I Miei Appuntamenti</span>
+                      </Link>
+                      
+                      {/* Logout */}
                       <button
                         onClick={() => signOut()}
-                        className="p-2 text-sage-600 hover:text-red-600 transition-colors"
+                        className="w-full flex items-center gap-3 px-4 py-3 bg-red-50 rounded-xl text-red-600 hover:bg-red-100 transition-colors"
                       >
                         <X className="w-5 h-5" />
+                        <span className="font-medium">Esci</span>
                       </button>
                     </div>
                   ) : (

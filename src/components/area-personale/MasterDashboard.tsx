@@ -110,26 +110,37 @@ export function MasterDashboard({ user }: MasterDashboardProps) {
   });
   const [loading, setLoading] = useState(true);
 
-  // Carica statistiche
+  // Carica statistiche reali dal database
   useEffect(() => {
     async function loadStats() {
       try {
-        // TODO: Implementare API per statistiche
-        // Per ora usiamo dati mock
+        // Carica statistiche pazienti da API
+        const res = await fetch('/api/admin/patients?filter=all');
+        const data = await res.json();
+        
+        const weekAppointments = user.appointments.filter(a => {
+          const date = new Date(a.startTime);
+          const now = new Date();
+          const weekStart = startOfWeek(now, { locale: it });
+          const weekEnd = endOfWeek(now, { locale: it });
+          return date >= weekStart && date <= weekEnd;
+        }).length;
+        
         setStats({
           totalAppointments: user.appointments.length,
-          weekAppointments: user.appointments.filter(a => {
-            const date = new Date(a.startTime);
-            const now = new Date();
-            const weekStart = startOfWeek(now, { locale: it });
-            const weekEnd = endOfWeek(now, { locale: it });
-            return date >= weekStart && date <= weekEnd;
-          }).length,
-          totalPatients: 12, // Mock
-          pendingRequests: 3, // Mock
+          weekAppointments,
+          totalPatients: data.success ? data.stats.whitelisted : 0,
+          pendingRequests: data.success ? data.stats.pending : 0,
         });
       } catch (error) {
         console.error('Error loading stats:', error);
+        // Fallback senza dati mock
+        setStats({
+          totalAppointments: user.appointments.length,
+          weekAppointments: 0,
+          totalPatients: 0,
+          pendingRequests: 0,
+        });
       } finally {
         setLoading(false);
       }
