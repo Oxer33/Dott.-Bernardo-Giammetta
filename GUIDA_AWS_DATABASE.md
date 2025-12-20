@@ -35,18 +35,15 @@ DATABASE_URL=postgresql://postgres:%21Godosybe28081991@agenda-db.criu4sm20xow.eu
 
 ---
 
-## 📋 STEP 2: Configura Security Group RDS
+## ✅ STEP 2: Security Group Configurato!
 
-Il database deve permettere connessioni dalla tua app Amplify.
+**Security Group ID:** `sg-0c00f86c7541e9483`
 
-1. Vai su **AWS RDS Console** → **Databases** → **agenda-db**
-2. Clicca sul **Security Group** (`agenda-db-sg`)
-3. Vai su **Inbound rules** → **Edit inbound rules**
-4. Aggiungi regola:
-   - **Type:** PostgreSQL
-   - **Port:** 5432
-   - **Source:** `0.0.0.0/0` (per Amplify) oppure IP specifico
-5. Salva
+Regole Inbound configurate:
+| Tipo | Porta | Sorgente | Descrizione |
+|------|-------|----------|-------------|
+| PostgreSQL | 5432 | `10.0.0.0/8` | Amplify VPC |
+| PostgreSQL | 5432 | `87.17.161.232/32` | IP Admin |
 
 ---
 
