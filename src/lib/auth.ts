@@ -48,6 +48,9 @@ export const authOptions: NextAuthOptions = {
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID!,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+      // IMPORTANTE: Permette di collegare account OAuth a utenti esistenti con stessa email
+      // Risolve errore OAuthAccountNotLinked quando utente esiste già nel DB
+      allowDangerousEmailAccountLinking: true,
       authorization: {
         params: {
           prompt: 'consent',
