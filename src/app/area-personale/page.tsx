@@ -39,8 +39,8 @@ export default async function AreaPersonalePage() {
     return <GuestView />;
   }
   
-  // Recupera dati utente dal database
-  const user = await db.user.findUnique({
+  // Recupera o crea utente nel database
+  let user = await db.user.findUnique({
     where: { email: session.user.email! },
     select: {
       id: true,
@@ -48,6 +48,19 @@ export default async function AreaPersonalePage() {
       email: true,
       role: true,
       isWhitelisted: true,
+      firstName: true,
+      lastName: true,
+      phone: true,
+      birthDate: true,
+      birthPlace: true,
+      birthProvince: true,
+      gender: true,
+      codiceFiscale: true,
+      address: true,
+      addressNumber: true,
+      city: true,
+      province: true,
+      cap: true,
       appointments: {
         where: {
           status: 'CONFIRMED',
@@ -60,8 +73,46 @@ export default async function AreaPersonalePage() {
     },
   });
   
+  // Se l'utente non esiste nel DB, crealo (può succedere con JWT session)
   if (!user) {
-    return <GuestView />;
+    try {
+      // Verifica se è account master
+      const isMasterEmail = session.user.email === MASTER_EMAIL;
+      
+      user = await db.user.create({
+        data: {
+          email: session.user.email!,
+          name: session.user.name,
+          image: session.user.image,
+          role: isMasterEmail ? 'ADMIN' : 'PATIENT',
+          isWhitelisted: isMasterEmail, // Master sempre in whitelist
+        },
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          role: true,
+          isWhitelisted: true,
+          firstName: true,
+          lastName: true,
+          phone: true,
+          birthDate: true,
+          birthPlace: true,
+          birthProvince: true,
+          gender: true,
+          codiceFiscale: true,
+          address: true,
+          addressNumber: true,
+          city: true,
+          province: true,
+          cap: true,
+          appointments: true,
+        },
+      });
+    } catch (error) {
+      console.error('Errore creazione utente:', error);
+      return <GuestView isLoggedIn userName={session.user.name} />;
+    }
   }
   
   // Verifica se è l'account master

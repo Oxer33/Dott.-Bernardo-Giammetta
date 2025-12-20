@@ -25,6 +25,24 @@ model User {
   image         String?
   phone         String?
   
+  // ==========================================================================
+  // DATI ANAGRAFICI COMPLETI (per fatturazione e gestione pazienti)
+  // ==========================================================================
+  firstName       String?   // Nome
+  lastName        String?   // Cognome
+  birthDate       DateTime? // Data di nascita
+  birthPlace      String?   // Comune di nascita
+  birthProvince   String?   // Provincia di nascita (sigla, es: RM)
+  gender          String?   // Sesso: "M" | "F"
+  codiceFiscale   String?   // Codice fiscale (calcolato o inserito)
+  
+  // Dati di residenza
+  address         String?   // Indirizzo (via/piazza + nome)
+  addressNumber   String?   // Numero civico
+  city            String?   // Comune di residenza
+  province        String?   // Provincia di residenza (sigla)
+  cap             String?   // CAP
+  
   // Stato whitelist - solo utenti in whitelist possono prenotare
   isWhitelisted Boolean   @default(false)
   whitelistedAt DateTime?
@@ -35,6 +53,7 @@ model User {
   // Relazioni
   appointments  Appointment[]
   emailLogs     EmailLog[]
+  invoices      Invoice[]   // Fatture emesse al paziente
   
   // NextAuth fields
   emailVerified DateTime?
@@ -254,4 +273,62 @@ model ContactMessage {
   
   @@index([read])
   @@index([createdAt])
+}
+
+// =============================================================================
+// MODELLO FATTURA
+// Per generazione fatture sanitarie (integrazione software STS)
+// =============================================================================
+
+model Invoice {
+  id              String    @id @default(cuid())
+  
+  // Riferimento paziente
+  userId          String
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Dati fattura
+  invoiceNumber   String    @unique  // Numero fattura (es: "2025/001")
+  invoiceDate     DateTime  // Data emissione
+  
+  // Importi
+  subtotal        Decimal   @db.Decimal(10, 2)  // Imponibile
+  contributo      Decimal   @db.Decimal(10, 2)  // Contributo previdenziale
+  bollo           Decimal   @db.Decimal(10, 2)  // Marca da bollo (se > 77.47€)
+  total           Decimal   @db.Decimal(10, 2)  // Totale fattura
+  
+  // Dettagli
+  description     String    // Descrizione prestazione
+  paymentMethod   String    // MP01=Contanti, MP05=Bonifico, MP08=POS
+  
+  // Stato
+  status          String    @default("DRAFT")  // DRAFT, ISSUED, PAID, CANCELLED
+  pdfPath         String?   // Path al file PDF generato
+  stsSubmitted    Boolean   @default(false)    // Inviata a Sistema Tessera Sanitaria
+  stsSubmittedAt  DateTime?
+  
+  // Timestamps
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  
+  @@index([userId])
+  @@index([invoiceNumber])
+  @@index([status])
+}
+
+// =============================================================================
+// MODELLO COMUNI ITALIANI
+// Per calcolo automatico codice fiscale
+// =============================================================================
+
+model Comune {
+  id              String   @id @default(cuid())
+  nome            String   // Nome comune
+  provincia       String   // Sigla provincia (es: RM)
+  regione         String   // Nome regione
+  codiceCatastale String   @unique  // Codice catastale per CF (es: H501 = Roma)
+  cap             String?  // CAP principale
+  
+  @@index([nome])
+  @@index([provincia])
 }

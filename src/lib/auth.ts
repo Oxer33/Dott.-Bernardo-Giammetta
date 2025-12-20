@@ -39,9 +39,9 @@ const getAdapter = () => {
 };
 
 export const authOptions: NextAuthOptions = {
-  // NOTA: Adapter disabilitato finché le tabelle non sono create
-  // Decommentare dopo aver eseguito: prisma db push
-  // adapter: getAdapter(),
+  // Adapter Prisma per salvare utenti nel database
+  // ABILITATO: Le tabelle sono state create con prisma db push
+  adapter: getAdapter(),
   
   // Providers di autenticazione
   providers: [
