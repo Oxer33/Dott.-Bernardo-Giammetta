@@ -138,12 +138,16 @@
   - Informazioni studio e orari
   - Pulsante WhatsApp
 
-### Pannello Admin (/admin) ✅
-- [x] Dashboard overview con statistiche
-- [x] Lista appuntamenti con filtri
-- [x] Gestione whitelist utenti
-- [x] Gestione blocchi orari (ricorrenti e occasionali)
+### Pannello Admin (/admin) ✅ AGGIORNATO 20/12/2024
+- [x] Dashboard overview con statistiche REALI (API /api/admin/appointments)
+- [x] Lista appuntamenti con filtri + azioni (conferma, cancella, completa, elimina)
+- [x] Modifica note appuntamenti inline
+- [x] Gestione whitelist utenti REALE (API /api/admin/patients)
+- [x] Elimina pazienti dal database
+- [x] Gestione blocchi orari REALE (API /api/admin/timeblocks)
+- [x] Modal aggiungi/modifica blocchi orari
 - [x] Navigazione a tab
+- [x] RIMOSSI TUTTI I DATI MOCK - ora usa solo dati reali dal database
 
 ### SEO e Performance ✅
 - [x] Sitemap dinamica
@@ -176,11 +180,16 @@
 - [ ] CMS (Sanity o Contentful) per blog
 - [x] NutriBot AI Assistant (OpenRouter + DeepSeek)
 
-### Area Personale ✅
-- [x] Dashboard Master (accomodationlapulena@gmail.com)
+### Area Personale ✅ AGGIORNATO 20/12/2024
+- [x] Dashboard Master (papa.danilo91tp@gmail.com, bernardogiammetta@gmail.com)
 - [x] Dashboard Pazienti (whitelist)
 - [x] Vista Guest (non autenticati)
 - [x] Logica ruoli differenziati
+- [x] Auto-upgrade account master al login (ADMIN + whitelist)
+- [x] Menu mobile con link Area Personale e Appuntamenti
+- [x] Precaricamento risorse durante splash screen
+- [x] Favicon dinamica con bordi arrotondati (icon.tsx)
+- [x] API gestione pazienti completa (/api/admin/patients)
 
 ### Testing ✅
 - [x] Unit tests per utility functions (jest.config.js, utils.test.ts)
