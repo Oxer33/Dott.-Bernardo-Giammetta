@@ -1,31 +1,45 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
-  <!-- Sfondo quadrato con bordi arrotondati -->
-  <rect x="0" y="0" width="100" height="100" rx="20" ry="20" fill="#FAFAFA"/>
-  <!-- G calligrafica stile firma medico - path disegnato a mano -->
-  <path d="M72 28 
-           C65 22 55 20 45 22 
-           C30 26 20 40 20 55 
-           C20 72 32 82 50 82 
-           C58 82 65 80 70 76 
-           L70 55 L52 55 
-           C52 55 52 50 52 48 
-           L75 48 
-           C75 48 75 78 75 80 
-           C68 86 58 90 46 90 
-           C25 90 10 74 10 52 
-           C10 30 28 14 52 14 
-           C62 14 72 18 78 24 
-           L72 28 Z
-           M70 55 L70 72 C66 76 58 78 50 78 C36 78 26 68 26 55 C26 42 36 30 50 28 C58 26 65 28 70 32"
+  <!-- Sfondo bianco con bordi arrotondati -->
+  <rect x="0" y="0" width="100" height="100" rx="18" ry="18" fill="#FFFFFF"/>
+  <!-- G calligrafica elegante stile firma - identica allo screenshot -->
+  <!-- Curva principale della G -->
+  <path d="M75 18
+           C72 15 65 12 55 12
+           Q30 12 22 35
+           Q15 55 22 72
+           Q30 90 55 90
+           Q68 90 78 82
+           L78 80
+           Q70 86 55 86
+           Q35 86 27 70
+           Q20 55 27 38
+           Q35 18 55 18
+           Q65 18 72 22
+           L75 18 Z"
         fill="none" 
-        stroke="#1a1a1a" 
-        stroke-width="3.5"
+        stroke="#2a2a2a" 
+        stroke-width="2.5"
         stroke-linecap="round"
         stroke-linejoin="round"/>
-  <!-- Tratto decorativo della firma -->
-  <path d="M75 85 Q82 82 88 78" 
+  <!-- Tratto orizzontale interno della G -->
+  <path d="M50 52 Q65 52 78 52 L78 80"
         fill="none" 
-        stroke="#1a1a1a" 
+        stroke="#2a2a2a" 
+        stroke-width="2.5"
+        stroke-linecap="round"
+        stroke-linejoin="round"/>
+  <!-- Ricciolo inferiore elegante della firma -->
+  <path d="M55 90 
+           Q45 92 38 88
+           Q28 82 32 72"
+        fill="none" 
+        stroke="#2a2a2a" 
         stroke-width="2"
+        stroke-linecap="round"/>
+  <!-- Svolazzo superiore -->
+  <path d="M75 18 Q82 14 88 16"
+        fill="none" 
+        stroke="#2a2a2a" 
+        stroke-width="1.5"
         stroke-linecap="round"/>
 </svg>
