@@ -58,41 +58,22 @@ export const authOptions: NextAuthOptions = {
   
   // Callbacks per personalizzare comportamento
   callbacks: {
-    // Aggiunge dati custom alla sessione
-    async session({ session, user, token }) {
-      if (session.user) {
-        // Se abbiamo un user dal database (strategy: database)
-        if (user) {
-          try {
-            const dbUser = await db.user.findUnique({
-              where: { id: user.id },
-              select: {
-                id: true,
-                role: true,
-                isWhitelisted: true,
-                phone: true,
-              },
-            });
-            
-            if (dbUser) {
-              session.user.id = dbUser.id;
-              session.user.role = dbUser.role as 'ADMIN' | 'PATIENT';
-              session.user.isWhitelisted = dbUser.isWhitelisted;
-              session.user.phone = dbUser.phone;
-            }
-          } catch (error) {
-            // Database non disponibile, usa valori default
-            console.warn('Database non disponibile per sessione');
-            session.user.id = user.id || 'temp-id';
-            session.user.role = 'PATIENT';
-            session.user.isWhitelisted = false;
-          }
-        } else if (token) {
-          // Se usiamo JWT (strategy: jwt)
-          session.user.id = token.sub || 'jwt-user';
-          session.user.role = 'PATIENT';
-          session.user.isWhitelisted = false;
-        }
+    // JWT callback - salva dati nel token
+    async jwt({ token, user, account }) {
+      if (user) {
+        token.id = user.id;
+        token.role = 'PATIENT';
+        token.isWhitelisted = false;
+      }
+      return token;
+    },
+    
+    // Session callback - usa dati dal token JWT
+    async session({ session, token }) {
+      if (session.user && token) {
+        session.user.id = token.sub || token.id as string || 'jwt-user';
+        session.user.role = (token.role as 'ADMIN' | 'PATIENT') || 'PATIENT';
+        session.user.isWhitelisted = (token.isWhitelisted as boolean) || false;
       }
       return session;
     },
