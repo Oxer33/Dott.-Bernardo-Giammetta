@@ -1,10 +1,14 @@
 // =============================================================================
 // PAGINA AGENDA - DOTT. BERNARDO GIAMMETTA
-// Visualizzazione pubblica dell'agenda con possibilità di prenotazione
+// Visualizzazione PROTETTA dell'agenda - solo utenti autorizzati
 // =============================================================================
 
 import { Metadata } from 'next';
+import { getServerSession } from 'next-auth';
+import { redirect } from 'next/navigation';
+import { authOptions } from '@/lib/auth';
 import { AgendaCalendar } from '@/components/agenda/AgendaCalendar';
+import Link from 'next/link';
 
 // =============================================================================
 // METADATA SEO
@@ -20,10 +24,71 @@ export const metadata: Metadata = {
 };
 
 // =============================================================================
-// PAGE COMPONENT
+// PAGE COMPONENT - PROTETTA
 // =============================================================================
 
-export default function AgendaPage() {
+export default async function AgendaPage() {
+  // Verifica autenticazione
+  const session = await getServerSession(authOptions);
+  
+  // Se non autenticato, mostra messaggio e link per accedere
+  if (!session?.user) {
+    return (
+      <div className="min-h-screen bg-cream-50 flex items-center justify-center p-4">
+        <div className="bg-white rounded-3xl shadow-xl p-8 max-w-md text-center">
+          <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-sage-100 flex items-center justify-center">
+            <svg className="w-8 h-8 text-sage-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+            </svg>
+          </div>
+          <h1 className="text-2xl font-display font-bold text-sage-900 mb-2">
+            Area Riservata
+          </h1>
+          <p className="text-sage-600 mb-6">
+            Per prenotare una visita devi prima accedere con il tuo account.
+          </p>
+          <Link 
+            href="/accedi"
+            className="inline-flex items-center justify-center px-6 py-3 bg-sage-500 hover:bg-sage-600 text-white rounded-xl font-medium transition-colors"
+          >
+            Accedi per prenotare
+          </Link>
+        </div>
+      </div>
+    );
+  }
+  
+  // Se autenticato ma NON in whitelist e NON admin, mostra messaggio
+  if (!session.user.isWhitelisted && session.user.role !== 'ADMIN') {
+    return (
+      <div className="min-h-screen bg-cream-50 flex items-center justify-center p-4">
+        <div className="bg-white rounded-3xl shadow-xl p-8 max-w-md text-center">
+          <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-orange-100 flex items-center justify-center">
+            <svg className="w-8 h-8 text-orange-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+          </div>
+          <h1 className="text-2xl font-display font-bold text-sage-900 mb-2">
+            Accesso Limitato
+          </h1>
+          <p className="text-sage-600 mb-4">
+            Ciao <strong>{session.user.name}</strong>! Il tuo account non è ancora abilitato per le prenotazioni.
+          </p>
+          <p className="text-sage-500 text-sm mb-6">
+            Per essere inserito nella lista dei pazienti, contatta lo studio:
+          </p>
+          <a 
+            href="tel:+393920979135"
+            className="inline-flex items-center justify-center px-6 py-3 bg-orange-500 hover:bg-orange-600 text-white rounded-xl font-medium transition-colors"
+          >
+            📞 Chiama: +39 392 0979135
+          </a>
+        </div>
+      </div>
+    );
+  }
+  
+  // Utente autorizzato (whitelist o admin) - mostra l'agenda
   return (
     <div className="min-h-screen bg-cream-50">
       {/* Header */}

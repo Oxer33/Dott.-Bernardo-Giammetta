@@ -7,6 +7,7 @@ import { NextAuthOptions } from 'next-auth';
 import GoogleProvider from 'next-auth/providers/google';
 import { PrismaAdapter } from '@auth/prisma-adapter';
 import { db } from '@/lib/db';
+import { isMasterAccount } from '@/lib/config';
 
 // Verifica se il database è configurato e accessibile
 const isDatabaseAvailable = async () => {
@@ -62,8 +63,12 @@ export const authOptions: NextAuthOptions = {
     async jwt({ token, user, account }) {
       if (user) {
         token.id = user.id;
-        token.role = 'PATIENT';
-        token.isWhitelisted = false;
+        // Account master = ADMIN, altrimenti PATIENT
+        const isMaster = isMasterAccount(user.email);
+        token.role = isMaster ? 'ADMIN' : 'PATIENT';
+        // Account master sono sempre in whitelist
+        token.isWhitelisted = isMaster;
+        token.email = user.email;
       }
       return token;
     },
@@ -74,6 +79,11 @@ export const authOptions: NextAuthOptions = {
         session.user.id = token.sub || token.id as string || 'jwt-user';
         session.user.role = (token.role as 'ADMIN' | 'PATIENT') || 'PATIENT';
         session.user.isWhitelisted = (token.isWhitelisted as boolean) || false;
+        // Ricontrolla se è master (per sicurezza)
+        if (isMasterAccount(session.user.email)) {
+          session.user.role = 'ADMIN';
+          session.user.isWhitelisted = true;
+        }
       }
       return session;
     },
