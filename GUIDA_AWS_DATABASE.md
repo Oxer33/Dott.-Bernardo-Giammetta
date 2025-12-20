@@ -1,53 +1,73 @@
 # 🗄️ GUIDA CONFIGURAZIONE DATABASE AWS RDS
 
 ## Panoramica
-Questa guida ti aiuterà a configurare il database PostgreSQL su AWS RDS per far funzionare l'agenda del sito.
+Database PostgreSQL su AWS RDS per l'agenda del sito del Dott. Bernardo Giammetta.
 
 ---
 
-## 📋 STEP 1: Verifica Variabili Ambiente AWS
+## ✅ DATABASE CONFIGURATO!
 
-Dalla tua console AWS Amplify/Elastic Beanstalk, verifica che queste variabili siano configurate:
-
-```
-DATABASE_URL=postgresql://postgres:PASSWORD@HOST:5432/postgres?schema=public
-OPENROUTER_API_KEY=sk-or-v1-xxxxxxxxxxxxxxxx
-```
-
-**Il tuo DATABASE_URL attuale sembra essere:**
-```
-postgresql://postgres:$#?hAaoN8bJsu:p$<OgN7x24lPFR@database-agenda.cluster-criu4sm20xow.eu-north-1.rds.amazonaws.com:5432/postgres?schema=public
-```
-
-⚠️ **ATTENZIONE**: Se la password contiene caratteri speciali come `$`, `#`, `<`, `>`, `?`, devi fare l'URL encoding!
+### Dettagli Database RDS:
+| Campo | Valore |
+|-------|--------|
+| **Endpoint** | `agenda-db.criu4sm20xow.eu-north-1.rds.amazonaws.com` |
+| **Porta** | `5432` |
+| **Nome DB** | `agenda_db` |
+| **Username** | `postgres` |
+| **Password** | `!Godosybe28081991` |
+| **Regione** | `eu-north-1` (Stockholm) |
+| **Istanza** | `db.t4g.micro` |
+| **Storage** | `20 GB SSD` |
 
 ---
 
-## 📋 STEP 2: URL Encoding della Password
+## 📋 STEP 1: Configura DATABASE_URL su Amplify Console
 
-Se la tua password è: `$#?hAaoN8bJsu:p$<OgN7x24lPFR`
+**Vai su AWS Amplify Console** → **La tua app** → **Environment variables**
 
-Devi convertire i caratteri speciali:
-- `$` → `%24`
-- `#` → `%23`
-- `?` → `%3F`
-- `:` → `%3A`
-- `<` → `%3C`
+Aggiungi/modifica questa variabile:
 
-**Password codificata:** `%24%23%3FhAaoN8bJsu%3Ap%24%3COgN7x24lPFR`
-
-**DATABASE_URL corretta:**
 ```
-postgresql://postgres:%24%23%3FhAaoN8bJsu%3Ap%24%3COgN7x24lPFR@database-agenda.cluster-criu4sm20xow.eu-north-1.rds.amazonaws.com:5432/postgres?schema=public
+DATABASE_URL=postgresql://postgres:%21Godosybe28081991@agenda-db.criu4sm20xow.eu-north-1.rds.amazonaws.com:5432/agenda_db?schema=public
+```
+
+⚠️ **NOTA**: Il carattere `!` è codificato come `%21`
+
+---
+
+## 📋 STEP 2: Configura Security Group RDS
+
+Il database deve permettere connessioni dalla tua app Amplify.
+
+1. Vai su **AWS RDS Console** → **Databases** → **agenda-db**
+2. Clicca sul **Security Group** (`agenda-db-sg`)
+3. Vai su **Inbound rules** → **Edit inbound rules**
+4. Aggiungi regola:
+   - **Type:** PostgreSQL
+   - **Port:** 5432
+   - **Source:** `0.0.0.0/0` (per Amplify) oppure IP specifico
+5. Salva
+
+---
+
+## 📋 STEP 3: Crea le Tabelle (dopo deploy)
+
+Dopo aver configurato DATABASE_URL su Amplify e fatto redeploy:
+
+1. Vai su: `https://TUO-SITO.amplifyapp.com/api/db/init`
+2. Clicca il pulsante **"Inizializza Database"**
+3. Aspetta che le tabelle vengano create
+
+Oppure fai una chiamata POST:
+```bash
+curl -X POST https://TUO-SITO.amplifyapp.com/api/db/init
 ```
 
 ---
 
-## 📋 STEP 3: Migrazione Database (Prisma)
+## 📋 STEP 4: Migrazione Database Locale (opzionale)
 
-Una volta configurato DATABASE_URL, devi creare le tabelle nel database.
-
-### Opzione A: Da locale (consigliata per prima volta)
+Se vuoi creare le tabelle da locale:
 
 1. **Crea file `.env` locale** con il DATABASE_URL corretto:
 ```bash
