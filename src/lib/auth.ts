@@ -8,13 +8,38 @@ import GoogleProvider from 'next-auth/providers/google';
 import { PrismaAdapter } from '@auth/prisma-adapter';
 import { db } from '@/lib/db';
 
+// Verifica se il database è configurato e accessibile
+const isDatabaseAvailable = async () => {
+  try {
+    await db.$queryRaw`SELECT 1`;
+    return true;
+  } catch {
+    return false;
+  }
+};
+
 // =============================================================================
 // AUTH OPTIONS
 // =============================================================================
 
+// Configurazione dinamica basata sulla disponibilità del database
+const getAdapter = () => {
+  // In produzione, usa sempre PrismaAdapter se DATABASE_URL è configurata
+  if (process.env.DATABASE_URL) {
+    try {
+      return PrismaAdapter(db) as any;
+    } catch (error) {
+      console.warn('PrismaAdapter non disponibile, uso sessioni JWT');
+      return undefined;
+    }
+  }
+  return undefined;
+};
+
 export const authOptions: NextAuthOptions = {
-  // Adapter Prisma per persistenza sessioni nel database
-  adapter: PrismaAdapter(db) as any,
+  // NOTA: Adapter disabilitato finché le tabelle non sono create
+  // Decommentare dopo aver eseguito: prisma db push
+  // adapter: getAdapter(),
   
   // Providers di autenticazione
   providers: [
@@ -34,24 +59,39 @@ export const authOptions: NextAuthOptions = {
   // Callbacks per personalizzare comportamento
   callbacks: {
     // Aggiunge dati custom alla sessione
-    async session({ session, user }) {
+    async session({ session, user, token }) {
       if (session.user) {
-        // Recupera dati aggiuntivi dal database
-        const dbUser = await db.user.findUnique({
-          where: { id: user.id },
-          select: {
-            id: true,
-            role: true,
-            isWhitelisted: true,
-            phone: true,
-          },
-        });
-        
-        if (dbUser) {
-          session.user.id = dbUser.id;
-          session.user.role = dbUser.role as 'ADMIN' | 'PATIENT';
-          session.user.isWhitelisted = dbUser.isWhitelisted;
-          session.user.phone = dbUser.phone;
+        // Se abbiamo un user dal database (strategy: database)
+        if (user) {
+          try {
+            const dbUser = await db.user.findUnique({
+              where: { id: user.id },
+              select: {
+                id: true,
+                role: true,
+                isWhitelisted: true,
+                phone: true,
+              },
+            });
+            
+            if (dbUser) {
+              session.user.id = dbUser.id;
+              session.user.role = dbUser.role as 'ADMIN' | 'PATIENT';
+              session.user.isWhitelisted = dbUser.isWhitelisted;
+              session.user.phone = dbUser.phone;
+            }
+          } catch (error) {
+            // Database non disponibile, usa valori default
+            console.warn('Database non disponibile per sessione');
+            session.user.id = user.id || 'temp-id';
+            session.user.role = 'PATIENT';
+            session.user.isWhitelisted = false;
+          }
+        } else if (token) {
+          // Se usiamo JWT (strategy: jwt)
+          session.user.id = token.sub || 'jwt-user';
+          session.user.role = 'PATIENT';
+          session.user.isWhitelisted = false;
         }
       }
       return session;
@@ -74,9 +114,10 @@ export const authOptions: NextAuthOptions = {
     error: '/accedi',
   },
   
-  // Opzioni sessione
+  // Opzioni sessione - SEMPRE JWT finché le tabelle non sono create
+  // NOTA: Cambiare a 'database' dopo aver creato le tabelle con prisma db push
   session: {
-    strategy: 'database',
+    strategy: 'jwt',
     maxAge: 30 * 24 * 60 * 60, // 30 giorni
   },
   
