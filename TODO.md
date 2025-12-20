@@ -88,8 +88,31 @@
 - [x] Creato amplify.yml per configurazione deploy
 - [x] Esposto variabili env in next.config.js per Amplify
 - [x] Variabili ambiente configurate su Amplify Console
-- [ ] **Creare tabelle su AWS RDS** (richiede EC2 nella stessa VPC)
+- [x] Account master (papa.danilo91tp@gmail.com + bernardogiammetta@gmail.com)
+- [x] Pagina agenda protetta (solo whitelist/admin)
+- [ ] **Creare tabelle su AWS RDS** (POST /api/db/init)
 - [ ] Test finale su produzione
+
+### Area Personale (/profilo) ✅ NUOVO
+- [x] Pagina profilo con gestione nome/cognome
+- [x] Nota per usare dati reali
+- [x] Card stato account (ruolo, whitelist)
+- [x] Link rapidi a servizi e contatti
+
+### Questionario Alimentare (/profilo/questionario) ✅ NUOVO
+- [x] 35 domande estratte da my-questionnaire
+- [x] Sezioni: Generalità, Stile di Vita, Cliniche, Obiettivo, ecc.
+- [x] Progress bar e navigazione domande
+- [x] Salvataggio locale (localStorage)
+- [x] Jump to question
+
+### NutriBot Miglioramenti ✅ NUOVO
+- [x] Formattazione Markdown (grassetto, corsivo, link)
+- [x] Prompt sistema: MAI consigli nutrizionali
+- [x] Risposta standard per domande su alimentazione
+
+### UI/UX Miglioramenti ✅ NUOVO
+- [x] Splash screen durata 3.5s (era 2.5s)
 
 ---
 
