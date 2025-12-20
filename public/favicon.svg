@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <!-- Cerchio di sfondo bianco -->
+  <circle cx="50" cy="50" r="48" fill="white" stroke="#8B6914" stroke-width="2"/>
+  <!-- Lettere BG in stile elegante -->
+  <text x="50" y="62" 
+        font-family="Georgia, serif" 
+        font-size="38" 
+        font-weight="bold"
+        font-style="italic"
+        fill="#8B6914" 
+        text-anchor="middle">BG</text>
+</svg>
