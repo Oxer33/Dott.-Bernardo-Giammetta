@@ -6,12 +6,24 @@
 import { NextResponse } from 'next/server';
 
 export const dynamic = 'force-dynamic';
+export const runtime = 'nodejs';
 
 export async function GET() {
   const results: Record<string, any> = {
     timestamp: new Date().toISOString(),
+    nodeEnv: process.env.NODE_ENV,
     tests: {},
   };
+
+  // Lista TUTTE le variabili d'ambiente (solo nomi, non valori sensibili)
+  const allEnvKeys = Object.keys(process.env).filter(k => 
+    k.includes('OPENROUTER') || 
+    k.includes('GOOGLE') || 
+    k.includes('NEXTAUTH') || 
+    k.includes('DATABASE') ||
+    k.includes('NEXT')
+  );
+  results.envKeysFound = allEnvKeys;
 
   // Test 1: Verifica API Key
   const apiKey = process.env.OPENROUTER_API_KEY;
@@ -20,6 +32,7 @@ export async function GET() {
     length: apiKey?.length || 0,
     prefix: apiKey?.substring(0, 15) || 'MISSING',
     suffix: apiKey?.slice(-5) || 'MISSING',
+    rawCheck: typeof process.env.OPENROUTER_API_KEY,
   };
 
   // Test 2: Prova chiamata OpenRouter

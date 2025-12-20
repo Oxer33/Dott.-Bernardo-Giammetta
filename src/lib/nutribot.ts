@@ -147,8 +147,8 @@ export interface NutriBotResponse {
 // =============================================================================
 
 const OPENROUTER_API_URL = 'https://openrouter.ai/api/v1/chat/completions';
-// Modello gratuito e affidabile - Llama 3.2 è veloce e stabile
-const MODEL = 'meta-llama/llama-3.2-3b-instruct:free';
+// DeepSeek R1 - modello richiesto
+const MODEL = 'deepseek/deepseek-r1-0528:free';
 
 // =============================================================================
 // FUNZIONE PRINCIPALE CHAT
