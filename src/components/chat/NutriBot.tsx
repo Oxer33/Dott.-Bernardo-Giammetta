@@ -122,11 +122,12 @@ export function NutriBot() {
       console.error('Chat error:', error);
       setHasError(true);
       
-      // Mostra messaggio di errore più specifico
-      let errorContent = OFFLINE_MESSAGE;
-      if (error?.message?.includes('API key')) {
-        errorContent = `⚠️ Il servizio NutriBot non è configurato correttamente.\n\nPer assistenza immediata:\n📞 Chiama: +39 392 0979135\n📧 Scrivi: info@bernardogiammetta.com`;
-      }
+      // Mostra l'errore reale per debug
+      const actualError = error?.message || 'Errore sconosciuto';
+      console.error('Actual error message:', actualError);
+      
+      // Messaggio user-friendly ma con dettagli per debug
+      const errorContent = `Mi dispiace, c'è stato un problema tecnico.\n\n🔧 Errore: ${actualError}\n\nPer assistenza immediata:\n📞 Chiama: +39 392 0979135\n📧 Scrivi: info@bernardogiammetta.com`;
       
       const errorMessage: Message = {
         id: `error-${Date.now()}`,
