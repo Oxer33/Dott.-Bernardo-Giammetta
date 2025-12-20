@@ -20,6 +20,25 @@ import { cn } from '@/lib/utils';
 import { WELCOME_MESSAGE, OFFLINE_MESSAGE } from '@/lib/nutribot';
 
 // =============================================================================
+// FUNZIONE PER PARSARE MARKDOWN SEMPLICE
+// Converte **grassetto**, *corsivo*, `codice` in HTML
+// =============================================================================
+
+function parseMarkdown(text: string): string {
+  return text
+    // Grassetto: **testo** o __testo__
+    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    .replace(/__(.+?)__/g, '<strong>$1</strong>')
+    // Corsivo: *testo* o _testo_
+    .replace(/\*(.+?)\*/g, '<em>$1</em>')
+    .replace(/_(.+?)_/g, '<em>$1</em>')
+    // Codice inline: `testo`
+    .replace(/`(.+?)`/g, '<code class="bg-lavender-100 px-1 rounded text-xs">$1</code>')
+    // Link: [testo](url)
+    .replace(/\[(.+?)\]\((.+?)\)/g, '<a href="$2" class="text-lavender-600 underline" target="_blank">$1</a>');
+}
+
+// =============================================================================
 // TIPI
 // =============================================================================
 
@@ -246,7 +265,15 @@ export function NutriBot() {
                             : "bg-white text-sage-800 rounded-bl-md shadow-sm border border-lavender-100"
                         )}
                       >
-                        <p className="whitespace-pre-wrap">{message.content}</p>
+                        {/* Usa dangerouslySetInnerHTML per renderizzare markdown */}
+                        <p 
+                          className="whitespace-pre-wrap"
+                          dangerouslySetInnerHTML={{ 
+                            __html: message.role === 'assistant' 
+                              ? parseMarkdown(message.content) 
+                              : message.content 
+                          }}
+                        />
                       </div>
                       {message.role === 'user' && (
                         <div className="w-8 h-8 rounded-full bg-sage-100 flex items-center justify-center flex-shrink-0">

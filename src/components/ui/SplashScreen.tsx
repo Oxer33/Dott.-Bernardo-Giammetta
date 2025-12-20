@@ -1,7 +1,7 @@
 // =============================================================================
 // SPLASHSCREEN - DOTT. BERNARDO GIAMMETTA
 // Splash screen d'impatto con animazione e messaggio di benvenuto
-// Durata: 2.5 secondi
+// Durata: 3.5 secondi
 // =============================================================================
 
 'use client';
@@ -27,11 +27,11 @@ export function SplashScreen() {
       return;
     }
 
-    // Nascondi dopo 2.5 secondi
+    // Nascondi dopo 3.5 secondi
     const timer = setTimeout(() => {
       setIsVisible(false);
       sessionStorage.setItem('splashSeen', 'true');
-    }, 2500);
+    }, 3500);
 
     return () => clearTimeout(timer);
   }, []);
@@ -58,7 +58,7 @@ export function SplashScreen() {
                 'linear-gradient(135deg, #5AC4B5 0%, #4BA89A 50%, #BEAEE2 100%)',
               ]
             }}
-            transition={{ duration: 2.5, ease: 'easeInOut' }}
+            transition={{ duration: 3.5, ease: 'easeInOut' }}
           />
 
           {/* Pattern decorativo */}
