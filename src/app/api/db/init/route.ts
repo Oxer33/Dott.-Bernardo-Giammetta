@@ -60,21 +60,163 @@ export async function GET() {
 }
 
 // =============================================================================
-// POST - Tenta di creare le tabelle (solo in development)
+// POST - Crea le tabelle nel database
 // =============================================================================
 
 export async function POST() {
-  // Disabilitato in produzione per sicurezza
-  if (process.env.NODE_ENV === 'production') {
+  try {
+    // Crea le tabelle usando raw SQL
+    await db.$executeRaw`
+      CREATE TABLE IF NOT EXISTS "User" (
+        "id" TEXT NOT NULL PRIMARY KEY,
+        "email" TEXT NOT NULL UNIQUE,
+        "name" TEXT,
+        "image" TEXT,
+        "phone" TEXT,
+        "isWhitelisted" BOOLEAN NOT NULL DEFAULT false,
+        "whitelistedAt" TIMESTAMP(3),
+        "role" TEXT NOT NULL DEFAULT 'PATIENT',
+        "emailVerified" TIMESTAMP(3),
+        "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        "lastVisitAt" TIMESTAMP(3)
+      )
+    `;
+
+    await db.$executeRaw`
+      CREATE TABLE IF NOT EXISTS "Account" (
+        "id" TEXT NOT NULL PRIMARY KEY,
+        "userId" TEXT NOT NULL,
+        "type" TEXT NOT NULL,
+        "provider" TEXT NOT NULL,
+        "providerAccountId" TEXT NOT NULL,
+        "refresh_token" TEXT,
+        "access_token" TEXT,
+        "expires_at" INTEGER,
+        "token_type" TEXT,
+        "scope" TEXT,
+        "id_token" TEXT,
+        "session_state" TEXT
+      )
+    `;
+
+    await db.$executeRaw`
+      CREATE TABLE IF NOT EXISTS "Session" (
+        "id" TEXT NOT NULL PRIMARY KEY,
+        "sessionToken" TEXT NOT NULL UNIQUE,
+        "userId" TEXT NOT NULL,
+        "expires" TIMESTAMP(3) NOT NULL
+      )
+    `;
+
+    await db.$executeRaw`
+      CREATE TABLE IF NOT EXISTS "VerificationToken" (
+        "identifier" TEXT NOT NULL,
+        "token" TEXT NOT NULL UNIQUE,
+        "expires" TIMESTAMP(3) NOT NULL
+      )
+    `;
+
+    await db.$executeRaw`
+      CREATE TABLE IF NOT EXISTS "Appointment" (
+        "id" TEXT NOT NULL PRIMARY KEY,
+        "userId" TEXT NOT NULL,
+        "startTime" TIMESTAMP(3) NOT NULL,
+        "duration" INTEGER NOT NULL DEFAULT 60,
+        "type" TEXT NOT NULL DEFAULT 'FOLLOW_UP',
+        "status" TEXT NOT NULL DEFAULT 'CONFIRMED',
+        "notes" TEXT,
+        "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        "cancelledAt" TIMESTAMP(3)
+      )
+    `;
+
+    await db.$executeRaw`
+      CREATE TABLE IF NOT EXISTS "TimeBlock" (
+        "id" TEXT NOT NULL PRIMARY KEY,
+        "type" TEXT NOT NULL,
+        "dayOfWeek" INTEGER,
+        "startTime" TEXT NOT NULL,
+        "endTime" TEXT NOT NULL,
+        "specificDate" TIMESTAMP(3),
+        "note" TEXT,
+        "isActive" BOOLEAN NOT NULL DEFAULT true,
+        "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP
+      )
+    `;
+
+    await db.$executeRaw`
+      CREATE TABLE IF NOT EXISTS "EmailLog" (
+        "id" TEXT NOT NULL PRIMARY KEY,
+        "userId" TEXT,
+        "toEmail" TEXT NOT NULL,
+        "type" TEXT NOT NULL,
+        "templateId" INTEGER NOT NULL,
+        "appointmentId" TEXT,
+        "status" TEXT NOT NULL DEFAULT 'SENT',
+        "subject" TEXT NOT NULL,
+        "sentAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP
+      )
+    `;
+
+    await db.$executeRaw`
+      CREATE TABLE IF NOT EXISTS "BlogPost" (
+        "id" TEXT NOT NULL PRIMARY KEY,
+        "slug" TEXT NOT NULL UNIQUE,
+        "title" TEXT NOT NULL,
+        "excerpt" TEXT NOT NULL,
+        "content" TEXT NOT NULL,
+        "coverImage" TEXT NOT NULL,
+        "category" TEXT NOT NULL,
+        "tags" TEXT NOT NULL,
+        "readingTime" INTEGER NOT NULL,
+        "published" BOOLEAN NOT NULL DEFAULT false,
+        "publishedAt" TIMESTAMP(3),
+        "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP
+      )
+    `;
+
+    await db.$executeRaw`
+      CREATE TABLE IF NOT EXISTS "ContactMessage" (
+        "id" TEXT NOT NULL PRIMARY KEY,
+        "name" TEXT NOT NULL,
+        "email" TEXT NOT NULL,
+        "phone" TEXT,
+        "subject" TEXT NOT NULL,
+        "message" TEXT NOT NULL,
+        "read" BOOLEAN NOT NULL DEFAULT false,
+        "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP
+      )
+    `;
+
+    // Inserisci account master
+    await db.$executeRaw`
+      INSERT INTO "User" ("id", "email", "name", "isWhitelisted", "role", "createdAt", "updatedAt")
+      VALUES ('master-danilo', 'papa.danilo91tp@gmail.com', 'Danilo Papa', true, 'ADMIN', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+      ON CONFLICT ("email") DO UPDATE SET "isWhitelisted" = true, "role" = 'ADMIN'
+    `;
+
+    await db.$executeRaw`
+      INSERT INTO "User" ("id", "email", "name", "isWhitelisted", "role", "createdAt", "updatedAt")
+      VALUES ('master-bernardo', 'bernardogiammetta@gmail.com', 'Dott. Bernardo Giammetta', true, 'ADMIN', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+      ON CONFLICT ("email") DO UPDATE SET "isWhitelisted" = true, "role" = 'ADMIN'
+    `;
+
+    return NextResponse.json({
+      success: true,
+      message: 'Database inizializzato con successo! Tabelle create.',
+      timestamp: new Date().toISOString(),
+    });
+
+  } catch (error: any) {
+    console.error('Database init POST error:', error);
     return NextResponse.json({
       success: false,
-      error: 'Operazione non permessa in produzione',
-      suggestion: 'Usa AWS CloudShell o EC2 per eseguire prisma db push'
-    }, { status: 403 });
+      error: error.message,
+      hint: 'Verifica che DATABASE_URL sia configurato correttamente',
+    }, { status: 500 });
   }
-  
-  return NextResponse.json({
-    success: false,
-    error: 'Usa prisma db push manualmente per creare le tabelle'
-  }, { status: 400 });
 }
