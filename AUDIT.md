@@ -370,4 +370,29 @@ File: `src/middleware.ts`
 
 ---
 
-*Ultimo aggiornamento: 21 Dicembre 2024 - 22:15*
+## 📋 COMPONENTI VERIFICATI RESPONSIVE
+
+| Componente | Mobile | Tablet | Desktop | Note |
+|------------|--------|--------|---------|------|
+| Navbar | ✅ | ✅ | ✅ | Menu hamburger su mobile |
+| HeroSection | ✅ | ✅ | ✅ | Grid responsive, floating condizionale |
+| Footer | ✅ | ✅ | ✅ | Grid 1→2→4 colonne |
+| ContactForm | ✅ | ✅ | ✅ | Grid sm:grid-cols-2 |
+| AgendaCalendar | ✅ | ✅ | ✅ | overflow-x-auto per scroll |
+| NutriBot | ✅ | ✅ | ✅ | max-w-[calc(100vw-3rem)] |
+| SplashScreen | ✅ | ✅ | ✅ | Durata ridotta su reduce motion |
+
+---
+
+## ⚠️ WARNING MINORI RIMANENTI (6)
+
+1. **36 type 'any'** - Da tipizzare progressivamente (non critico)
+2. **4 TODO comments** - Funzionalità future documentate
+3. **Refresh token rotation** - Non configurato (JWT valido 30gg)
+4. **Blog dinamico sitemap** - TODO in sitemap.ts
+5. **Placeholder blur immagini** - Da aggiungere su immagini grandi
+6. **SRI per CDN** - Non usiamo CDN esterni
+
+---
+
+*Ultimo aggiornamento: 21 Dicembre 2024 - 22:30*
