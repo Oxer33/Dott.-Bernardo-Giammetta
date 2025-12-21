@@ -60,6 +60,7 @@ export function WhitelistManager() {
   const [error, setError] = useState<string | null>(null);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
 
   // Carica pazienti dal database
   const loadPatients = async () => {
@@ -114,10 +115,10 @@ export function WhitelistManager() {
       if (data.success) {
         loadPatients();
       } else {
-        alert(data.error || 'Errore');
+        setActionError(data.error || 'Errore');
       }
     } catch (err) {
-      alert('Errore di connessione');
+      setActionError('Errore di connessione');
     } finally {
       setActionLoading(null);
     }
@@ -134,10 +135,10 @@ export function WhitelistManager() {
         setDeleteConfirm(null);
         loadPatients();
       } else {
-        alert(data.error || 'Errore');
+        setActionError(data.error || 'Errore');
       }
     } catch (err) {
-      alert('Errore di connessione');
+      setActionError('Errore di connessione');
     } finally {
       setActionLoading(null);
     }
@@ -218,11 +219,22 @@ export function WhitelistManager() {
         </div>
       </div>
 
-      {/* Errore */}
+      {/* Errore caricamento */}
       {error && (
         <div className="bg-red-50 border border-red-200 rounded-xl p-4 flex items-center gap-3">
           <AlertCircle className="w-5 h-5 text-red-500" />
           <span className="text-red-700">{error}</span>
+        </div>
+      )}
+
+      {/* Errore azione */}
+      {actionError && (
+        <div className="bg-orange-50 border border-orange-200 rounded-xl p-4 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <AlertCircle className="w-5 h-5 text-orange-500" />
+            <span className="text-orange-700">{actionError}</span>
+          </div>
+          <button onClick={() => setActionError(null)} className="text-orange-500 hover:text-orange-700">✕</button>
         </div>
       )}
       

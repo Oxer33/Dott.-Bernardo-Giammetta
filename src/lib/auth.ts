@@ -5,10 +5,11 @@
 
 import { NextAuthOptions } from 'next-auth';
 import GoogleProvider from 'next-auth/providers/google';
-import EmailProvider from 'next-auth/providers/email';
+import CredentialsProvider from 'next-auth/providers/credentials';
 import { PrismaAdapter } from '@auth/prisma-adapter';
 import { db } from '@/lib/db';
 import { isMasterAccount } from '@/lib/config';
+import bcrypt from 'bcryptjs';
 
 // Verifica se il database è configurato e accessibile
 const isDatabaseAvailable = async () => {
@@ -45,6 +46,7 @@ export const authOptions: NextAuthOptions = {
   
   // Providers di autenticazione
   providers: [
+    // Google OAuth
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID!,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
@@ -57,6 +59,53 @@ export const authOptions: NextAuthOptions = {
           access_type: 'offline',
           response_type: 'code',
         },
+      },
+    }),
+    
+    // Autenticazione Email/Password
+    CredentialsProvider({
+      id: 'credentials',
+      name: 'Email e Password',
+      credentials: {
+        email: { label: 'Email', type: 'email', placeholder: 'email@esempio.com' },
+        password: { label: 'Password', type: 'password' },
+      },
+      async authorize(credentials) {
+        // Validazione input
+        if (!credentials?.email || !credentials?.password) {
+          throw new Error('Email e password sono richiesti');
+        }
+        
+        // Cerca utente nel database
+        const user = await db.user.findUnique({
+          where: { email: credentials.email.toLowerCase().trim() },
+        });
+        
+        // Utente non trovato
+        if (!user) {
+          throw new Error('Credenziali non valide');
+        }
+        
+        // Utente senza password (registrato solo con OAuth)
+        if (!user.password) {
+          throw new Error('Questo account usa accesso con Google. Usa il pulsante Google per accedere.');
+        }
+        
+        // Verifica password
+        const isValidPassword = await bcrypt.compare(credentials.password, user.password);
+        if (!isValidPassword) {
+          throw new Error('Credenziali non valide');
+        }
+        
+        // Ritorna utente per creare sessione
+        return {
+          id: user.id,
+          email: user.email,
+          name: user.name,
+          image: user.image,
+          role: isMasterAccount(user.email) ? 'ADMIN' : 'PATIENT',
+          isWhitelisted: user.isWhitelisted || isMasterAccount(user.email),
+        };
       },
     }),
   ],

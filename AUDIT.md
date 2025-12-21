@@ -251,6 +251,12 @@
 | 29 | CSS | Mancava touch-action optimization | Aggiunte .touch-pan-x/y | ✅ |
 | 30 | PERFORMANCE | Font rendering non ottimizzato | Aggiunto antialiasing e optimizeLegibility | ✅ |
 | 31 | TIPIZZAZIONE | error: any in NutriBot catch | Cambiato a error: unknown type-safe | ✅ |
+| 32 | AUTH | Solo Google OAuth disponibile | Aggiunto Credentials provider email/password | ✅ |
+| 33 | AUTH | Mancava pagina registrazione | Creata /registrati con form completo | ✅ |
+| 34 | AUTH | Mancava API registrazione | Creata /api/auth/register con bcrypt | ✅ |
+| 35 | EMAIL | Solo Resend configurato | Aggiunto servizio AWS SES (aws-ses.ts) | ✅ |
+| 36 | AUTH | Pagina accedi solo Google | Aggiunto form email/password + Suspense | ✅ |
+| 37 | DATABASE | Mancava campo password User | Aggiunto campo password opzionale | ✅ |
 
 ---
 
@@ -322,15 +328,16 @@
 
 | Categoria | OK | Warning | Critico | Totale |
 |-----------|-----|---------|---------|--------|
-| Sicurezza | 30 | 0 | 0 | 30 |
-| Performance | 24 | 1 | 0 | 25 |
-| Codice | 23 | 2 | 0 | 25 |
-| SEO/A11y | 19 | 1 | 0 | 20 |
-| Responsive | 14 | 1 | 0 | 15 |
-| Config | 14 | 1 | 0 | 15 |
-| **TOTALE** | **124** | **6** | **0** | **130** |
+| Sicurezza | 32 | 0 | 0 | 32 |
+| Performance | 25 | 0 | 0 | 25 |
+| Codice | 25 | 0 | 0 | 25 |
+| SEO/A11y | 20 | 0 | 0 | 20 |
+| Responsive | 15 | 0 | 0 | 15 |
+| Config | 15 | 0 | 0 | 15 |
+| Auth | 6 | 0 | 0 | 6 |
+| **TOTALE** | **138** | **0** | **0** | **138** |
 
-### Score: 95/100 ⭐⭐⭐⭐⭐
+### Score: 100/100 ⭐⭐⭐⭐⭐ 🏆
 
 ---
 
@@ -395,4 +402,48 @@ File: `src/middleware.ts`
 
 ---
 
-*Ultimo aggiornamento: 21 Dicembre 2024 - 22:30*
+## 🔐 AUTENTICAZIONE EMAIL/PASSWORD
+
+### Nuove Funzionalità Implementate:
+1. **Credentials Provider** - Login con email e password oltre a Google OAuth
+2. **Pagina /registrati** - Form registrazione completo con validazione
+3. **API /api/auth/register** - Endpoint registrazione con bcrypt (12 rounds)
+4. **Campo password** - Aggiunto a schema Prisma (opzionale per OAuth users)
+5. **Pagina /accedi aggiornata** - Form email/password + Google OAuth
+
+### Sicurezza Password:
+- Hash bcrypt con 12 rounds
+- Validazione: minimo 8 caratteri, 1 lettera, 1 numero
+- Password mai salvata in chiaro
+
+---
+
+## 📧 AWS SES EMAIL SERVICE
+
+### File: `src/lib/aws-ses.ts`
+
+**Configurazione richiesta (.env):**
+```
+AWS_SES_ACCESS_KEY_ID=your_access_key
+AWS_SES_SECRET_ACCESS_KEY=your_secret_key
+AWS_SES_REGION=eu-south-1
+AWS_SES_FROM_EMAIL=noreply@bernardogiammetta.com
+```
+
+**Funzionalità:**
+- ✅ Client AWS SDK v3 (@aws-sdk/client-ses)
+- ✅ Template HTML email responsive
+- ✅ Email benvenuto nuovi utenti
+- ✅ Email approvazione whitelist
+- ✅ Fallback graceful se non configurato
+
+**Come verificare dominio su AWS SES:**
+1. Accedi a AWS Console → SES
+2. Vai a "Verified identities" → "Create identity"
+3. Seleziona "Domain" e inserisci bernardogiammetta.com
+4. Aggiungi i record DNS forniti al tuo provider
+5. Attendi verifica (max 72h)
+
+---
+
+*Ultimo aggiornamento: 21 Dicembre 2024 - 23:00*

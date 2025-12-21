@@ -25,6 +25,9 @@ model User {
   image         String?
   phone         String?
   
+  // Password hash per autenticazione email/password (opzionale se usa solo OAuth)
+  password      String?
+  
   // ==========================================================================
   // DATI ANAGRAFICI COMPLETI (per fatturazione e gestione pazienti)
   // ==========================================================================
