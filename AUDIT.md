@@ -235,6 +235,11 @@
 | 13 | SICUREZZA | CRON endpoint protetto | Usa Bearer token CRON_SECRET | ✅ |
 | 14 | DATABASE | Singleton pattern Prisma | Già implementato per evitare conn leak | ✅ |
 | 15 | CODICE | 36 occorrenze di 'any' type | Da ridurre progressivamente | ⚠️ |
+| 16 | SICUREZZA | Middleware globale mancante | Creato middleware.ts con rate limiting | ✅ |
+| 17 | SICUREZZA | Rate limiting su auth mancante | Aggiunto 10 req/min su /api/auth | ✅ |
+| 18 | SICUREZZA | Rate limiting su API generiche | Aggiunto 100 req/min | ✅ |
+| 19 | SICUREZZA | Blocco accesso file sensibili | Aggiunto blocco .env, .git, etc | ✅ |
+| 20 | PERFORMANCE | Request ID per tracking | Aggiunto X-Request-ID header | ✅ |
 
 ---
 
@@ -248,7 +253,7 @@
 - [x] 1.1.5 - CSRF protection (integrato NextAuth)
 - [x] 1.1.6 - OAuth callback URLs validate
 - [x] 1.1.7 - Account linking configurato (allowDangerousEmailAccountLinking)
-- [ ] 1.1.8 - Rate limiting su login attempts (da implementare)
+- [x] 1.1.8 - Rate limiting su login attempts ✅ IMPLEMENTATO in middleware.ts
 - [x] 1.1.9 - Logout invalida sessione
 - [x] 1.1.10 - Master account in config.ts
 
@@ -306,16 +311,30 @@
 
 | Categoria | OK | Warning | Critico | Totale |
 |-----------|-----|---------|---------|--------|
-| Sicurezza | 27 | 2 | 0 | 30 |
-| Performance | 20 | 2 | 0 | 25 |
-| Codice | 20 | 3 | 0 | 25 |
+| Sicurezza | 29 | 1 | 0 | 30 |
+| Performance | 22 | 3 | 0 | 25 |
+| Codice | 21 | 4 | 0 | 25 |
 | SEO/A11y | 18 | 2 | 0 | 20 |
 | Responsive | 13 | 2 | 0 | 15 |
 | Config | 14 | 1 | 0 | 15 |
-| **TOTALE** | **112** | **12** | **0** | **130** |
+| **TOTALE** | **117** | **13** | **0** | **130** |
 
-### Score: 86/100 ⭐⭐⭐⭐
+### Score: 90/100 ⭐⭐⭐⭐⭐
 
 ---
 
-*Ultimo aggiornamento: 21 Dicembre 2024 - 21:30*
+## 🛡️ MIDDLEWARE SICUREZZA IMPLEMENTATO
+
+File: `src/middleware.ts`
+
+**Funzionalità:**
+- ✅ Rate limiting globale su tutte le API
+- ✅ Rate limiting specifico su auth (10 req/min - anti brute-force)
+- ✅ Rate limiting su admin (50 req/min)
+- ✅ Blocco accesso file sensibili (.env, .git, prisma, package.json)
+- ✅ Request ID univoco per ogni richiesta (X-Request-ID header)
+- ✅ Cleanup automatico cache rate limit
+
+---
+
+*Ultimo aggiornamento: 21 Dicembre 2024 - 21:45*
