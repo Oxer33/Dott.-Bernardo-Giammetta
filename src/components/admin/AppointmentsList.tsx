@@ -82,7 +82,11 @@ export function AppointmentsList() {
         setAppointments(data.appointments);
       }
     } catch (error) {
-      console.error('Errore caricamento:', error);
+      // Log solo in development
+      if (process.env.NODE_ENV === 'development') {
+        // eslint-disable-next-line no-console
+        console.error('Errore caricamento:', error);
+      }
     } finally {
       setLoading(false);
     }
@@ -117,7 +121,11 @@ export function AppointmentsList() {
         setEditingNotes(null);
       }
     } catch (error) {
-      console.error('Errore azione:', error);
+      // Log solo in development
+      if (process.env.NODE_ENV === 'development') {
+        // eslint-disable-next-line no-console
+        console.error('Errore azione:', error);
+      }
     } finally {
       setActionLoading(null);
     }
@@ -133,7 +141,11 @@ export function AppointmentsList() {
         loadAppointments();
       }
     } catch (error) {
-      console.error('Errore eliminazione:', error);
+      // Log solo in development
+      if (process.env.NODE_ENV === 'development') {
+        // eslint-disable-next-line no-console
+        console.error('Errore eliminazione:', error);
+      }
     } finally {
       setActionLoading(null);
     }

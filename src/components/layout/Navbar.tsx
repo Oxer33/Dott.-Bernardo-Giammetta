@@ -44,13 +44,21 @@ export function Navbar() {
   const pathname = usePathname();
   const { data: session, status } = useSession();
 
-  // Effetto scroll per cambiare stile navbar
+  // Effetto scroll per cambiare stile navbar - ottimizzato con throttle
   useEffect(() => {
+    let ticking = false;
+    
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 20);
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          setIsScrolled(window.scrollY > 20);
+          ticking = false;
+        });
+        ticking = true;
+      }
     };
 
-    window.addEventListener('scroll', handleScroll);
+    window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
@@ -234,7 +242,7 @@ export function Navbar() {
               {isMobileMenuOpen ? (
                 <X className="w-6 h-6 text-sage-900" />
               ) : (
-                <Menu className="w-6 h-6 text-sage-900" />
+                <Menu className={cn('w-6 h-6', isScrolled ? 'text-sage-900' : 'text-white')} />
               )}
             </button>
           </div>

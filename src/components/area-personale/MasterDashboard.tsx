@@ -133,7 +133,11 @@ export function MasterDashboard({ user }: MasterDashboardProps) {
           pendingRequests: data.success ? data.stats.pending : 0,
         });
       } catch (error) {
-        console.error('Error loading stats:', error);
+        // Log solo in development
+        if (process.env.NODE_ENV === 'development') {
+          // eslint-disable-next-line no-console
+          console.error('Error loading stats:', error);
+        }
         // Fallback senza dati mock
         setStats({
           totalAppointments: user.appointments.length,

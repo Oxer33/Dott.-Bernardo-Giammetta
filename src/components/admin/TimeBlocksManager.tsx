@@ -72,7 +72,11 @@ export function TimeBlocksManager() {
         setTimeBlocks(data.timeBlocks);
       }
     } catch (error) {
-      console.error('Errore caricamento:', error);
+      // Log solo in development
+      if (process.env.NODE_ENV === 'development') {
+        // eslint-disable-next-line no-console
+        console.error('Errore caricamento:', error);
+      }
     } finally {
       setLoading(false);
     }
@@ -159,7 +163,11 @@ export function TimeBlocksManager() {
         loadTimeBlocks();
       }
     } catch (error) {
-      console.error('Errore eliminazione:', error);
+      // Log solo in development
+      if (process.env.NODE_ENV === 'development') {
+        // eslint-disable-next-line no-console
+        console.error('Errore eliminazione:', error);
+      }
     } finally {
       setActionLoading(null);
     }

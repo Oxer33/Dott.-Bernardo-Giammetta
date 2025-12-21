@@ -6,7 +6,7 @@
 'use client';
 
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { 
   MessageCircle, 
   X, 
@@ -62,11 +62,15 @@ export function NutriBot() {
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  // Rispetta preferenze utente per riduzione movimento
+  const shouldReduceMotion = useReducedMotion();
 
-  // Scroll automatico ai nuovi messaggi
+  // Scroll automatico ai nuovi messaggi - instant su mobile per fluidità
   const scrollToBottom = useCallback(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, []);
+    messagesEndRef.current?.scrollIntoView({ 
+      behavior: shouldReduceMotion ? 'auto' : 'smooth' 
+    });
+  }, [shouldReduceMotion]);
 
   useEffect(() => {
     scrollToBottom();
@@ -137,13 +141,17 @@ export function NutriBot() {
       } else {
         throw new Error(data.error || 'Errore sconosciuto');
       }
-    } catch (error: any) {
-      console.error('Chat error:', error);
+    } catch (error: unknown) {
       setHasError(true);
       
-      // Mostra l'errore reale per debug
-      const actualError = error?.message || 'Errore sconosciuto';
-      console.error('Actual error message:', actualError);
+      // Estrai messaggio errore in modo type-safe
+      const actualError = error instanceof Error ? error.message : 'Errore sconosciuto';
+      
+      // Log solo in development
+      if (process.env.NODE_ENV === 'development') {
+        // eslint-disable-next-line no-console
+        console.error('Chat error:', actualError);
+      }
       
       // Messaggio user-friendly ma con dettagli per debug
       const errorContent = `Mi dispiace, c'è stato un problema tecnico.\n\n🔧 Errore: ${actualError}\n\nPer assistenza immediata:\n📞 Chiama: +39 392 0979135\n📧 Scrivi: info@bernardogiammetta.com`;

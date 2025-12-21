@@ -7,7 +7,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import { Leaf, Heart, Sparkles } from 'lucide-react';
 
 // =============================================================================
@@ -17,6 +17,8 @@ import { Leaf, Heart, Sparkles } from 'lucide-react';
 export function SplashScreen() {
   const [isVisible, setIsVisible] = useState(true);
   const [hasSeenSplash, setHasSeenSplash] = useState(false);
+  // Rispetta preferenze utente per riduzione movimento (accessibilità)
+  const shouldReduceMotion = useReducedMotion();
 
   useEffect(() => {
     // Controlla se l'utente ha già visto lo splash in questa sessione
@@ -49,14 +51,15 @@ export function SplashScreen() {
     };
     preloadResources();
 
-    // Nascondi dopo 3.5 secondi
+    // Nascondi dopo 2.5 secondi (ridotto per migliore UX) o 1s se reduce motion
+    const duration = shouldReduceMotion ? 1000 : 2500;
     const timer = setTimeout(() => {
       setIsVisible(false);
       sessionStorage.setItem('splashSeen', 'true');
-    }, 3500);
+    }, duration);
 
     return () => clearTimeout(timer);
-  }, []);
+  }, [shouldReduceMotion]);
 
   // Se ha già visto lo splash, non renderizzare nulla
   if (hasSeenSplash) return null;
@@ -70,17 +73,10 @@ export function SplashScreen() {
           transition={{ duration: 0.5 }}
           className="fixed inset-0 z-[100] flex items-center justify-center overflow-hidden"
         >
-          {/* Background con gradiente animato */}
-          <motion.div 
+          {/* Background con gradiente - semplificato per performance */}
+          <div 
             className="absolute inset-0 bg-gradient-to-br from-sage-600 via-sage-500 to-lavender-500"
-            animate={{
-              background: [
-                'linear-gradient(135deg, #5AC4B5 0%, #4BA89A 50%, #BEAEE2 100%)',
-                'linear-gradient(135deg, #4BA89A 0%, #BEAEE2 50%, #F2C078 100%)',
-                'linear-gradient(135deg, #5AC4B5 0%, #4BA89A 50%, #BEAEE2 100%)',
-              ]
-            }}
-            transition={{ duration: 3.5, ease: 'easeInOut' }}
+            style={{ willChange: 'opacity' }}
           />
 
           {/* Pattern decorativo */}

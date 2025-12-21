@@ -82,7 +82,11 @@ export function AdminStats() {
         setRecentActivity(data.recentActivity || []);
       }
     } catch (error) {
-      console.error('Errore caricamento stats:', error);
+      // Log solo in development
+      if (process.env.NODE_ENV === 'development') {
+        // eslint-disable-next-line no-console
+        console.error('Errore caricamento stats:', error);
+      }
     } finally {
       setLoading(false);
     }
@@ -106,7 +110,11 @@ export function AdminStats() {
         loadData();
       }
     } catch (error) {
-      console.error('Errore azione:', error);
+      // Log solo in development
+      if (process.env.NODE_ENV === 'development') {
+        // eslint-disable-next-line no-console
+        console.error('Errore azione:', error);
+      }
     } finally {
       setActionLoading(null);
     }

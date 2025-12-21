@@ -8,7 +8,7 @@
 import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { motion } from 'framer-motion';
+import { motion, useReducedMotion } from 'framer-motion';
 import { ArrowDown, Calendar, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 
@@ -57,10 +57,15 @@ const floatingVariants = {
 
 export function HeroSection() {
   const [isLoaded, setIsLoaded] = useState(false);
+  // Rispetta preferenze utente per riduzione movimento (accessibilità)
+  const shouldReduceMotion = useReducedMotion();
 
   useEffect(() => {
     setIsLoaded(true);
   }, []);
+
+  // Disabilita animazioni floating se reduce motion
+  const floatingAnimation = shouldReduceMotion ? {} : floatingVariants;
 
   return (
     <section className="relative min-h-screen flex items-center overflow-hidden -mt-20">
@@ -85,20 +90,25 @@ export function HeroSection() {
         />
       </div>
 
-      {/* Decorative Elements */}
-      <motion.div
-        variants={floatingVariants}
-        initial="initial"
-        animate="animate"
-        className="absolute top-1/4 right-10 w-64 h-64 bg-lavender-400/20 rounded-full blur-3xl"
-      />
-      <motion.div
-        variants={floatingVariants}
-        initial="initial"
-        animate="animate"
-        className="absolute bottom-1/4 left-10 w-96 h-96 bg-orange-300/15 rounded-full blur-3xl"
-        style={{ animationDelay: '2s' }}
-      />
+      {/* Decorative Elements - GPU accelerated con will-change */}
+      {!shouldReduceMotion && (
+        <>
+          <motion.div
+            variants={floatingVariants}
+            initial="initial"
+            animate="animate"
+            className="absolute top-1/4 right-10 w-64 h-64 bg-lavender-400/20 rounded-full blur-3xl"
+            style={{ willChange: 'transform' }}
+          />
+          <motion.div
+            variants={floatingVariants}
+            initial="initial"
+            animate="animate"
+            className="absolute bottom-1/4 left-10 w-96 h-96 bg-orange-300/15 rounded-full blur-3xl"
+            style={{ willChange: 'transform' }}
+          />
+        </>
+      )}
 
       {/* Content */}
       <div className="container-custom relative z-10 pt-20">

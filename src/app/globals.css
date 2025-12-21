@@ -470,6 +470,64 @@
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* =============================================================================
+   PERFORMANCE OPTIMIZATIONS
+   ============================================================================= */
+
+/* GPU acceleration per elementi che si muovono frequentemente */
+.gpu-accelerated {
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
+
+/* Contain per isolare repainting */
+.contain-layout {
+  contain: layout;
+}
+
+.contain-paint {
+  contain: paint;
+}
+
+.contain-strict {
+  contain: strict;
+}
+
+/* Touch action per migliorare scroll su mobile */
+.touch-pan-y {
+  touch-action: pan-y;
+}
+
+.touch-pan-x {
+  touch-action: pan-x;
+}
+
+/* Ottimizzazione font rendering */
+body {
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Prevent layout shift per immagini */
+img {
+  content-visibility: auto;
+}
+
+/* Smooth scroll solo su desktop (su mobile può causare lag) */
+@media (min-width: 768px) {
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+@media (max-width: 767px) {
+  html {
+    scroll-behavior: auto;
   }
 }
 

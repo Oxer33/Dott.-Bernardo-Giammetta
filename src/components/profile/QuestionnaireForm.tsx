@@ -43,7 +43,7 @@ export function QuestionnaireForm({ userEmail }: QuestionnaireFormProps) {
       try {
         setAnswers(JSON.parse(saved));
       } catch (e) {
-        console.error('Errore caricamento risposte salvate');
+        // Errore parsing JSON - ignora risposte corrotte
       }
     }
   }, [userEmail]);
