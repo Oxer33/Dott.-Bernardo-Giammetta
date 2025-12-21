@@ -50,8 +50,8 @@ export function CookieConsent() {
     
     // Qui puoi attivare/disattivare gli script in base alle preferenze
     if (consent.analytics) {
-      // Attiva Google Analytics
-      console.log('Analytics attivato');
+      // Attiva Google Analytics - il componente GoogleAnalytics si occupa del tracking
+      // La configurazione viene gestita tramite il componente dedicato
     }
   };
 

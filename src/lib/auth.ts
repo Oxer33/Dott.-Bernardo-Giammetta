@@ -120,8 +120,12 @@ export const authOptions: NextAuthOptions = {
   events: {
     async signIn({ user, isNewUser }) {
       if (isNewUser) {
-        // Logica per nuovo utente (es. invia email benvenuto)
-        console.log(`Nuovo utente registrato: ${user.email}`);
+        // TODO: Invia email di benvenuto al nuovo utente
+        // Per ora loggiamo solo in development
+        if (process.env.NODE_ENV === 'development') {
+          // eslint-disable-next-line no-console
+          console.log(`[DEV] Nuovo utente registrato: ${user.email}`);
+        }
       }
     },
   },

@@ -1,14 +1,22 @@
 // =============================================================================
 // API DEBUG ENVIRONMENT - DOTT. BERNARDO GIAMMETTA
 // Endpoint per verificare quali variabili ambiente sono configurate
-// ATTENZIONE: Rimuovere in produzione dopo il debug!
+// PROTETTO: Solo account admin possono accedere
 // =============================================================================
 
 import { NextResponse } from 'next/server';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/lib/auth';
+import { isMasterAccount } from '@/lib/config';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET() {
+  // SICUREZZA: Solo admin può vedere info debug
+  const session = await getServerSession(authOptions);
+  if (!session?.user?.email || !isMasterAccount(session.user.email)) {
+    return NextResponse.json({ error: 'Non autorizzato' }, { status: 403 });
+  }
   // Verifica quali variabili sono presenti (NON mostra i valori per sicurezza)
   const envStatus = {
     // Database

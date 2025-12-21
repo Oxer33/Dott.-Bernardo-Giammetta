@@ -1,14 +1,23 @@
 // =============================================================================
 // TEST NUTRIBOT - DEBUG ENDPOINT
 // Endpoint per testare NutriBot e vedere esattamente cosa fallisce
+// PROTETTO: Solo admin possono accedere
 // =============================================================================
 
 import { NextResponse } from 'next/server';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/lib/auth';
+import { isMasterAccount } from '@/lib/config';
 
 export const dynamic = 'force-dynamic';
 export const runtime = 'nodejs';
 
 export async function GET() {
+  // SICUREZZA: Solo admin può vedere info debug
+  const session = await getServerSession(authOptions);
+  if (!session?.user?.email || !isMasterAccount(session.user.email)) {
+    return NextResponse.json({ error: 'Non autorizzato' }, { status: 403 });
+  }
   const results: Record<string, any> = {
     timestamp: new Date().toISOString(),
     nodeEnv: process.env.NODE_ENV,

@@ -1,10 +1,13 @@
 // =============================================================================
 // API ENDPOINT INIZIALIZZAZIONE DATABASE - DOTT. BERNARDO GIAMMETTA
 // Endpoint per verificare/inizializzare la connessione al database
-// Chiamato al primo avvio per assicurarsi che le tabelle esistano
+// PROTETTO: Solo admin possono accedere
 // =============================================================================
 
 import { NextResponse } from 'next/server';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/lib/auth';
+import { isMasterAccount } from '@/lib/config';
 import { db } from '@/lib/db';
 
 // Forza rendering dinamico
@@ -15,6 +18,12 @@ export const dynamic = 'force-dynamic';
 // =============================================================================
 
 export async function GET() {
+  // SICUREZZA: Solo admin può vedere stato database
+  const session = await getServerSession(authOptions);
+  if (!session?.user?.email || !isMasterAccount(session.user.email)) {
+    return NextResponse.json({ error: 'Non autorizzato' }, { status: 403 });
+  }
+  
   try {
     // Tenta una query semplice per verificare la connessione
     const result = await db.$queryRaw`SELECT 1 as connected`;
@@ -64,6 +73,12 @@ export async function GET() {
 // =============================================================================
 
 export async function POST() {
+  // SICUREZZA: Solo admin può inizializzare database
+  const session = await getServerSession(authOptions);
+  if (!session?.user?.email || !isMasterAccount(session.user.email)) {
+    return NextResponse.json({ error: 'Non autorizzato' }, { status: 403 });
+  }
+  
   try {
     // Crea le tabelle usando raw SQL
     await db.$executeRaw`
