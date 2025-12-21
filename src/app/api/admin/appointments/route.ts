@@ -37,7 +37,8 @@ export async function GET(request: NextRequest) {
     startOfWeek.setDate(startOfWeek.getDate() - startOfWeek.getDay() + 1); // Lunedì
     const endOfWeek = new Date(startOfWeek.getTime() + 7 * 24 * 60 * 60 * 1000);
     
-    let whereClause: any = {};
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let whereClause: Record<string, unknown> = {};
     
     // Filtro temporale
     if (filter === 'today') {
