@@ -9,7 +9,7 @@ import { useState, Suspense } from 'react';
 import { signIn } from 'next-auth/react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { motion } from 'framer-motion';
-import { Mail, Lock, ArrowRight, Leaf, Eye, EyeOff, Loader2 } from 'lucide-react';
+import { Mail, Lock, ArrowRight, Leaf, Eye, EyeOff, Loader2, CheckCircle, AlertTriangle } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/Button';
 
@@ -23,9 +23,13 @@ function AccediForm() {
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get('callbackUrl') || '/area-personale';
   
+  // Messaggi da URL (verifica email, errori)
+  const verified = searchParams.get('verified') === 'true';
+  const urlError = searchParams.get('error');
+  
   const [isLoading, setIsLoading] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(urlError);
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({ email: '', password: '' });
 
@@ -96,14 +100,30 @@ function AccediForm() {
             </p>
           </div>
 
-          {/* Errore */}
-          {error && (
+          {/* Successo verifica email */}
+          {verified && (
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
-              className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl text-red-700 text-sm text-center"
+              className="mb-6 p-4 bg-green-50 border border-green-200 rounded-xl flex items-center gap-3"
             >
-              {error}
+              <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
+              <div>
+                <p className="text-green-800 font-medium">Email verificata!</p>
+                <p className="text-green-700 text-sm">Ora puoi accedere con le tue credenziali.</p>
+              </div>
+            </motion.div>
+          )}
+
+          {/* Errore */}
+          {error && !verified && (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl flex items-center gap-3"
+            >
+              <AlertTriangle className="w-5 h-5 text-red-600 flex-shrink-0" />
+              <p className="text-red-700 text-sm">{error}</p>
             </motion.div>
           )}
 

@@ -9,8 +9,10 @@
 // =============================================================================
 
 export const MASTER_ACCOUNTS = [
-  'papa.danilo91tp@gmail.com',      // Danilo Papa - Developer
-  'bernardogiammetta@gmail.com',    // Dott. Bernardo Giammetta - Owner
+  'papa.danilo91tp@gmail.com',           // Danilo Papa - Developer
+  'bernardogiammetta@gmail.com',         // Dott. Bernardo Giammetta - Owner
+  'dr.giammettabernardo@gmail.com',      // Dott. Bernardo Giammetta - Email principale
+  'accomodationlapulena@gmail.com',      // La Pulena - Account secondario
 ] as const;
 
 // Verifica se un'email è un account master
@@ -28,6 +30,7 @@ export const SITE_CONFIG = {
   description: 'Biologo Nutrizionista',
   url: process.env.NEXTAUTH_URL || 'https://www.bernardogiammetta.com',
   email: 'info@bernardogiammetta.com',
+  doctorEmail: 'dr.giammettabernardo@gmail.com', // Email per ricevere notifiche
   phone: '+39 392 0979135',
 } as const;
 

@@ -6,7 +6,10 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import bcrypt from 'bcryptjs';
+import crypto from 'crypto';
 import { isValidEmail } from '@/lib/utils';
+import { sendVerificationEmail } from '@/lib/nodemailer';
+import { SITE_CONFIG } from '@/lib/config';
 
 // =============================================================================
 // POST - Registra nuovo utente
@@ -84,6 +87,10 @@ export async function POST(request: Request) {
     // Crea nome completo se forniti nome e cognome
     const fullName = name || (firstName && lastName ? `${firstName} ${lastName}` : null);
 
+    // Genera token di verifica email
+    const verificationToken = crypto.randomBytes(32).toString('hex');
+    const verificationExpires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 ore
+
     // Crea nuovo utente
     const user = await db.user.create({
       data: {
@@ -96,15 +103,26 @@ export async function POST(request: Request) {
         // Nuovi utenti non sono in whitelist - devono essere approvati dall'admin
         isWhitelisted: false,
         role: 'PATIENT',
+        // Token verifica email
+        verificationToken,
+        verificationExpires,
+        // Email non ancora verificata
+        emailVerified: null,
       },
     });
 
-    // TODO: Inviare email di benvenuto con AWS SES
-    // await sendWelcomeEmail(user);
+    // Invia email di verifica
+    const verificationUrl = `${SITE_CONFIG.url}/api/auth/verify-email?token=${verificationToken}`;
+    await sendVerificationEmail({
+      email: user.email,
+      name: fullName || user.email,
+      verificationUrl,
+    });
 
     return NextResponse.json({
       success: true,
-      message: 'Account creato con successo! Attendi l\'approvazione per prenotare.',
+      message: 'Account creato! Controlla la tua email per verificare l\'account.',
+      requiresVerification: true,
       user: {
         id: user.id,
         email: user.email,

@@ -10,8 +10,11 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { db } from '@/lib/db';
 import { createAppointment, canUserBook, VISIT_DURATION } from '@/lib/agenda';
-import { parseISO } from 'date-fns';
+import { parseISO, format } from 'date-fns';
+import { it } from 'date-fns/locale';
 import { z } from 'zod';
+import { sendBookingConfirmationToPatient, sendBookingNotificationToDoctor } from '@/lib/nodemailer';
+import { isMasterAccount } from '@/lib/config';
 
 // =============================================================================
 // SCHEMA VALIDAZIONE
@@ -66,7 +69,59 @@ export async function POST(request: NextRequest) {
       bookingUserId = targetUserId;
     }
     
-    // Verifica possibilità di prenotare
+    // Recupera utente dal database
+    const bookingUser = await db.user.findUnique({
+      where: { id: bookingUserId },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        phone: true,
+        isWhitelisted: true,
+        emailVerified: true,
+        maxActiveBookings: true,
+      },
+    });
+
+    if (!bookingUser) {
+      return NextResponse.json(
+        { success: false, error: 'Utente non trovato' },
+        { status: 404 }
+      );
+    }
+
+    // Verifica che l'utente sia whitelistato (o sia admin/master)
+    const isAdmin = session.user.role === 'ADMIN' || isMasterAccount(session.user.email);
+    if (!bookingUser.isWhitelisted && !isAdmin) {
+      return NextResponse.json(
+        { success: false, error: 'Il tuo account non è ancora abilitato alle prenotazioni. Attendi l\'approvazione.' },
+        { status: 403 }
+      );
+    }
+
+    // Verifica email verificata (per utenti con password)
+    // Skip per utenti OAuth (hanno emailVerified = null ma sono OK)
+    // Commento: per ora non blocchiamo, ma segnaliamo
+
+    // Conta prenotazioni attive dell'utente
+    const activeBookingsCount = await db.appointment.count({
+      where: {
+        userId: bookingUserId,
+        status: 'CONFIRMED',
+        startTime: { gte: new Date() },
+      },
+    });
+
+    // Verifica limite prenotazioni (default 1 per whitelistati, illimitato per admin)
+    const maxBookings = isAdmin ? 999 : (bookingUser.maxActiveBookings || 1);
+    if (activeBookingsCount >= maxBookings) {
+      return NextResponse.json(
+        { success: false, error: `Hai già ${activeBookingsCount} prenotazione/i attiva/e. Puoi prenotare una nuova visita solo dopo aver completato quella esistente.` },
+        { status: 400 }
+      );
+    }
+
+    // Verifica possibilità di prenotare (slot libero, orario valido, ecc.)
     const duration = type === 'FIRST_VISIT' 
       ? VISIT_DURATION.FIRST_VISIT 
       : VISIT_DURATION.FOLLOW_UP;
@@ -92,16 +147,41 @@ export async function POST(request: NextRequest) {
       notes
     );
     
-    // TODO: Invia email di conferma al paziente e notifica al dottore
+    // Formatta data e ora per email
+    const appointmentDate = format(parseISO(startTime), 'EEEE d MMMM yyyy', { locale: it });
+    const appointmentTime = format(parseISO(startTime), 'HH:mm');
+    const appointmentType = type === 'FIRST_VISIT' ? 'Prima Visita (90 min)' : 'Visita di Controllo (60 min)';
+
+    // Invia email di conferma al paziente
+    await sendBookingConfirmationToPatient({
+      patientEmail: bookingUser.email,
+      patientName: bookingUser.name || 'Paziente',
+      appointmentDate,
+      appointmentTime,
+      appointmentType,
+    });
+
+    // Invia notifica al dottore
+    await sendBookingNotificationToDoctor({
+      patientName: bookingUser.name || 'Paziente',
+      patientEmail: bookingUser.email,
+      patientPhone: bookingUser.phone || undefined,
+      appointmentDate,
+      appointmentTime,
+      appointmentType,
+    });
     
     return NextResponse.json({
       success: true,
       data: appointment,
-      message: 'Appuntamento prenotato con successo!',
+      message: 'Appuntamento prenotato con successo! Ti abbiamo inviato un\'email di conferma.',
     });
     
   } catch (error) {
-    console.error('Errore creazione appuntamento:', error);
+    if (process.env.NODE_ENV === 'development') {
+      // eslint-disable-next-line no-console
+      console.error('Errore creazione appuntamento:', error);
+    }
     return NextResponse.json(
       { 
         success: false, 

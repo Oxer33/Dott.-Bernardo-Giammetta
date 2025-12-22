@@ -9,6 +9,7 @@ import { ServicesGrid } from '@/components/home/ServicesGrid';
 import { StatsCounter } from '@/components/home/StatsCounter';
 import { TestimonialsCarousel } from '@/components/home/TestimonialsCarousel';
 import { BlogPreview } from '@/components/home/BlogPreview';
+import { ContactSection } from '@/components/home/ContactSection';
 import { CTASection } from '@/components/home/CTASection';
 
 // =============================================================================
@@ -35,6 +36,9 @@ export default function HomePage() {
 
       {/* Blog Preview - Ultimi articoli */}
       <BlogPreview />
+
+      {/* Contact Section - Form ricontatto */}
+      <ContactSection />
 
       {/* CTA Section - Call to action finale */}
       <CTASection />

@@ -63,6 +63,13 @@ model User {
   accounts      Account[]
   sessions      Session[]
   
+  // Token verifica email (per registrazione con password)
+  verificationToken   String?   @unique
+  verificationExpires DateTime?
+  
+  // Numero massimo prenotazioni attive (default 1 per whitelistati)
+  maxActiveBookings   Int       @default(1)
+  
   // Timestamps
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
