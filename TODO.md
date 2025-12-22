@@ -28,6 +28,7 @@
 - [x] StatsCounter con numeri animati
 - [x] TestimonialsCarousel con Embla
 - [x] BlogPreview con cards moderne
+- [x] **ContactSection** con form ricontatto (22/12/2024)
 - [x] CTASection finale
 
 ### Sistema Autenticazione
@@ -36,6 +37,11 @@
 - [x] Prisma Adapter per sessioni
 - [x] Estensione tipi per ruoli e whitelist
 - [x] API route [...nextauth]
+- [x] **Credentials Provider** per login email/password (22/12/2024)
+- [x] **Pagina /registrati** con form completo
+- [x] **API /api/auth/register** con bcrypt (12 rounds)
+- [x] **Sistema verifica email** con token (24h scadenza)
+- [x] **API /api/auth/verify-email** per conferma account
 
 ### Database
 - [x] Schema Prisma completo
@@ -57,6 +63,9 @@
 - [x] API /api/agenda/appointments (CRUD)
 - [x] Componente AgendaCalendar
 - [x] Pagina /agenda
+- [x] **Verifica whitelist** per prenotazioni (22/12/2024)
+- [x] **Limite 1 prenotazione attiva** per paziente
+- [x] **Email conferma** a paziente e dottore
 
 ### Sistema Email
 - [x] Configurazione Resend
@@ -67,6 +76,10 @@
 - [x] Template followup 25 giorni
 - [x] Template urgente 60 giorni
 - [x] API cron per reminders automatici
+- [x] **Nodemailer per SMTP Aruba** (22/12/2024)
+- [x] **AWS SES service** alternativo
+- [x] **Email verifica account** per nuovi utenti
+- [x] **Email conferma prenotazione** a paziente e dottore
 
 ### Documentazione
 - [x] ARCHITETTURA.md
@@ -187,6 +200,7 @@
 - [x] Logica ruoli differenziati
 - [x] Auto-upgrade account master al login (ADMIN + whitelist)
 - [x] Menu mobile con link Area Personale e Appuntamenti
+- [x] **4 account master** (papa.danilo91tp, bernardogiammetta, dr.giammettabernardo, accomodationlapulena)
 - [x] Precaricamento risorse durante splash screen
 - [x] Favicon dinamica con bordi arrotondati (icon.tsx)
 - [x] API gestione pazienti completa (/api/admin/patients)
@@ -256,4 +270,4 @@
 
 ---
 
-*Ultimo aggiornamento: 20 Dicembre 2024*
+*Ultimo aggiornamento: 22 Dicembre 2024*
