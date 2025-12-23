@@ -106,6 +106,38 @@ export function middleware(request: NextRequest) {
   const requestId = crypto.randomUUID();
   response.headers.set('X-Request-ID', requestId);
   
+  // ==========================================================================
+  // SECURITY HEADERS
+  // Protezione contro attacchi comuni (XSS, Clickjacking, MIME sniffing)
+  // ==========================================================================
+  
+  // Previene clickjacking - la pagina non può essere embeddata in iframe esterni
+  response.headers.set('X-Frame-Options', 'SAMEORIGIN');
+  
+  // Previene MIME type sniffing
+  response.headers.set('X-Content-Type-Options', 'nosniff');
+  
+  // Abilita protezione XSS del browser
+  response.headers.set('X-XSS-Protection', '1; mode=block');
+  
+  // Referrer policy - non inviare referrer a siti esterni
+  response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
+  
+  // Permissions policy - disabilita features non necessarie
+  response.headers.set(
+    'Permissions-Policy',
+    'camera=(), microphone=(), geolocation=(), interest-cohort=()'
+  );
+  
+  // Content Security Policy (base - non troppo restrittivo per compatibilità)
+  // In produzione si può rendere più restrittivo
+  if (process.env.NODE_ENV === 'production') {
+    response.headers.set(
+      'Strict-Transport-Security',
+      'max-age=31536000; includeSubDomains; preload'
+    );
+  }
+  
   return response;
 }
 

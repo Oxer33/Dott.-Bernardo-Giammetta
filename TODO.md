@@ -233,6 +233,32 @@
 
 ---
 
+## ⚠️ LIMITI PRODUZIONE (DA CONFIGURARE)
+
+### AWS SES (Simple Email Service)
+- **Stato attuale**: Sandbox Mode (limite 200 email/giorno)
+- **Azione richiesta**: Richiedere uscita da Sandbox per produzione
+- **Come fare**:
+  1. Accedere a AWS Console > SES > Account Dashboard
+  2. Cliccare "Request production access"
+  3. Compilare form con use case (transactional emails)
+  4. Attendere approvazione (24-48h)
+- **Limite produzione**: 50.000 email/giorno (dopo approvazione)
+- **Costo**: ~$0.10 per 1000 email
+
+### Rate Limiting API
+- `/api/contact`: 5 richieste/minuto per IP
+- `/api/auth/register`: 3 richieste/minuto per IP
+- `/api/agenda/appointments`: 10 richieste/minuto per utente
+- **Nota**: Aumentare in base al traffico reale
+
+### Database RDS
+- **Istanza**: db.t3.medium (2 vCPU, 4GB RAM)
+- **Connessioni max**: 100 simultanee
+- **Azione**: Monitorare e scalare se necessario
+
+---
+
 ## 💡 IDEE FUTURE
 
 - [ ] Sistema recensioni integrato
@@ -270,4 +296,4 @@
 
 ---
 
-*Ultimo aggiornamento: 22 Dicembre 2024*
+*Ultimo aggiornamento: 23 Dicembre 2024*
