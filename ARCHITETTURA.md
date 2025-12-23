@@ -64,9 +64,24 @@ src/
 │   │   └── Footer.tsx
 │   ├── agenda/            # Componenti agenda
 │   │   └── AgendaCalendar.tsx
-│   ├── ui/                # Componenti UI riutilizzabili
-│   │   ├── Button.tsx
-│   │   └── Toaster.tsx
+│   ├── ui/                # Componenti UI riutilizzabili (20+)
+│   │   ├── index.ts           # Export centralizzato
+│   │   ├── Button.tsx         # Pulsanti con varianti
+│   │   ├── FormInput.tsx      # Input, Textarea, Checkbox
+│   │   ├── Select.tsx         # Select, RadioGroup
+│   │   ├── SearchInput.tsx    # Ricerca con debounce
+│   │   ├── Modal.tsx          # Modal, Drawer
+│   │   ├── Tabs.tsx           # Tabs con varianti
+│   │   ├── Tooltip.tsx        # Tooltip, Badge, StatusDot
+│   │   ├── Card.tsx           # Card, StatCard, ProfileCard
+│   │   ├── Accordion.tsx      # Accordion, FAQ
+│   │   ├── Pagination.tsx     # Paginazione con hook
+│   │   ├── LoadingSpinner.tsx # Spinner, Skeleton
+│   │   ├── ErrorMessage.tsx   # Errori, EmptyState
+│   │   ├── Toast.tsx          # Notifiche toast
+│   │   ├── ConfirmDialog.tsx  # Dialog conferma
+│   │   ├── OptimizedImage.tsx # Immagini ottimizzate
+│   │   └── Toaster.tsx        # Toast container
 │   └── providers/         # Context providers
 │       └── Providers.tsx
 │
@@ -76,7 +91,18 @@ src/
 │   ├── auth.ts            # NextAuth configurazione
 │   ├── agenda.ts          # Logica gestione agenda
 │   ├── email.ts           # Sistema email con template
+│   ├── nodemailer.ts      # SMTP Aruba per email
+│   ├── aws-ses.ts         # AWS SES alternativo
+│   ├── api-utils.ts       # Retry, rate limit, error handling
+│   ├── validations.ts     # Schemi Zod centralizzati
+│   ├── constants.ts       # Routes, roles, limiti, messaggi
+│   ├── config.ts          # Configurazione app e master accounts
 │   └── nutribot.ts        # NutriBot AI (OpenRouter + DeepSeek)
+│
+├── hooks/                 # Custom React Hooks
+│   ├── index.ts           # Export centralizzato
+│   ├── useApi.ts          # Fetch con cache e retry
+│   └── useDebounce.ts     # Debounce, throttle, localStorage, mediaQuery
 │
 scripts/
 └── setup-database.js      # Script auto-setup DB per build Amplify
@@ -271,4 +297,66 @@ npx prisma db push
 
 ---
 
-*Ultimo aggiornamento: 20 Dicembre 2024*
+---
+
+## 🧩 Componenti UI (Aggiornato 23/12/2024)
+
+### Form Components
+| Componente | Descrizione |
+|------------|-------------|
+| `FormInput` | Input con validazione, password toggle, icone |
+| `FormTextarea` | Textarea con contatore caratteri |
+| `FormCheckbox` | Checkbox con label e descrizione |
+| `Select` | Dropdown con placeholder e validazione |
+| `RadioGroup` | Gruppo radio con opzioni |
+| `SearchInput` | Input ricerca con debounce e suggestions |
+
+### Feedback Components
+| Componente | Descrizione |
+|------------|-------------|
+| `LoadingSpinner` | Varianti: default, leaf, dots, pulse |
+| `Skeleton` | Skeleton loaders per card, table, page |
+| `ErrorMessage` | Errori con varianti e retry |
+| `Toast` | Sistema notifiche con provider |
+| `ConfirmDialog` | Dialog conferma azioni distruttive |
+
+### Layout Components
+| Componente | Descrizione |
+|------------|-------------|
+| `Card` | Varianti: default, outlined, elevated, glass |
+| `StatCard` | Card per statistiche con trend |
+| `ProfileCard` | Card profilo con avatar |
+| `Modal` | Modale con varianti dimensione |
+| `Drawer` | Modale laterale (left/right) |
+| `Tabs` | Varianti: default, pills, underline |
+| `Accordion` | Collapsible con animazioni |
+
+### Data Display
+| Componente | Descrizione |
+|------------|-------------|
+| `Pagination` | Paginazione con hook usePagination |
+| `Tooltip` | Tooltip con posizioni e delay |
+| `Badge` | Etichette colorate |
+| `StatusDot` | Indicatore stato online/offline |
+| `OptimizedImage` | Immagini con blur placeholder |
+
+---
+
+## 🪝 Custom Hooks
+
+| Hook | Descrizione |
+|------|-------------|
+| `useApi` | Fetch con cache, retry e gestione errori |
+| `useMutation` | Mutation con invalidazione cache |
+| `useDebounce` | Debounce valori |
+| `useDebounceCallback` | Debounce funzioni |
+| `useThrottle` | Throttle funzioni |
+| `useLocalStorage` | Persistenza stato in localStorage |
+| `useMediaQuery` | Responsive design (isMobile, isTablet, isDesktop) |
+| `useClickOutside` | Detect click fuori elemento |
+| `useIntersectionObserver` | Lazy loading e animazioni scroll |
+| `usePagination` | Gestione paginazione |
+
+---
+
+*Ultimo aggiornamento: 23 Dicembre 2024 - 02:45*
