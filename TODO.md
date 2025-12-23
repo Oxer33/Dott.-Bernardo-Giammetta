@@ -124,8 +124,28 @@
 - [x] Prompt sistema: MAI consigli nutrizionali
 - [x] Risposta standard per domande su alimentazione
 
-### UI/UX Miglioramenti ✅ NUOVO
+### UI/UX Miglioramenti ✅ AGGIORNATO 23/12/2024
 - [x] Splash screen durata 3.5s (era 2.5s)
+- [x] **LoadingSpinner** con varianti (default, leaf, dots, pulse)
+- [x] **Skeleton loaders** per card, table, page
+- [x] **ErrorMessage** e **ApiError** components
+- [x] **Toast notification system** con provider
+- [x] **ConfirmDialog** per azioni distruttive
+- [x] **FormInput** con validazione, password toggle, icone
+- [x] **FormTextarea** con contatore caratteri
+- [x] **FormCheckbox** con label e descrizione
+- [x] **Select/Dropdown** con placeholder e validazione
+- [x] **RadioGroup** con opzioni
+- [x] **Modal** con varianti dimensione + Drawer laterale
+- [x] **Tabs** con varianti (default, pills, underline)
+- [x] **Tooltip** con posizioni e delay + InfoTooltip
+- [x] **Badge** etichette colorate + StatusDot
+- [x] **Card** con varianti (default, outlined, elevated, glass)
+- [x] **StatCard**, **FeatureCard**, **ProfileCard**
+- [x] **Accordion** collapsible + FAQAccordion
+- [x] **Pagination** con varianti + usePagination hook
+- [x] **SearchInput** con debounce + suggestions
+- [x] **OptimizedImage** con blur placeholder e lazy loading
 
 ---
 
@@ -212,6 +232,20 @@
 - [ ] E2E tests con Playwright
 - [ ] Test responsività mobile
 
+### Utilities e Hooks ✅ NUOVO 23/12/2024
+- [x] **api-utils.ts**: retry logic, rate limiting, error handling
+- [x] **validations.ts**: schemi Zod centralizzati
+- [x] **constants.ts**: routes, roles, limiti, messaggi
+- [x] **useApi hook**: fetch con cache e retry
+- [x] **useDebounce hook**: debounce valori e callback
+- [x] **useThrottle hook**: throttle funzioni
+- [x] **useLocalStorage hook**: persistenza stato
+- [x] **useMediaQuery hook**: responsive design
+- [x] **useClickOutside hook**: detect click fuori elemento
+- [x] **useIntersectionObserver hook**: lazy loading
+- [x] **usePagination hook**: gestione paginazione
+- [x] **Middleware sicurezza**: security headers (XSS, clickjacking, HSTS)
+
 ### Deploy ✅
 - [x] Setup Vercel (vercel.json)
 - [x] CI/CD con GitHub Actions (.github/workflows/ci.yml)
@@ -296,4 +330,4 @@
 
 ---
 
-*Ultimo aggiornamento: 23 Dicembre 2024*
+*Ultimo aggiornamento: 23 Dicembre 2024 - 02:30*
