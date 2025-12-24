@@ -276,19 +276,32 @@ export function AgendaCalendar() {
               ))}
               
               {/* Time Slots o Feste */}
-              {availability[0]?.slots.length > 0 ? (
-                // Mostra slot normali
-                availability[0]?.slots.map((_, slotIndex) => (
+              {(() => {
+                // FIX BUG PASQUA: Trova il primo giorno con slots (non festivo) per riferimento
+                const referenceDay = availability.find(day => !day.isHoliday && day.slots.length > 0);
+                const maxSlots = referenceDay?.slots.length || 23; // 23 slot default (08:30-20:00)
+                
+                // Se tutti i giorni sono feste, mostra messaggio
+                if (!referenceDay) {
+                  return (
+                    <div className="col-span-7 py-10 text-center text-sage-500">
+                      Nessuno slot disponibile in questa settimana (festività)
+                    </div>
+                  );
+                }
+                
+                // Genera griglia con tutti gli slot
+                return referenceDay.slots.map((refSlot, slotIndex) => (
                   availability.map((day) => {
-                    // Se è festa, mostra cella vuota (già gestito sopra)
+                    // Se è festa, mostra banner solo al primo slot
                     if (day.isHoliday) {
                       return slotIndex === 0 ? (
                         <div
                           key={`${day.dateString}-holiday`}
-                          className="col-span-1 row-span-full p-4 bg-red-50 rounded-xl text-center border border-red-100"
-                          style={{ gridRow: `span ${availability[0]?.slots.length || 1}` }}
+                          className="p-2 bg-red-50 rounded-xl text-center border border-red-100 flex items-center justify-center"
+                          style={{ gridRow: `span ${maxSlots}` }}
                         >
-                          <p className="text-red-600 font-medium text-sm">
+                          <p className="text-red-600 font-medium text-xs writing-mode-vertical">
                             {day.holidayName || 'Chiuso'}
                           </p>
                         </div>
@@ -296,7 +309,7 @@ export function AgendaCalendar() {
                     }
                     
                     const slot = day.slots[slotIndex];
-                    if (!slot) return null;
+                    if (!slot) return <div key={`${day.dateString}-empty-${slotIndex}`} />;
                     
                     return (
                       <button
@@ -314,13 +327,8 @@ export function AgendaCalendar() {
                       </button>
                     );
                   })
-                ))
-              ) : (
-                // Mostra messaggio se tutti i giorni sono feste
-                <div className="col-span-7 py-10 text-center text-sage-500">
-                  Nessuno slot disponibile in questa settimana
-                </div>
-              )}
+                ));
+              })()}
             </div>
           </div>
         )}
