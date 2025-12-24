@@ -19,6 +19,7 @@ import {
   differenceInHours
 } from 'date-fns';
 import { it } from 'date-fns/locale';
+import { isItalianHoliday, HolidayInfo } from '@/lib/italian-holidays';
 
 // =============================================================================
 // COSTANTI
@@ -64,6 +65,8 @@ export interface DayAvailability {
   dateString: string;    // "YYYY-MM-DD"
   dayName: string;       // "Lunedì", "Martedì", etc.
   slots: TimeSlot[];
+  isHoliday: boolean;    // Se è festa/domenica
+  holidayName?: string;  // Nome della festa
 }
 
 // =============================================================================
@@ -109,6 +112,21 @@ export async function getDayAvailability(
 ): Promise<DayAvailability> {
   const dateString = format(date, 'yyyy-MM-dd');
   const dayOfWeek = getDay(date); // 0 = Dom, 1 = Lun, ...
+  
+  // Verifica se è una festa italiana o domenica
+  const holidayInfo: HolidayInfo = isItalianHoliday(date);
+  
+  // Se è festa, ritorna giorno vuoto (non prenotabile)
+  if (holidayInfo.isHoliday) {
+    return {
+      date,
+      dateString,
+      dayName: format(date, 'EEEE', { locale: it }),
+      slots: [], // Nessuno slot disponibile
+      isHoliday: true,
+      holidayName: holidayInfo.name,
+    };
+  }
   
   // Genera slot base
   const slots = generateBaseTimeSlots(date);
@@ -213,6 +231,7 @@ export async function getDayAvailability(
     dateString,
     dayName: format(date, 'EEEE', { locale: it }),
     slots,
+    isHoliday: false,
   };
 }
 
@@ -226,7 +245,7 @@ export async function canUserBook(
   startTime: Date,
   duration: number,
   userEmail?: string
-): Promise<{ canBook: boolean; reason?: string }> {
+): Promise<{ canBook: boolean; reason?: string; gapWarning?: string }> {
   // 1. Verifica che l'utente sia in whitelist
   const user = await db.user.findUnique({
     where: { id: userId },
@@ -299,20 +318,19 @@ export async function canUserBook(
     };
   }
   
-  // 5. LOGICA ANTI-BUCHI: evita buchi di 30 min nell'agenda - Master esente
-  // Se c'è un appuntamento che finisce prima, l'utente deve prenotare subito dopo
-  // Se c'è un appuntamento che inizia dopo, l'utente deve prenotare subito prima
+  // 5. LOGICA ANTI-BUCHI: avviso gentile (non vincolo) - Master esente
+  // Verifica se la prenotazione crea buchi di 30 minuti
+  // Restituisce un warning ma permette comunque la prenotazione
+  let gapWarning: string | undefined;
   if (!isMaster) {
     const antiGapCheck = await checkNoGapPolicy(startTime, duration, dayAvailability);
     if (!antiGapCheck.allowed) {
-      return {
-        canBook: false,
-        reason: antiGapCheck.reason || 'Orario non disponibile per evitare buchi nell\'agenda'
-      };
+      // Solo un avviso, non blocchiamo più la prenotazione
+      gapWarning = antiGapCheck.reason;
     }
   }
   
-  return { canBook: true };
+  return { canBook: true, gapWarning };
 }
 
 // =============================================================================

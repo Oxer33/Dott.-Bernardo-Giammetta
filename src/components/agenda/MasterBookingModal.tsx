@@ -1,0 +1,561 @@
+// =============================================================================
+// MASTER BOOKING MODAL - DOTT. BERNARDO GIAMMETTA
+// Finestra speciale per account master/medico
+// Funzionalità: prenotazione per pazienti, blocchi orari, durata variabile
+// =============================================================================
+
+'use client';
+
+import { useState, useEffect, useCallback } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import {
+  X,
+  Search,
+  User,
+  Clock,
+  Calendar,
+  CalendarOff,
+  Repeat,
+  CheckCircle,
+  AlertCircle,
+  Loader2,
+  Users,
+} from 'lucide-react';
+import { format } from 'date-fns';
+import { it } from 'date-fns/locale';
+import { Button } from '@/components/ui/Button';
+import { cn } from '@/lib/utils';
+
+// =============================================================================
+// TYPES
+// =============================================================================
+
+interface Patient {
+  id: string;
+  name: string | null;
+  email: string;
+  phone: string | null;
+}
+
+interface MasterBookingModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  selectedDate: string; // YYYY-MM-DD
+  selectedTime: string; // HH:MM
+  onSuccess: () => void;
+}
+
+type ActionType = 'appointment' | 'block_occasional' | 'block_recurring';
+
+// =============================================================================
+// COSTANTI
+// =============================================================================
+
+const DURATIONS = [
+  { value: 60, label: '60 minuti', description: 'Visita di controllo' },
+  { value: 90, label: '90 minuti', description: 'Prima visita' },
+  { value: 120, label: '120 minuti', description: 'Visita approfondita' },
+];
+
+// Genera tutte le fasce orarie dalle 08:30 alle 20:00
+const generateTimeSlots = (): string[] => {
+  const slots: string[] = [];
+  for (let hour = 8; hour < 20; hour++) {
+    for (let minute = 0; minute < 60; minute += 30) {
+      if (hour === 8 && minute === 0) continue; // Skip 08:00
+      slots.push(`${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`);
+    }
+  }
+  return slots;
+};
+
+const TIME_SLOTS = generateTimeSlots();
+
+const DAYS_OF_WEEK = [
+  { value: 1, label: 'Lunedì' },
+  { value: 2, label: 'Martedì' },
+  { value: 3, label: 'Mercoledì' },
+  { value: 4, label: 'Giovedì' },
+  { value: 5, label: 'Venerdì' },
+  { value: 6, label: 'Sabato' },
+];
+
+// =============================================================================
+// COMPONENTE
+// =============================================================================
+
+export function MasterBookingModal({
+  isOpen,
+  onClose,
+  selectedDate,
+  selectedTime,
+  onSuccess,
+}: MasterBookingModalProps) {
+  // Stati
+  const [actionType, setActionType] = useState<ActionType>('appointment');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [patients, setPatients] = useState<Patient[]>([]);
+  const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
+  const [searchLoading, setSearchLoading] = useState(false);
+  const [duration, setDuration] = useState(60);
+  const [startTime, setStartTime] = useState(selectedTime);
+  const [endTime, setEndTime] = useState('');
+  const [blockNote, setBlockNote] = useState('');
+  const [recurringDay, setRecurringDay] = useState<number>(1);
+  const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  // Reset quando si apre il modal
+  useEffect(() => {
+    if (isOpen) {
+      setActionType('appointment');
+      setSearchQuery('');
+      setPatients([]);
+      setSelectedPatient(null);
+      setDuration(60);
+      setStartTime(selectedTime);
+      setEndTime(calculateEndTime(selectedTime, 60));
+      setBlockNote('');
+      setSuccess(false);
+      setError(null);
+      
+      // Imposta il giorno della settimana corrente per blocchi ricorrenti
+      const dayOfWeek = new Date(selectedDate).getDay();
+      setRecurringDay(dayOfWeek === 0 ? 1 : dayOfWeek);
+    }
+  }, [isOpen, selectedTime, selectedDate]);
+
+  // Calcola orario fine quando cambia inizio o durata
+  useEffect(() => {
+    if (actionType === 'appointment') {
+      setEndTime(calculateEndTime(startTime, duration));
+    }
+  }, [startTime, duration, actionType]);
+
+  // Calcola orario fine
+  const calculateEndTime = (start: string, durationMin: number): string => {
+    const [hours, minutes] = start.split(':').map(Number);
+    const totalMinutes = hours * 60 + minutes + durationMin;
+    const endHours = Math.floor(totalMinutes / 60);
+    const endMinutes = totalMinutes % 60;
+    return `${endHours.toString().padStart(2, '0')}:${endMinutes.toString().padStart(2, '0')}`;
+  };
+
+  // Cerca pazienti
+  const searchPatients = useCallback(async (query: string) => {
+    if (query.length < 2) {
+      setPatients([]);
+      return;
+    }
+
+    setSearchLoading(true);
+    try {
+      const response = await fetch(`/api/admin/patients?search=${encodeURIComponent(query)}`);
+      const data = await response.json();
+      
+      if (data.success) {
+        setPatients(data.data || []);
+      }
+    } catch (err) {
+      console.error('Errore ricerca pazienti:', err);
+    } finally {
+      setSearchLoading(false);
+    }
+  }, []);
+
+  // Debounce ricerca
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (searchQuery) {
+        searchPatients(searchQuery);
+      }
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [searchQuery, searchPatients]);
+
+  // Conferma azione
+  const handleConfirm = async () => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      if (actionType === 'appointment') {
+        // Prenotazione per paziente
+        if (!selectedPatient) {
+          setError('Seleziona un paziente');
+          setLoading(false);
+          return;
+        }
+
+        const startTimeISO = `${selectedDate}T${startTime}:00.000Z`;
+        
+        const response = await fetch('/api/agenda/appointments', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            startTime: startTimeISO,
+            type: duration === 90 ? 'FIRST_VISIT' : 'FOLLOW_UP',
+            userId: selectedPatient.id,
+          }),
+        });
+
+        const data = await response.json();
+        
+        if (!data.success) {
+          throw new Error(data.error || 'Errore nella prenotazione');
+        }
+      } else if (actionType === 'block_occasional') {
+        // Blocco occasionale
+        const response = await fetch('/api/agenda/blocks', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            type: 'OCCASIONAL',
+            specificDate: selectedDate,
+            startTime,
+            endTime,
+            note: blockNote || undefined,
+          }),
+        });
+
+        const data = await response.json();
+        
+        if (!data.success) {
+          throw new Error(data.error || 'Errore nella creazione del blocco');
+        }
+      } else if (actionType === 'block_recurring') {
+        // Blocco ricorrente
+        const response = await fetch('/api/agenda/blocks', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            type: 'RECURRING',
+            dayOfWeek: recurringDay,
+            startTime,
+            endTime,
+            note: blockNote || undefined,
+          }),
+        });
+
+        const data = await response.json();
+        
+        if (!data.success) {
+          throw new Error(data.error || 'Errore nella creazione del blocco');
+        }
+      }
+
+      setSuccess(true);
+      setTimeout(() => {
+        onSuccess();
+        onClose();
+      }, 1500);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Errore sconosciuto');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <AnimatePresence>
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-sage-900/30 backdrop-blur-sm"
+        onClick={onClose}
+      >
+        <motion.div
+          initial={{ scale: 0.95, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          exit={{ scale: 0.95, opacity: 0 }}
+          className="bg-white rounded-3xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto"
+          onClick={(e) => e.stopPropagation()}
+        >
+          {success ? (
+            // Successo
+            <div className="p-8 text-center">
+              <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-green-100 flex items-center justify-center">
+                <CheckCircle className="w-8 h-8 text-green-600" />
+              </div>
+              <h3 className="text-xl font-display font-semibold text-sage-900 mb-2">
+                {actionType === 'appointment' ? 'Appuntamento Creato!' : 'Blocco Creato!'}
+              </h3>
+              <p className="text-sage-600">
+                L'operazione è stata completata con successo.
+              </p>
+            </div>
+          ) : (
+            <>
+              {/* Header */}
+              <div className="p-6 border-b border-sage-100">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-xl font-display font-semibold text-sage-900">
+                    Gestione Agenda
+                  </h3>
+                  <button
+                    onClick={onClose}
+                    className="p-2 hover:bg-sage-100 rounded-lg transition-colors"
+                  >
+                    <X className="w-5 h-5 text-sage-600" />
+                  </button>
+                </div>
+                <p className="text-sage-600 text-sm mt-1">
+                  {format(new Date(selectedDate), "EEEE d MMMM yyyy", { locale: it })} - ore {selectedTime}
+                </p>
+              </div>
+
+              {/* Selezione tipo azione */}
+              <div className="p-6 border-b border-sage-100">
+                <label className="block text-sm font-medium text-sage-700 mb-3">
+                  Cosa vuoi fare?
+                </label>
+                <div className="grid grid-cols-3 gap-2">
+                  <button
+                    onClick={() => setActionType('appointment')}
+                    className={cn(
+                      'p-3 rounded-xl border-2 transition-all text-center',
+                      actionType === 'appointment'
+                        ? 'border-sage-500 bg-sage-50'
+                        : 'border-sage-200 hover:border-sage-300'
+                    )}
+                  >
+                    <Users className="w-5 h-5 mx-auto mb-1 text-sage-600" />
+                    <span className="text-xs font-medium text-sage-700">Appuntamento</span>
+                  </button>
+                  <button
+                    onClick={() => setActionType('block_occasional')}
+                    className={cn(
+                      'p-3 rounded-xl border-2 transition-all text-center',
+                      actionType === 'block_occasional'
+                        ? 'border-amber-500 bg-amber-50'
+                        : 'border-sage-200 hover:border-sage-300'
+                    )}
+                  >
+                    <CalendarOff className="w-5 h-5 mx-auto mb-1 text-amber-600" />
+                    <span className="text-xs font-medium text-sage-700">Blocco</span>
+                  </button>
+                  <button
+                    onClick={() => setActionType('block_recurring')}
+                    className={cn(
+                      'p-3 rounded-xl border-2 transition-all text-center',
+                      actionType === 'block_recurring'
+                        ? 'border-purple-500 bg-purple-50'
+                        : 'border-sage-200 hover:border-sage-300'
+                    )}
+                  >
+                    <Repeat className="w-5 h-5 mx-auto mb-1 text-purple-600" />
+                    <span className="text-xs font-medium text-sage-700">Ricorrente</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Content in base al tipo */}
+              <div className="p-6 space-y-4">
+                {actionType === 'appointment' && (
+                  <>
+                    {/* Ricerca paziente */}
+                    <div>
+                      <label className="block text-sm font-medium text-sage-700 mb-2">
+                        Cerca Paziente
+                      </label>
+                      <div className="relative">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-sage-400" />
+                        <input
+                          type="text"
+                          value={searchQuery}
+                          onChange={(e) => setSearchQuery(e.target.value)}
+                          placeholder="Nome, email o telefono..."
+                          className="w-full pl-10 pr-4 py-3 border border-sage-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-sage-400"
+                        />
+                        {searchLoading && (
+                          <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-sage-400 animate-spin" />
+                        )}
+                      </div>
+
+                      {/* Lista pazienti trovati */}
+                      {patients.length > 0 && !selectedPatient && (
+                        <div className="mt-2 border border-sage-200 rounded-xl max-h-40 overflow-y-auto">
+                          {patients.map((patient) => (
+                            <button
+                              key={patient.id}
+                              onClick={() => {
+                                setSelectedPatient(patient);
+                                setSearchQuery('');
+                                setPatients([]);
+                              }}
+                              className="w-full p-3 text-left hover:bg-sage-50 border-b border-sage-100 last:border-b-0"
+                            >
+                              <p className="font-medium text-sage-900">{patient.name || 'Senza nome'}</p>
+                              <p className="text-sm text-sage-600">{patient.email}</p>
+                            </button>
+                          ))}
+                        </div>
+                      )}
+
+                      {/* Paziente selezionato */}
+                      {selectedPatient && (
+                        <div className="mt-2 p-3 bg-sage-50 rounded-xl flex items-center justify-between">
+                          <div className="flex items-center gap-3">
+                            <User className="w-5 h-5 text-sage-600" />
+                            <div>
+                              <p className="font-medium text-sage-900">{selectedPatient.name || 'Senza nome'}</p>
+                              <p className="text-sm text-sage-600">{selectedPatient.email}</p>
+                            </div>
+                          </div>
+                          <button
+                            onClick={() => setSelectedPatient(null)}
+                            className="p-1 hover:bg-sage-200 rounded-lg"
+                          >
+                            <X className="w-4 h-4 text-sage-600" />
+                          </button>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Durata */}
+                    <div>
+                      <label className="block text-sm font-medium text-sage-700 mb-2">
+                        Durata Visita
+                      </label>
+                      <div className="grid grid-cols-3 gap-2">
+                        {DURATIONS.map((d) => (
+                          <button
+                            key={d.value}
+                            onClick={() => setDuration(d.value)}
+                            className={cn(
+                              'p-3 rounded-xl border-2 transition-all text-center',
+                              duration === d.value
+                                ? 'border-sage-500 bg-sage-50'
+                                : 'border-sage-200 hover:border-sage-300'
+                            )}
+                          >
+                            <p className="font-semibold text-sage-900">{d.value} min</p>
+                            <p className="text-xs text-sage-600">{d.description}</p>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </>
+                )}
+
+                {/* Orario inizio/fine */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-sage-700 mb-2">
+                      <Clock className="w-4 h-4 inline mr-1" />
+                      Ora Inizio
+                    </label>
+                    <select
+                      value={startTime}
+                      onChange={(e) => setStartTime(e.target.value)}
+                      className="w-full p-3 border border-sage-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-sage-400"
+                    >
+                      {TIME_SLOTS.map((time) => (
+                        <option key={time} value={time}>{time}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-sage-700 mb-2">
+                      <Clock className="w-4 h-4 inline mr-1" />
+                      Ora Fine
+                    </label>
+                    {actionType === 'appointment' ? (
+                      <div className="p-3 bg-sage-50 border border-sage-200 rounded-xl text-sage-700">
+                        {endTime} (automatico)
+                      </div>
+                    ) : (
+                      <select
+                        value={endTime}
+                        onChange={(e) => setEndTime(e.target.value)}
+                        className="w-full p-3 border border-sage-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-sage-400"
+                      >
+                        {TIME_SLOTS.filter(t => t > startTime).map((time) => (
+                          <option key={time} value={time}>{time}</option>
+                        ))}
+                      </select>
+                    )}
+                  </div>
+                </div>
+
+                {/* Giorno settimana per ricorrenti */}
+                {actionType === 'block_recurring' && (
+                  <div>
+                    <label className="block text-sm font-medium text-sage-700 mb-2">
+                      <Repeat className="w-4 h-4 inline mr-1" />
+                      Ripeti ogni
+                    </label>
+                    <select
+                      value={recurringDay}
+                      onChange={(e) => setRecurringDay(Number(e.target.value))}
+                      className="w-full p-3 border border-sage-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-sage-400"
+                    >
+                      {DAYS_OF_WEEK.map((day) => (
+                        <option key={day.value} value={day.value}>{day.label}</option>
+                      ))}
+                    </select>
+                    <p className="text-xs text-amber-600 mt-1">
+                      ⚠️ Questo blocco si ripeterà ogni settimana nello stesso orario
+                    </p>
+                  </div>
+                )}
+
+                {/* Nota per blocchi */}
+                {(actionType === 'block_occasional' || actionType === 'block_recurring') && (
+                  <div>
+                    <label className="block text-sm font-medium text-sage-700 mb-2">
+                      Nota (opzionale)
+                    </label>
+                    <input
+                      type="text"
+                      value={blockNote}
+                      onChange={(e) => setBlockNote(e.target.value)}
+                      placeholder="Es: Convegno, Vacanza, Altro impegno..."
+                      className="w-full p-3 border border-sage-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-sage-400"
+                    />
+                  </div>
+                )}
+
+                {/* Errore */}
+                {error && (
+                  <div className="p-4 bg-red-50 border border-red-200 rounded-xl text-red-700 text-sm flex items-start gap-2">
+                    <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5" />
+                    <span>{error}</span>
+                  </div>
+                )}
+              </div>
+
+              {/* Footer */}
+              <div className="p-6 border-t border-sage-100 flex gap-3">
+                <Button
+                  variant="secondary"
+                  onClick={onClose}
+                  className="flex-1"
+                  disabled={loading}
+                >
+                  Annulla
+                </Button>
+                <Button
+                  variant="primary"
+                  onClick={handleConfirm}
+                  className="flex-1"
+                  isLoading={loading}
+                  loadingText="Salvataggio..."
+                >
+                  {actionType === 'appointment' ? 'Prenota' : 'Crea Blocco'}
+                </Button>
+              </div>
+            </>
+          )}
+        </motion.div>
+      </motion.div>
+    </AnimatePresence>
+  );
+}
+
+export default MasterBookingModal;

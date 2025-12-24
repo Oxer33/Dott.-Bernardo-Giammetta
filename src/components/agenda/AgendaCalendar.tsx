@@ -23,6 +23,8 @@ import { format, addDays, startOfWeek, isSameDay } from 'date-fns';
 import { it } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/Button';
+import { MasterBookingModal } from './MasterBookingModal';
+import { isMasterAccount } from '@/lib/config';
 
 // =============================================================================
 // TYPES
@@ -41,6 +43,8 @@ interface DayAvailability {
   dateString: string;
   dayName: string;
   slots: TimeSlot[];
+  isHoliday?: boolean;
+  holidayName?: string;
 }
 
 // =============================================================================
@@ -57,6 +61,11 @@ export function AgendaCalendar() {
   const [bookingLoading, setBookingLoading] = useState(false);
   const [bookingSuccess, setBookingSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [masterModal, setMasterModal] = useState(false);
+  
+  // Verifica se l'utente è master/admin
+  const isMaster = session?.user?.role === 'ADMIN' || 
+    (session?.user?.email && isMasterAccount(session.user.email));
 
   // Fetch disponibilità
   const fetchAvailability = useCallback(async () => {
@@ -98,6 +107,14 @@ export function AgendaCalendar() {
 
   // Gestione selezione slot
   const handleSlotClick = (date: string, time: string, isAvailable: boolean) => {
+    // Per utenti master, apri sempre il modal speciale (anche su slot occupati per vedere/gestire)
+    if (isMaster) {
+      setSelectedSlot({ date, time });
+      setMasterModal(true);
+      return;
+    }
+    
+    // Per utenti normali
     if (!isAvailable) return;
     
     if (!session) {
@@ -123,13 +140,16 @@ export function AgendaCalendar() {
     setError(null);
     
     try {
-      const startTime = new Date(`${selectedSlot.date}T${selectedSlot.time}:00`);
+      // FIX BUG TIMEZONE: Passiamo data e ora come stringa ISO senza conversione timezone
+      // Formato: YYYY-MM-DDTHH:MM:00.000Z ma con l'ora locale desiderata
+      // Il server interpreterà questa come l'ora esatta che l'utente ha selezionato
+      const startTimeISO = `${selectedSlot.date}T${selectedSlot.time}:00.000Z`;
       
       const response = await fetch('/api/agenda/appointments', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          startTime: startTime.toISOString(),
+          startTime: startTimeISO,
           type: 'FOLLOW_UP', // Default per pazienti in whitelist
         }),
       });
@@ -255,28 +275,52 @@ export function AgendaCalendar() {
                 </div>
               ))}
               
-              {/* Time Slots */}
-              {availability[0]?.slots.map((_, slotIndex) => (
-                availability.map((day) => {
-                  const slot = day.slots[slotIndex];
-                  if (!slot) return null;
-                  
-                  return (
-                    <button
-                      key={`${day.dateString}-${slot.time}`}
-                      onClick={() => handleSlotClick(day.dateString, slot.time, slot.isAvailable)}
-                      disabled={!slot.isAvailable}
-                      className={cn(
-                        'p-2 text-xs rounded-lg border transition-all duration-200',
-                        'focus:outline-none focus:ring-2 focus:ring-sage-400 focus:ring-offset-1',
-                        getSlotColor(slot)
-                      )}
-                    >
-                      {slot.time}
-                    </button>
-                  );
-                })
-              ))}
+              {/* Time Slots o Feste */}
+              {availability[0]?.slots.length > 0 ? (
+                // Mostra slot normali
+                availability[0]?.slots.map((_, slotIndex) => (
+                  availability.map((day) => {
+                    // Se è festa, mostra cella vuota (già gestito sopra)
+                    if (day.isHoliday) {
+                      return slotIndex === 0 ? (
+                        <div
+                          key={`${day.dateString}-holiday`}
+                          className="col-span-1 row-span-full p-4 bg-red-50 rounded-xl text-center border border-red-100"
+                          style={{ gridRow: `span ${availability[0]?.slots.length || 1}` }}
+                        >
+                          <p className="text-red-600 font-medium text-sm">
+                            {day.holidayName || 'Chiuso'}
+                          </p>
+                        </div>
+                      ) : null;
+                    }
+                    
+                    const slot = day.slots[slotIndex];
+                    if (!slot) return null;
+                    
+                    return (
+                      <button
+                        key={`${day.dateString}-${slot.time}`}
+                        onClick={() => handleSlotClick(day.dateString, slot.time, slot.isAvailable)}
+                        disabled={!slot.isAvailable && !isMaster}
+                        className={cn(
+                          'p-2 text-xs rounded-lg border transition-all duration-200',
+                          'focus:outline-none focus:ring-2 focus:ring-sage-400 focus:ring-offset-1',
+                          isMaster ? 'cursor-pointer hover:opacity-80' : '',
+                          getSlotColor(slot)
+                        )}
+                      >
+                        {slot.time}
+                      </button>
+                    );
+                  })
+                ))
+              ) : (
+                // Mostra messaggio se tutti i giorni sono feste
+                <div className="col-span-7 py-10 text-center text-sage-500">
+                  Nessuno slot disponibile in questa settimana
+                </div>
+              )}
             </div>
           </div>
         )}
@@ -412,6 +456,24 @@ export function AgendaCalendar() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Master Booking Modal - per account medico */}
+      {selectedSlot && (
+        <MasterBookingModal
+          isOpen={masterModal}
+          onClose={() => {
+            setMasterModal(false);
+            setSelectedSlot(null);
+          }}
+          selectedDate={selectedSlot.date}
+          selectedTime={selectedSlot.time}
+          onSuccess={() => {
+            fetchAvailability();
+            setMasterModal(false);
+            setSelectedSlot(null);
+          }}
+        />
+      )}
     </div>
   );
 }

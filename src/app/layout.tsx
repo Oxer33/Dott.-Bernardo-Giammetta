@@ -14,6 +14,7 @@ import { ScrollToTop } from '@/components/ui/ScrollToTop';
 import { CookieConsent } from '@/components/ui/CookieConsent';
 import { NutriBot } from '@/components/chat/NutriBot';
 import { SplashScreen } from '@/components/ui/SplashScreen';
+import { PWAInstallPrompt } from '@/components/ui/PWAInstallPrompt';
 
 // =============================================================================
 // CONFIGURAZIONE FONT
@@ -204,6 +205,9 @@ export default function RootLayout({
           
           {/* Splash Screen */}
           <SplashScreen />
+          
+          {/* PWA Install Prompt per mobile/tablet */}
+          <PWAInstallPrompt />
         </Providers>
       </body>
     </html>

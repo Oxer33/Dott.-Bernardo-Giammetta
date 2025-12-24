@@ -1,7 +1,7 @@
 // =============================================================================
 // SPLASHSCREEN - DOTT. BERNARDO GIAMMETTA
 // Splash screen d'impatto con animazione e messaggio di benvenuto
-// Durata: 3.5 secondi
+// Durata: 5 secondi (aumentato di 1.5s su richiesta)
 // =============================================================================
 
 'use client';
@@ -51,8 +51,8 @@ export function SplashScreen() {
     };
     preloadResources();
 
-    // Nascondi dopo 2.5 secondi (ridotto per migliore UX) o 1s se reduce motion
-    const duration = shouldReduceMotion ? 1000 : 2500;
+    // Nascondi dopo 4 secondi (aumentato di 1.5s) o 1.5s se reduce motion
+    const duration = shouldReduceMotion ? 1500 : 4000;
     const timer = setTimeout(() => {
       setIsVisible(false);
       sessionStorage.setItem('splashSeen', 'true');
