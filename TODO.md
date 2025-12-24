@@ -125,7 +125,10 @@
 - [x] Risposta standard per domande su alimentazione
 
 ### UI/UX Miglioramenti ✅ AGGIORNATO 23/12/2024
-- [x] Splash screen durata 3.5s (era 2.5s)
+- [x] Splash screen durata 4s (aumentato 1.5s)
+- [x] **PWA Install Prompt** per mobile/tablet
+- [x] **MasterBookingModal** per account medico (blocchi, durata, pazienti)
+- [x] **Feste italiane** escluse dall'agenda (domeniche, Pasqua, patrono Bologna)
 - [x] **LoadingSpinner** con varianti (default, leaf, dots, pulse)
 - [x] **Skeleton loaders** per card, table, page
 - [x] **ErrorMessage** e **ApiError** components
@@ -232,10 +235,16 @@
 - [ ] E2E tests con Playwright
 - [ ] Test responsività mobile
 
-### Utilities e Hooks ✅ NUOVO 23/12/2024
+### Utilities e Hooks ✅ AGGIORNATO 24/12/2024
 - [x] **api-utils.ts**: retry logic, rate limiting, error handling
 - [x] **validations.ts**: schemi Zod centralizzati
 - [x] **constants.ts**: routes, roles, limiti, messaggi
+- [x] **security.ts**: sanitizzazione input, rate limit, auth helpers
+- [x] **error-handler.ts**: gestione centralizzata errori con ApiError
+- [x] **db-utils.ts**: retry DB, transazioni, health check, paginazione
+- [x] **cache.ts**: sistema caching in-memory con TTL
+- [x] **form-validation.ts**: validazione avanzata (CF, P.IVA, password strength)
+- [x] **italian-holidays.ts**: feste italiane + Pasqua variabile
 - [x] **useApi hook**: fetch con cache e retry
 - [x] **useDebounce hook**: debounce valori e callback
 - [x] **useThrottle hook**: throttle funzioni
@@ -330,4 +339,4 @@
 
 ---
 
-*Ultimo aggiornamento: 23 Dicembre 2024 - 02:30*
+*Ultimo aggiornamento: 24 Dicembre 2024 - 20:30*

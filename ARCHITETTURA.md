@@ -88,13 +88,19 @@ src/
 ├── lib/                   # Utilities e configurazioni
 │   ├── utils.ts           # Funzioni helper generiche
 │   ├── db.ts              # Prisma client singleton
+│   ├── db-utils.ts        # Retry DB, transazioni, health check
 │   ├── auth.ts            # NextAuth configurazione
 │   ├── agenda.ts          # Logica gestione agenda
+│   ├── italian-holidays.ts # Feste italiane + Pasqua
 │   ├── email.ts           # Sistema email con template
 │   ├── nodemailer.ts      # SMTP Aruba per email
 │   ├── aws-ses.ts         # AWS SES alternativo
 │   ├── api-utils.ts       # Retry, rate limit, error handling
+│   ├── security.ts        # Sanitizzazione, rate limit, auth
+│   ├── error-handler.ts   # Gestione centralizzata errori
+│   ├── cache.ts           # Sistema caching in-memory
 │   ├── validations.ts     # Schemi Zod centralizzati
+│   ├── form-validation.ts # Validazione form avanzata (CF, P.IVA)
 │   ├── constants.ts       # Routes, roles, limiti, messaggi
 │   ├── config.ts          # Configurazione app e master accounts
 │   └── nutribot.ts        # NutriBot AI (OpenRouter + DeepSeek)
