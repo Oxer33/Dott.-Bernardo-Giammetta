@@ -11,12 +11,11 @@ import {
   Calendar, 
   Users, 
   Clock, 
-  Mail, 
-  Settings,
   BarChart3,
   UserCheck,
-  CalendarDays
+  Home
 } from 'lucide-react';
+import Link from 'next/link';
 import { AppointmentsList } from './AppointmentsList';
 import { WhitelistManager } from './WhitelistManager';
 import { TimeBlocksManager } from './TimeBlocksManager';
@@ -35,17 +34,17 @@ interface AdminDashboardProps {
   };
 }
 
-type TabType = 'overview' | 'appointments' | 'whitelist' | 'timeblocks';
+type TabType = 'appointments' | 'whitelist' | 'timeblocks' | 'stats';
 
 // =============================================================================
 // TABS NAVIGATION
 // =============================================================================
 
 const tabs = [
-  { id: 'overview' as TabType, label: 'Panoramica', icon: BarChart3 },
   { id: 'appointments' as TabType, label: 'Appuntamenti', icon: Calendar },
   { id: 'whitelist' as TabType, label: 'Whitelist', icon: UserCheck },
   { id: 'timeblocks' as TabType, label: 'Blocchi Orari', icon: Clock },
+  { id: 'stats' as TabType, label: 'Statistiche', icon: BarChart3 },
 ];
 
 // =============================================================================
@@ -53,7 +52,7 @@ const tabs = [
 // =============================================================================
 
 export function AdminDashboard({ user }: AdminDashboardProps) {
-  const [activeTab, setActiveTab] = useState<TabType>('overview');
+  const [activeTab, setActiveTab] = useState<TabType>('appointments');
   
   return (
     <div className="min-h-screen bg-cream-50">
@@ -69,33 +68,34 @@ export function AdminDashboard({ user }: AdminDashboardProps) {
                 Benvenuto, {user.name || 'Dottore'}
               </p>
             </div>
-            <div className="flex items-center gap-4">
-              <button className="p-2 hover:bg-sage-50 rounded-lg transition-colors">
-                <Mail className="w-5 h-5 text-sage-600" />
-              </button>
-              <button className="p-2 hover:bg-sage-50 rounded-lg transition-colors">
-                <Settings className="w-5 h-5 text-sage-600" />
-              </button>
-            </div>
           </div>
         </div>
       </header>
       
       <div className="container-custom py-8">
-        {/* Tabs Navigation */}
-        <div className="flex gap-2 mb-8 overflow-x-auto pb-2">
+        {/* Tabs Navigation - Responsive */}
+        <div className="flex flex-wrap gap-2 mb-8">
+          {/* Bottone Dashboard (torna ad area-personale) */}
+          <Link
+            href="/area-personale"
+            className="flex items-center gap-2 px-4 py-2 rounded-xl font-medium transition-all bg-lavender-100 text-lavender-700 hover:bg-lavender-200 border border-lavender-200"
+          >
+            <Home className="w-4 h-4" />
+            <span className="hidden sm:inline">Dashboard</span>
+          </Link>
+          
           {tabs.map((tab) => (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`flex items-center gap-2 px-4 py-2 rounded-xl font-medium transition-all whitespace-nowrap ${
+              className={`flex items-center gap-2 px-3 sm:px-4 py-2 rounded-xl font-medium transition-all ${
                 activeTab === tab.id
                   ? 'bg-sage-500 text-white shadow-md'
                   : 'bg-white text-sage-600 hover:bg-sage-50 border border-sage-100'
               }`}
             >
               <tab.icon className="w-4 h-4" />
-              {tab.label}
+              <span className="hidden sm:inline">{tab.label}</span>
             </button>
           ))}
         </div>
@@ -107,10 +107,10 @@ export function AdminDashboard({ user }: AdminDashboardProps) {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3 }}
         >
-          {activeTab === 'overview' && <AdminStats />}
           {activeTab === 'appointments' && <AppointmentsList />}
           {activeTab === 'whitelist' && <WhitelistManager />}
           {activeTab === 'timeblocks' && <TimeBlocksManager />}
+          {activeTab === 'stats' && <AdminStats />}
         </motion.div>
       </div>
     </div>

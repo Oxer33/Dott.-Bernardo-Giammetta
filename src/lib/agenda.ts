@@ -58,6 +58,9 @@ export interface TimeSlot {
   isBlocked: boolean;    // Bloccato da impegno
   blockType?: 'recurring' | 'occasional' | 'appointment';
   blockNote?: string;    // Nota visibile solo al dottore
+  // Info paziente (solo per admin quando blockType='appointment')
+  patientName?: string;
+  patientSurname?: string;
 }
 
 export interface DayAvailability {
@@ -152,7 +155,7 @@ export async function getDayAvailability(
     },
   });
   
-  // Recupera appuntamenti per questa data
+  // Recupera appuntamenti per questa data (con dati paziente per admin)
   const appointments = await db.appointment.findMany({
     where: {
       startTime: {
@@ -163,6 +166,15 @@ export async function getDayAvailability(
         in: ['CONFIRMED'],
       },
     },
+    include: includeBlockNotes ? {
+      user: {
+        select: {
+          name: true,
+          firstName: true,
+          lastName: true,
+        }
+      }
+    } : undefined,
   });
   
   // Applica blocchi ricorrenti
@@ -207,11 +219,21 @@ export async function getDayAvailability(
       'HH:mm'
     );
     
+    // Estrai nome paziente se disponibile (solo per admin)
+    const user = (appointment as any).user;
+    const patientName = user?.firstName || user?.name?.split(' ')[0] || '';
+    const patientSurname = user?.lastName || user?.name?.split(' ').slice(1).join(' ') || '';
+    
     slots.forEach((slot, index) => {
       if (slot.time >= appointmentStart && slot.time < appointmentEnd) {
         slots[index].isAvailable = false;
         slots[index].isBlocked = true;
         slots[index].blockType = 'appointment';
+        // Aggiungi info paziente solo per admin
+        if (includeBlockNotes && (patientName || patientSurname)) {
+          slots[index].patientName = patientName;
+          slots[index].patientSurname = patientSurname;
+        }
       }
     });
   }

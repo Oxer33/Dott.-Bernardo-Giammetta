@@ -181,59 +181,43 @@ export function MasterDashboard({ user }: MasterDashboardProps) {
                 <p className="text-sage-600">Benvenuto, {user.name?.split(' ')[0] || 'Admin'}!</p>
               </div>
             </div>
-            <div className="flex gap-3">
-              <Link href="/admin">
-                <Button variant="secondary" size="sm">
-                  <Settings className="w-4 h-4" />
-                  <span>Admin Panel</span>
-                </Button>
-              </Link>
-              <Link href="/agenda">
-                <Button className="bg-lavender-500 hover:bg-lavender-600" size="sm">
-                  <CalendarPlus className="w-4 h-4" />
-                  <span>Nuovo Appuntamento</span>
-                </Button>
-              </Link>
-            </div>
+            <Link href="/agenda">
+              <Button className="bg-lavender-500 hover:bg-lavender-600" size="sm">
+                <CalendarPlus className="w-4 h-4" />
+                <span>Nuova Prenotazione</span>
+              </Button>
+            </Link>
           </div>
         </motion.div>
 
-        {/* Statistiche */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-          className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8"
-        >
-          <StatCard
-            title="Appuntamenti Totali"
-            value={stats.totalAppointments}
-            icon={Calendar}
-            color="sage"
-          />
-          <StatCard
-            title="Questa Settimana"
-            value={stats.weekAppointments}
-            icon={Activity}
-            color="lavender"
-          />
-          <StatCard
-            title="Pazienti Attivi"
-            value={stats.totalPatients}
-            icon={Users}
-            color="sage"
-          />
-          <StatCard
-            title="Richieste in Attesa"
-            value={stats.pendingRequests}
-            icon={UserPlus}
-            color="orange"
-          />
-        </motion.div>
+        {/* Richieste in Attesa - unica card statistica */}
+        {stats.pendingRequests > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            className="mb-8"
+          >
+            <Link href="/admin">
+              <div className="bg-orange-50 border-2 border-orange-200 rounded-2xl p-6 hover:bg-orange-100 transition-colors cursor-pointer">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-4">
+                    <div className="w-14 h-14 rounded-xl bg-orange-100 flex items-center justify-center">
+                      <UserPlus className="w-7 h-7 text-orange-600" />
+                    </div>
+                    <div>
+                      <p className="text-orange-600 text-sm font-medium">Richieste in Attesa</p>
+                      <p className="text-3xl font-bold text-orange-700">{stats.pendingRequests}</p>
+                    </div>
+                  </div>
+                  <ChevronRight className="w-6 h-6 text-orange-400" />
+                </div>
+              </div>
+            </Link>
+          </motion.div>
+        )}
 
-        <div className="grid lg:grid-cols-3 gap-8">
-          {/* Colonna principale */}
-          <div className="lg:col-span-2 space-y-6">
+        <div className="space-y-6">
             {/* Appuntamenti di oggi */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -319,72 +303,6 @@ export function MasterDashboard({ user }: MasterDashboardProps) {
                 </p>
               )}
             </motion.div>
-          </div>
-
-          {/* Sidebar */}
-          <div className="space-y-6">
-            {/* Azioni rapide */}
-            <motion.div
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.4 }}
-              className="bg-white rounded-2xl p-6 shadow-soft border border-lavender-100"
-            >
-              <h3 className="font-semibold text-sage-800 mb-4">Azioni Rapide</h3>
-              <div className="space-y-3">
-                <Link href="/admin" className="flex items-center gap-3 p-3 rounded-xl hover:bg-sage-50 transition-colors group">
-                  <div className="w-10 h-10 rounded-full bg-sage-100 flex items-center justify-center group-hover:bg-sage-200 transition-colors">
-                    <Users className="w-5 h-5 text-sage-600" />
-                  </div>
-                  <div className="flex-1">
-                    <p className="text-sm font-medium text-sage-800">Gestisci Whitelist</p>
-                    <p className="text-xs text-sage-500">Aggiungi o rimuovi pazienti</p>
-                  </div>
-                  <ChevronRight className="w-4 h-4 text-sage-400" />
-                </Link>
-                
-                <Link href="/admin" className="flex items-center gap-3 p-3 rounded-xl hover:bg-lavender-50 transition-colors group">
-                  <div className="w-10 h-10 rounded-full bg-lavender-100 flex items-center justify-center group-hover:bg-lavender-200 transition-colors">
-                    <CalendarX className="w-5 h-5 text-lavender-600" />
-                  </div>
-                  <div className="flex-1">
-                    <p className="text-sm font-medium text-sage-800">Blocca Orari</p>
-                    <p className="text-xs text-sage-500">Imposta indisponibilità</p>
-                  </div>
-                  <ChevronRight className="w-4 h-4 text-sage-400" />
-                </Link>
-
-                <Link href="/admin" className="flex items-center gap-3 p-3 rounded-xl hover:bg-orange-50 transition-colors group">
-                  <div className="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center group-hover:bg-orange-200 transition-colors">
-                    <BarChart3 className="w-5 h-5 text-orange-500" />
-                  </div>
-                  <div className="flex-1">
-                    <p className="text-sm font-medium text-sage-800">Statistiche</p>
-                    <p className="text-xs text-sage-500">Report e analisi</p>
-                  </div>
-                  <ChevronRight className="w-4 h-4 text-sage-400" />
-                </Link>
-              </div>
-            </motion.div>
-
-            {/* Info account */}
-            <motion.div
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.5 }}
-              className="bg-gradient-to-br from-lavender-100 to-lavender-50 rounded-2xl p-6 border border-lavender-200"
-            >
-              <div className="flex items-start gap-3">
-                <AlertCircle className="w-5 h-5 text-lavender-600 flex-shrink-0 mt-0.5" />
-                <div>
-                  <h4 className="font-medium text-lavender-800 mb-1">Account Master</h4>
-                  <p className="text-sm text-lavender-700">
-                    Hai accesso completo a tutte le funzionalità. Puoi prenotare senza restrizioni.
-                  </p>
-                </div>
-              </div>
-            </motion.div>
-          </div>
         </div>
       </div>
     </div>

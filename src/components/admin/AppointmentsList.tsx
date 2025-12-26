@@ -238,171 +238,212 @@ export function AppointmentsList() {
             <p className="text-sm text-sage-500">Gli appuntamenti appariranno qui dopo le prenotazioni</p>
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="bg-sage-50 border-b border-sage-100">
-                <tr>
-                  <th className="text-left px-4 py-3 text-sm font-medium text-sage-600">Paziente</th>
-                  <th className="text-left px-4 py-3 text-sm font-medium text-sage-600">Data</th>
-                  <th className="text-left px-4 py-3 text-sm font-medium text-sage-600">Ora</th>
-                  <th className="text-left px-4 py-3 text-sm font-medium text-sage-600">Tipo</th>
-                  <th className="text-left px-4 py-3 text-sm font-medium text-sage-600">Stato</th>
-                  <th className="text-left px-4 py-3 text-sm font-medium text-sage-600">Note</th>
-                  <th className="text-left px-4 py-3 text-sm font-medium text-sage-600">Azioni</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-sage-50">
-                {appointments.map((apt, index) => (
-                  <motion.tr
-                    key={apt.id}
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ delay: index * 0.03 }}
-                    className="hover:bg-sage-50 transition-colors"
-                  >
-                    <td className="px-4 py-3">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-sage-100 rounded-full flex items-center justify-center">
-                          <User className="w-5 h-5 text-sage-600" />
-                        </div>
-                        <div>
-                          <div className="font-medium text-sage-800">{getPatientName(apt)}</div>
-                          <div className="text-sm text-sage-500 flex items-center gap-2">
-                            <Mail className="w-3 h-3" /> {apt.user.email}
-                          </div>
-                          {apt.user.phone && (
-                            <div className="text-sm text-sage-500 flex items-center gap-2">
-                              <Phone className="w-3 h-3" /> {apt.user.phone}
-                            </div>
-                          )}
-                        </div>
+          <>
+            {/* Vista Mobile - Cards */}
+            <div className="block lg:hidden divide-y divide-sage-100">
+              {appointments.map((apt, index) => (
+                <motion.div
+                  key={apt.id}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: index * 0.03 }}
+                  className="p-4 space-y-3"
+                >
+                  {/* Header con paziente e stato */}
+                  <div className="flex items-start justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 bg-sage-100 rounded-full flex items-center justify-center flex-shrink-0">
+                        <User className="w-5 h-5 text-sage-600" />
                       </div>
-                    </td>
-                    <td className="px-4 py-3">
-                      <div className="flex items-center gap-1 text-sage-700">
-                        <Calendar className="w-4 h-4 text-sage-400" />
-                        {format(new Date(apt.startTime), 'dd/MM/yyyy', { locale: it })}
+                      <div className="min-w-0">
+                        <div className="font-medium text-sage-800 truncate">{getPatientName(apt)}</div>
+                        <div className="text-xs text-sage-500 truncate">{apt.user.email}</div>
                       </div>
-                    </td>
-                    <td className="px-4 py-3">
-                      <div className="flex items-center gap-1 text-sage-700">
-                        <Clock className="w-4 h-4 text-sage-400" />
-                        {format(new Date(apt.startTime), 'HH:mm')}
-                      </div>
-                      <div className="text-xs text-sage-500">{apt.duration} min</div>
-                    </td>
-                    <td className="px-4 py-3">
-                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                        apt.type === 'FIRST_VISIT' 
-                          ? 'bg-purple-100 text-purple-700' 
-                          : 'bg-blue-100 text-blue-700'
-                      }`}>
-                        {getVisitType(apt.type)}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3 text-sm">
-                      {getStatusBadge(apt.status)}
-                    </td>
-                    <td className="px-4 py-3 max-w-[200px]">
-                      {editingNotes === apt.id ? (
-                        <div className="flex gap-1">
-                          <input
-                            type="text"
-                            value={notesText}
-                            onChange={(e) => setNotesText(e.target.value)}
-                            className="flex-1 px-2 py-1 text-sm border rounded"
-                            autoFocus
-                          />
-                          <button
-                            onClick={() => handleAction(apt.id, 'update_notes', { notes: notesText })}
-                            className="p-1 bg-green-100 text-green-600 rounded"
-                          >
-                            <Check className="w-4 h-4" />
+                    </div>
+                    <div className="text-xs">{getStatusBadge(apt.status)}</div>
+                  </div>
+                  
+                  {/* Info appuntamento */}
+                  <div className="flex flex-wrap gap-3 text-sm">
+                    <div className="flex items-center gap-1 text-sage-700 bg-sage-50 px-2 py-1 rounded">
+                      <Calendar className="w-3 h-3" />
+                      {format(new Date(apt.startTime), 'dd/MM/yy', { locale: it })}
+                    </div>
+                    <div className="flex items-center gap-1 text-sage-700 bg-sage-50 px-2 py-1 rounded">
+                      <Clock className="w-3 h-3" />
+                      {format(new Date(apt.startTime), 'HH:mm')}
+                    </div>
+                    <span className={`px-2 py-1 rounded text-xs font-medium ${
+                      apt.type === 'FIRST_VISIT' ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700'
+                    }`}>
+                      {getVisitType(apt.type)}
+                    </span>
+                  </div>
+                  
+                  {/* Note */}
+                  {editingNotes === apt.id ? (
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        value={notesText}
+                        onChange={(e) => setNotesText(e.target.value)}
+                        className="flex-1 px-3 py-2 text-sm border rounded-lg"
+                        placeholder="Aggiungi nota..."
+                        autoFocus
+                      />
+                      <button onClick={() => handleAction(apt.id, 'update_notes', { notes: notesText })} className="p-2 bg-green-100 text-green-600 rounded-lg">
+                        <Check className="w-4 h-4" />
+                      </button>
+                      <button onClick={() => setEditingNotes(null)} className="p-2 bg-gray-100 text-gray-600 rounded-lg">
+                        <X className="w-4 h-4" />
+                      </button>
+                    </div>
+                  ) : apt.notes ? (
+                    <p onClick={() => { setEditingNotes(apt.id); setNotesText(apt.notes || ''); }} className="text-sm text-sage-600 bg-sage-50 p-2 rounded-lg cursor-pointer">
+                      {apt.notes}
+                    </p>
+                  ) : null}
+                  
+                  {/* Azioni */}
+                  <div className="flex gap-2 pt-2 border-t border-sage-100">
+                    {actionLoading === apt.id ? (
+                      <Loader2 className="w-5 h-5 animate-spin text-sage-400" />
+                    ) : deleteConfirm === apt.id ? (
+                      <>
+                        <button onClick={() => handleDelete(apt.id)} className="flex-1 py-2 bg-red-500 text-white text-sm rounded-lg">Elimina</button>
+                        <button onClick={() => setDeleteConfirm(null)} className="flex-1 py-2 bg-gray-200 text-gray-700 text-sm rounded-lg">Annulla</button>
+                      </>
+                    ) : (
+                      <>
+                        {!apt.notes && (
+                          <button onClick={() => { setEditingNotes(apt.id); setNotesText(''); }} className="p-2 bg-sage-100 text-sage-600 rounded-lg" title="Nota">
+                            <Edit3 className="w-4 h-4" />
                           </button>
-                          <button
-                            onClick={() => setEditingNotes(null)}
-                            className="p-1 bg-gray-100 text-gray-600 rounded"
-                          >
-                            <X className="w-4 h-4" />
-                          </button>
-                        </div>
-                      ) : (
-                        <div
-                          onClick={() => { setEditingNotes(apt.id); setNotesText(apt.notes || ''); }}
-                          className="text-sm text-sage-600 cursor-pointer hover:text-sage-800 flex items-center gap-1"
-                        >
-                          {apt.notes ? (
-                            <span className="truncate">{apt.notes}</span>
-                          ) : (
-                            <span className="text-sage-400 italic flex items-center gap-1">
-                              <Edit3 className="w-3 h-3" /> Aggiungi nota
-                            </span>
-                          )}
-                        </div>
-                      )}
-                    </td>
-                    <td className="px-4 py-3">
-                      {actionLoading === apt.id ? (
-                        <Loader2 className="w-5 h-5 animate-spin text-sage-400" />
-                      ) : deleteConfirm === apt.id ? (
-                        <div className="flex gap-1">
-                          <button
-                            onClick={() => handleDelete(apt.id)}
-                            className="px-2 py-1 bg-red-500 text-white text-xs rounded"
-                          >
-                            Conferma
-                          </button>
-                          <button
-                            onClick={() => setDeleteConfirm(null)}
-                            className="px-2 py-1 bg-gray-200 text-gray-700 text-xs rounded"
-                          >
-                            Annulla
-                          </button>
-                        </div>
-                      ) : (
-                        <div className="flex items-center gap-1">
-                          {apt.status === 'CONFIRMED' && (
-                            <>
-                              <button
-                                onClick={() => handleAction(apt.id, 'complete')}
-                                className="p-1.5 bg-green-100 text-green-600 rounded hover:bg-green-200"
-                                title="Segna come completato"
-                              >
-                                <Check className="w-4 h-4" />
-                              </button>
-                              <button
-                                onClick={() => handleAction(apt.id, 'cancel')}
-                                className="p-1.5 bg-orange-100 text-orange-600 rounded hover:bg-orange-200"
-                                title="Cancella"
-                              >
-                                <X className="w-4 h-4" />
-                              </button>
-                            </>
-                          )}
-                          {apt.status === 'CANCELLED' && (
-                            <button
-                              onClick={() => handleAction(apt.id, 'confirm')}
-                              className="p-1.5 bg-green-100 text-green-600 rounded hover:bg-green-200"
-                              title="Riconferma"
-                            >
+                        )}
+                        {apt.status === 'CONFIRMED' && (
+                          <>
+                            <button onClick={() => handleAction(apt.id, 'complete')} className="p-2 bg-green-100 text-green-600 rounded-lg" title="Completato">
                               <Check className="w-4 h-4" />
                             </button>
-                          )}
-                          <button
-                            onClick={() => setDeleteConfirm(apt.id)}
-                            className="p-1.5 bg-red-100 text-red-600 rounded hover:bg-red-200"
-                            title="Elimina"
-                          >
-                            <Trash2 className="w-4 h-4" />
+                            <button onClick={() => handleAction(apt.id, 'cancel')} className="p-2 bg-orange-100 text-orange-600 rounded-lg" title="Cancella">
+                              <X className="w-4 h-4" />
+                            </button>
+                          </>
+                        )}
+                        {apt.status === 'CANCELLED' && (
+                          <button onClick={() => handleAction(apt.id, 'confirm')} className="p-2 bg-green-100 text-green-600 rounded-lg" title="Riconferma">
+                            <Check className="w-4 h-4" />
                           </button>
+                        )}
+                        <button onClick={() => setDeleteConfirm(apt.id)} className="p-2 bg-red-100 text-red-600 rounded-lg ml-auto" title="Elimina">
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </>
+                    )}
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+            
+            {/* Vista Desktop - Tabella */}
+            <div className="hidden lg:block overflow-x-auto">
+              <table className="w-full">
+                <thead className="bg-sage-50 border-b border-sage-100">
+                  <tr>
+                    <th className="text-left px-4 py-3 text-sm font-medium text-sage-600">Paziente</th>
+                    <th className="text-left px-4 py-3 text-sm font-medium text-sage-600">Data</th>
+                    <th className="text-left px-4 py-3 text-sm font-medium text-sage-600">Ora</th>
+                    <th className="text-left px-4 py-3 text-sm font-medium text-sage-600">Tipo</th>
+                    <th className="text-left px-4 py-3 text-sm font-medium text-sage-600">Stato</th>
+                    <th className="text-left px-4 py-3 text-sm font-medium text-sage-600">Note</th>
+                    <th className="text-left px-4 py-3 text-sm font-medium text-sage-600">Azioni</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-sage-50">
+                  {appointments.map((apt, index) => (
+                    <motion.tr
+                      key={apt.id}
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ delay: index * 0.03 }}
+                      className="hover:bg-sage-50 transition-colors"
+                    >
+                      <td className="px-4 py-3">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 bg-sage-100 rounded-full flex items-center justify-center">
+                            <User className="w-5 h-5 text-sage-600" />
+                          </div>
+                          <div>
+                            <div className="font-medium text-sage-800">{getPatientName(apt)}</div>
+                            <div className="text-sm text-sage-500 flex items-center gap-2">
+                              <Mail className="w-3 h-3" /> {apt.user.email}
+                            </div>
+                          </div>
                         </div>
-                      )}
-                    </td>
-                  </motion.tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                      </td>
+                      <td className="px-4 py-3">
+                        <div className="flex items-center gap-1 text-sage-700">
+                          <Calendar className="w-4 h-4 text-sage-400" />
+                          {format(new Date(apt.startTime), 'dd/MM/yyyy', { locale: it })}
+                        </div>
+                      </td>
+                      <td className="px-4 py-3">
+                        <div className="flex items-center gap-1 text-sage-700">
+                          <Clock className="w-4 h-4 text-sage-400" />
+                          {format(new Date(apt.startTime), 'HH:mm')}
+                        </div>
+                        <div className="text-xs text-sage-500">{apt.duration} min</div>
+                      </td>
+                      <td className="px-4 py-3">
+                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                          apt.type === 'FIRST_VISIT' ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700'
+                        }`}>
+                          {getVisitType(apt.type)}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3 text-sm">{getStatusBadge(apt.status)}</td>
+                      <td className="px-4 py-3 max-w-[200px]">
+                        {editingNotes === apt.id ? (
+                          <div className="flex gap-1">
+                            <input type="text" value={notesText} onChange={(e) => setNotesText(e.target.value)} className="flex-1 px-2 py-1 text-sm border rounded" autoFocus />
+                            <button onClick={() => handleAction(apt.id, 'update_notes', { notes: notesText })} className="p-1 bg-green-100 text-green-600 rounded"><Check className="w-4 h-4" /></button>
+                            <button onClick={() => setEditingNotes(null)} className="p-1 bg-gray-100 text-gray-600 rounded"><X className="w-4 h-4" /></button>
+                          </div>
+                        ) : (
+                          <div onClick={() => { setEditingNotes(apt.id); setNotesText(apt.notes || ''); }} className="text-sm text-sage-600 cursor-pointer hover:text-sage-800 flex items-center gap-1">
+                            {apt.notes ? <span className="truncate">{apt.notes}</span> : <span className="text-sage-400 italic flex items-center gap-1"><Edit3 className="w-3 h-3" /> Aggiungi</span>}
+                          </div>
+                        )}
+                      </td>
+                      <td className="px-4 py-3">
+                        {actionLoading === apt.id ? (
+                          <Loader2 className="w-5 h-5 animate-spin text-sage-400" />
+                        ) : deleteConfirm === apt.id ? (
+                          <div className="flex gap-1">
+                            <button onClick={() => handleDelete(apt.id)} className="px-2 py-1 bg-red-500 text-white text-xs rounded">Sì</button>
+                            <button onClick={() => setDeleteConfirm(null)} className="px-2 py-1 bg-gray-200 text-gray-700 text-xs rounded">No</button>
+                          </div>
+                        ) : (
+                          <div className="flex items-center gap-1">
+                            {apt.status === 'CONFIRMED' && (
+                              <>
+                                <button onClick={() => handleAction(apt.id, 'complete')} className="p-1.5 bg-green-100 text-green-600 rounded hover:bg-green-200" title="Completato"><Check className="w-4 h-4" /></button>
+                                <button onClick={() => handleAction(apt.id, 'cancel')} className="p-1.5 bg-orange-100 text-orange-600 rounded hover:bg-orange-200" title="Cancella"><X className="w-4 h-4" /></button>
+                              </>
+                            )}
+                            {apt.status === 'CANCELLED' && (
+                              <button onClick={() => handleAction(apt.id, 'confirm')} className="p-1.5 bg-green-100 text-green-600 rounded hover:bg-green-200" title="Riconferma"><Check className="w-4 h-4" /></button>
+                            )}
+                            <button onClick={() => setDeleteConfirm(apt.id)} className="p-1.5 bg-red-100 text-red-600 rounded hover:bg-red-200" title="Elimina"><Trash2 className="w-4 h-4" /></button>
+                          </div>
+                        )}
+                      </td>
+                    </motion.tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </>
         )}
       </div>
     </div>

@@ -36,6 +36,9 @@ interface TimeSlot {
   isAvailable: boolean;
   isBlocked: boolean;
   blockType?: 'recurring' | 'occasional' | 'appointment';
+  blockNote?: string;
+  patientName?: string;
+  patientSurname?: string;
 }
 
 interface DayAvailability {
@@ -203,13 +206,16 @@ export function AgendaCalendar() {
             <h2 className="text-xl font-display font-semibold text-sage-900">
               Disponibilità Settimanale
             </h2>
-            <p className="text-sage-600 text-sm mt-1">
-              Seleziona una fascia oraria disponibile (verde) per prenotare
-            </p>
+            {/* Descrizione nascosta per account master */}
+            {!isMaster && (
+              <p className="text-sage-600 text-sm mt-1">
+                Seleziona una fascia oraria disponibile (verde) per prenotare
+              </p>
+            )}
           </div>
           
           {/* Navigation */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
             <button
               onClick={goToPreviousWeek}
               className="p-2 rounded-lg hover:bg-sage-50 transition-colors"
@@ -232,6 +238,21 @@ export function AgendaCalendar() {
             >
               <ChevronRight className="w-5 h-5 text-sage-600" />
             </button>
+            
+            {/* Vai alla data - visibile per master e pazienti whitelist */}
+            {(isMaster || session?.user?.isWhitelisted) && (
+              <div className="flex items-center gap-1 ml-2">
+                <input
+                  type="date"
+                  onChange={(e) => {
+                    if (e.target.value) {
+                      setCurrentWeekStart(startOfWeek(new Date(e.target.value), { weekStartsOn: 1 }));
+                    }
+                  }}
+                  className="px-2 py-1.5 text-sm border border-sage-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-sage-400"
+                />
+              </div>
+            )}
           </div>
         </div>
         
@@ -316,14 +337,30 @@ export function AgendaCalendar() {
                         key={`${day.dateString}-${slot.time}`}
                         onClick={() => handleSlotClick(day.dateString, slot.time, slot.isAvailable)}
                         disabled={!slot.isAvailable && !isMaster}
+                        title={isMaster && slot.blockNote ? slot.blockNote : undefined}
                         className={cn(
-                          'p-2 text-xs rounded-lg border transition-all duration-200',
+                          'p-1 text-xs rounded-lg border transition-all duration-200 flex flex-col items-center justify-center min-h-[52px]',
                           'focus:outline-none focus:ring-2 focus:ring-sage-400 focus:ring-offset-1',
                           isMaster ? 'cursor-pointer hover:opacity-80' : '',
                           getSlotColor(slot)
                         )}
                       >
-                        {slot.time}
+                        <span className="font-medium">{slot.time}</span>
+                        {/* Mostra nome paziente per master se è un appuntamento */}
+                        {isMaster && slot.blockType === 'appointment' && slot.patientName && (
+                          <>
+                            <span className="text-[10px] truncate max-w-full leading-tight">{slot.patientName}</span>
+                            {slot.patientSurname && (
+                              <span className="text-[10px] truncate max-w-full leading-tight">{slot.patientSurname}</span>
+                            )}
+                          </>
+                        )}
+                        {/* Mostra nota blocco per master */}
+                        {isMaster && slot.blockNote && slot.blockType !== 'appointment' && (
+                          <span className="text-[10px] truncate max-w-full leading-tight opacity-75">
+                            {slot.blockNote.slice(0, 10)}{slot.blockNote.length > 10 ? '...' : ''}
+                          </span>
+                        )}
                       </button>
                     );
                   })

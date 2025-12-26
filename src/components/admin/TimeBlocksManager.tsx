@@ -331,9 +331,8 @@ export function TimeBlocksManager() {
           </button>
           <button
             onClick={() => { resetForm(); setShowAddModal(true); }}
-            className="flex items-center gap-2 px-4 py-2 bg-sage-500 text-white rounded-xl hover:bg-sage-600 transition-colors"
+            className="px-4 py-2 bg-sage-500 text-white rounded-xl hover:bg-sage-600 transition-colors"
           >
-            <Plus className="w-4 h-4" />
             Nuovo Blocco
           </button>
         </div>

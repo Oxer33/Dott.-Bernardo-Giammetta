@@ -35,6 +35,7 @@ interface Patient {
   name: string | null;
   email: string;
   phone: string | null;
+  isWhitelisted?: boolean;
 }
 
 interface MasterBookingModalProps {
@@ -142,7 +143,7 @@ export function MasterBookingModal({
     return `${endHours.toString().padStart(2, '0')}:${endMinutes.toString().padStart(2, '0')}`;
   };
 
-  // Cerca pazienti
+  // Cerca pazienti (include anche quelli in attesa di whitelist)
   const searchPatients = useCallback(async (query: string) => {
     if (query.length < 2) {
       setPatients([]);
@@ -151,11 +152,19 @@ export function MasterBookingModal({
 
     setSearchLoading(true);
     try {
-      const response = await fetch(`/api/admin/patients?search=${encodeURIComponent(query)}`);
+      // Usa filter=all per includere TUTTI i pazienti (anche non whitelisted)
+      const response = await fetch(`/api/admin/patients?filter=all&search=${encodeURIComponent(query)}`);
       const data = await response.json();
       
-      if (data.success) {
-        setPatients(data.data || []);
+      if (data.success && data.patients) {
+        // Mappa i dati nel formato corretto
+        setPatients(data.patients.map((p: any) => ({
+          id: p.id,
+          name: p.firstName && p.lastName ? `${p.firstName} ${p.lastName}` : p.name,
+          email: p.email,
+          phone: p.phone,
+          isWhitelisted: p.isWhitelisted,
+        })));
       }
     } catch (err) {
       console.error('Errore ricerca pazienti:', err);
@@ -379,7 +388,7 @@ export function MasterBookingModal({
 
                       {/* Lista pazienti trovati */}
                       {patients.length > 0 && !selectedPatient && (
-                        <div className="mt-2 border border-sage-200 rounded-xl max-h-40 overflow-y-auto">
+                        <div className="mt-2 border border-sage-200 rounded-xl max-h-48 overflow-y-auto">
                           {patients.map((patient) => (
                             <button
                               key={patient.id}
@@ -390,8 +399,15 @@ export function MasterBookingModal({
                               }}
                               className="w-full p-3 text-left hover:bg-sage-50 border-b border-sage-100 last:border-b-0"
                             >
-                              <p className="font-medium text-sage-900">{patient.name || 'Senza nome'}</p>
-                              <p className="text-sm text-sage-600">{patient.email}</p>
+                              <div className="flex items-center justify-between">
+                                <div>
+                                  <p className="font-medium text-sage-900">{patient.name || 'Senza nome'}</p>
+                                  <p className="text-sm text-sage-600">{patient.email}</p>
+                                </div>
+                                {!patient.isWhitelisted && (
+                                  <span className="px-2 py-0.5 text-xs bg-orange-100 text-orange-700 rounded-full">In attesa</span>
+                                )}
+                              </div>
                             </button>
                           ))}
                         </div>
@@ -405,6 +421,9 @@ export function MasterBookingModal({
                             <div>
                               <p className="font-medium text-sage-900">{selectedPatient.name || 'Senza nome'}</p>
                               <p className="text-sm text-sage-600">{selectedPatient.email}</p>
+                              {!selectedPatient.isWhitelisted && (
+                                <span className="text-xs text-orange-600">⚠️ Paziente in attesa di approvazione</span>
+                              )}
                             </div>
                           </div>
                           <button
