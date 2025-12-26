@@ -124,11 +124,24 @@
 - [x] Prompt sistema: MAI consigli nutrizionali
 - [x] Risposta standard per domande su alimentazione
 
-### UI/UX Miglioramenti ✅ AGGIORNATO 23/12/2024
+### UI/UX Miglioramenti ✅ AGGIORNATO 26/12/2024
 - [x] Splash screen durata 4s (aumentato 1.5s)
 - [x] **PWA Install Prompt** per mobile/tablet
 - [x] **MasterBookingModal** per account medico (blocchi, durata, pazienti)
 - [x] **Feste italiane** escluse dall'agenda (domeniche, Pasqua, patrono Bologna)
+
+### Account Master - Modifiche 26/12/2024 ✅ NUOVO
+- [x] **MasterDashboard** semplificato: solo richieste in attesa + oggi + domani
+- [x] **AdminDashboard** menu responsive con flex-wrap per mobile
+- [x] **AdminDashboard** bottone Dashboard (primo) + Statistiche (ultimo)
+- [x] Rimossi bottoni busta/ingranaggio inutili da header admin
+- [x] **AppointmentsList** responsive: cards su mobile, tabella su desktop
+- [x] **MasterBookingModal** ricerca include pazienti in attesa whitelist
+- [x] **AgendaCalendar** mostra nome/cognome paziente nelle caselle per master
+- [x] **AgendaCalendar** note blocchi con tooltip per master
+- [x] **AgendaCalendar** nascosta descrizione per master
+- [x] **AgendaCalendar** "Vai alla data" per master e whitelist
+- [x] **TimeBlocksManager** rimosso + dal bottone "Nuovo Blocco"
 - [x] **LoadingSpinner** con varianti (default, leaf, dots, pulse)
 - [x] **Skeleton loaders** per card, table, page
 - [x] **ErrorMessage** e **ApiError** components
