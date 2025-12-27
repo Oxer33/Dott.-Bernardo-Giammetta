@@ -196,6 +196,24 @@
 - [x] **SearchInput** con debounce + suggestions
 - [x] **OptimizedImage** con blur placeholder e lazy loading
 
+### ⚡ FIX CRITICI Master Account - 27/12/2024 (Sessione 3) ✅ NUOVO
+- [x] **agenda.ts** usa `isMasterAccount()` da config.ts (lista completa 4 account)
+- [x] **agenda.ts** master ESENTE da TUTTI i controlli - ritorna subito OK
+- [x] **api/agenda/appointments** master può prenotare per qualsiasi userId
+- [x] **Rimosso MASTER_EMAIL singolo** - ora usa lista MASTER_ACCOUNTS
+- [x] **Master può prenotare date PASSATE** ✓
+- [x] **Master può prenotare nelle prossime 48h** (no limite preavviso) ✓
+- [x] **Master può prenotare per pazienti NON in whitelist** ✓
+- [x] **AgendaMasterView** nuovo componente vista agenda semplificata master
+- [x] **Icona blocchi orari** da Clock a Lock (AdminDashboard, MasterDashboard)
+- [x] **AppointmentsList** modal modifica con selezione durata (60/90/120 min)
+- [x] **AdminStats** card maschi/femmine con percentuali
+- [x] **AdminStats** ricerca paziente + statistiche individuali + stato Ultimato
+- [x] **API patient-stats** nuovo endpoint statistiche singolo paziente
+- [x] **Mobile** disabilitato zoom (userScalable: false)
+- [x] **Auto-whitelist** paziente dopo prima visita completata
+- [x] **whitelist-expiry** esecuzione settimanale, esclude Ultimati
+
 ---
 
 ## ✅ COMPLETATO (Pagine e Admin)
@@ -385,4 +403,4 @@
 
 ---
 
-*Ultimo aggiornamento: 24 Dicembre 2024 - 20:30*
+*Ultimo aggiornamento: 27 Dicembre 2024 - 23:50*
