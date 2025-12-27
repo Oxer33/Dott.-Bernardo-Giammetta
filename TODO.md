@@ -224,6 +224,12 @@
 - [x] **Colori agenda differenziati**: 60min=lilla, 90min=viola scuro, 120min=rosso
 - [x] **AppointmentsList** fix salvataggio modifica (formato data ISO corretto)
 
+### ⚡ FIX CRITICI Master Account - 28/12/2024 (Sessione 5) ✅ NUOVO
+- [x] **MASTER_OVERRIDE flag**: bypass garantito per master indipendente da email
+- [x] **isMaster doppio controllo**: `isMasterAccount(email) || role === 'ADMIN'`
+- [x] **canUserBook**: riconosce 'MASTER_OVERRIDE' come caller per bypass totale
+- [x] **Reschedule parsing robusto**: validazione data con try/catch e logging
+
 ---
 
 ## ✅ COMPLETATO (Pagine e Admin)
