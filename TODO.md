@@ -162,6 +162,19 @@
 - [x] **AgendaCalendar** date picker limitato anni 2020-2099, precompilato
 - [x] **PullToRefresh** nuovo componente refresh swipe-down su mobile
 - [x] **API stats** nuovo endpoint statistiche complete `/api/admin/stats`
+
+### Bug Fixes e Miglioramenti - 27/12/2024 (Sessione 2) ✅ NUOVO
+- [x] **canUserBook** master può prenotare per pazienti non in whitelist (solo warning)
+- [x] **canUserBook** master può inserire appuntamenti su date passate
+- [x] **AppointmentsList** tasto modifica appuntamento (cambio data/ora)
+- [x] **AppointmentsList** note autosalvanti con onBlur (niente più click conferma)
+- [x] **AppointmentsList** colori diversi per durata (60min normale, 90min scuro, 120min rosso)
+- [x] **AppointmentsList** fix overflow card mobile
+- [x] **MasterDashboard** card "In attesa con visita effettuata"
+- [x] **AdminDashboard** bottone Agenda aggiunto
+- [x] **AdminDashboard** navigazione con query string `?tab=` funzionante
+- [x] **Middleware** rate limiting auth aumentato (da 10 a 30 req/min)
+- [x] **API whitelist-expiry** dopo 12 mesi senza visite paziente torna in attesa
 - [x] **LoadingSpinner** con varianti (default, leaf, dots, pulse)
 - [x] **Skeleton loaders** per card, table, page
 - [x] **ErrorMessage** e **ApiError** components
