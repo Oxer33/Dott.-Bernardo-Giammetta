@@ -64,8 +64,10 @@ export async function POST(request: NextRequest) {
     // Determina per chi è la prenotazione
     let bookingUserId = session.user.id;
     
-    // Se admin e specifica un userId, prenota per quell'utente
-    if (targetUserId && session.user.role === 'ADMIN') {
+    // Se admin/master e specifica un userId, prenota per quell'utente
+    // CRITICO: Master deve poter prenotare per qualsiasi paziente
+    const isMaster = isMasterAccount(session.user.email);
+    if (targetUserId && (session.user.role === 'ADMIN' || isMaster)) {
       bookingUserId = targetUserId;
     }
     

@@ -32,8 +32,8 @@ export const STUDIO_HOURS = {
   end: 20,          // 20:00
 };
 
-// Email account master che può fare tutto
-export const MASTER_EMAIL = 'papa.danilo91tp@gmail.com';
+// Importa funzione verifica master da config (usa lista completa account master)
+import { isMasterAccount } from '@/lib/config';
 
 // Durata fasce orarie in minuti
 export const SLOT_DURATION = 30;
@@ -279,8 +279,9 @@ export async function canUserBook(
   }
   
   // Verifica se chi chiama è l'account master (callerEmail) o se l'utente target è master
-  const isMasterCalling = callerEmail === MASTER_EMAIL;
-  const isUserMaster = user.email === MASTER_EMAIL;
+  // CRITICO: Usa lista completa account master da config.ts
+  const isMasterCalling = isMasterAccount(callerEmail);
+  const isUserMaster = isMasterAccount(user.email);
   const isMaster = isMasterCalling || isUserMaster;
   
   // Prepara warning per paziente non in whitelist (solo se master prenota per lui)
@@ -332,7 +333,13 @@ export async function canUserBook(
     }
   }
   
-  // 4. Verifica disponibilità dello slot
+  // 4. Verifica disponibilità dello slot - MASTER ESENTE (può forzare qualsiasi slot)
+  // Il master ha libertà totale: date passate, prossime 48h, slot occupati
+  if (isMaster) {
+    // Master può prenotare OVUNQUE - restituisci subito OK con eventuale warning
+    return { canBook: true, warning: patientWarning };
+  }
+  
   const dayAvailability = await getDayAvailability(startTime);
   const startTimeStr = format(startTime, 'HH:mm');
   const endTime = addMinutes(startTime, duration);
