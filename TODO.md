@@ -214,6 +214,16 @@
 - [x] **Auto-whitelist** paziente dopo prima visita completata
 - [x] **whitelist-expiry** esecuzione settimanale, esclude Ultimati
 
+### ⚡ FIX CRITICI Master Account - 28/12/2024 (Sessione 4) ✅ NUOVO
+- [x] **FIX ROOT CAUSE**: `session.user.email` non veniva copiata dal token JWT
+- [x] **auth.ts** ora copia `token.email` -> `session.user.email` esplicitamente
+- [x] **isMasterAccount()** fix confronto case-insensitive con `.some()`
+- [x] **Rimosso bernardogiammetta@gmail.com** da MASTER_ACCOUNTS (email sbagliata)
+- [x] **Modal modifica appuntamento** - data e ora separati con fasce orarie
+- [x] **Modal inserimento** - data/ora evidenti come titolo principale
+- [x] **Colori agenda differenziati**: 60min=lilla, 90min=viola scuro, 120min=rosso
+- [x] **AppointmentsList** fix salvataggio modifica (formato data ISO corretto)
+
 ---
 
 ## ✅ COMPLETATO (Pagine e Admin)
