@@ -90,9 +90,13 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Verifica che l'utente sia whitelistato (o sia admin/master)
+    // Verifica che l'utente sia whitelistato (o sia admin/master che prenota)
+    // PUNTO 9: Master può sempre prenotare per qualsiasi paziente (anche in attesa)
     const isAdmin = session.user.role === 'ADMIN' || isMasterAccount(session.user.email);
-    if (!bookingUser.isWhitelisted && !isAdmin) {
+    
+    // Se non è admin E il paziente per cui si prenota non è whitelisted, blocca
+    // Ma se è admin, può prenotare per chiunque
+    if (!isAdmin && !bookingUser.isWhitelisted) {
       return NextResponse.json(
         { success: false, error: 'Il tuo account non è ancora abilitato alle prenotazioni. Attendi l\'approvazione.' },
         { status: 403 }

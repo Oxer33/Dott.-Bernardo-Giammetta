@@ -239,7 +239,7 @@ export function AppointmentsList() {
           </div>
         ) : (
           <>
-            {/* Vista Mobile - Cards */}
+            {/* Vista Mobile - Cards (punto 3: fix layout tastiera) */}
             <div className="block lg:hidden divide-y divide-sage-100">
               {appointments.map((apt, index) => (
                 <motion.div
@@ -247,6 +247,7 @@ export function AppointmentsList() {
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   transition={{ delay: index * 0.03 }}
+                  layout={false}
                   className="p-4 space-y-3"
                 >
                   {/* Header con paziente e stato */}

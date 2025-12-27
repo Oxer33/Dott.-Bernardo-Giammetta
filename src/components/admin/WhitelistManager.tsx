@@ -55,7 +55,7 @@ export function WhitelistManager() {
   const [patients, setPatients] = useState<Patient[]>([]);
   const [stats, setStats] = useState<Stats>({ total: 0, whitelisted: 0, pending: 0 });
   const [searchQuery, setSearchQuery] = useState('');
-  const [filter, setFilter] = useState<'all' | 'whitelisted' | 'pending'>('all');
+  const [filter, setFilter] = useState<'all' | 'whitelisted' | 'pending' | 'pending_with_visits' | 'pending_without_visits'>('all');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
@@ -195,12 +195,13 @@ export function WhitelistManager() {
             className="w-full pl-10 pr-4 py-2 bg-white border border-sage-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-sage-400"
           />
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
+          {/* Filtri principali */}
           {(['all', 'whitelisted', 'pending'] as const).map((f) => (
             <button
               key={f}
               onClick={() => setFilter(f)}
-              className={`px-4 py-2 rounded-xl font-medium transition-colors ${
+              className={`px-3 py-2 rounded-xl text-sm font-medium transition-colors ${
                 filter === f
                   ? 'bg-sage-500 text-white'
                   : 'bg-white text-sage-600 border border-sage-200 hover:bg-sage-50'
@@ -209,6 +210,31 @@ export function WhitelistManager() {
               {f === 'all' ? 'Tutti' : f === 'whitelisted' ? 'Approvati' : 'In Attesa'}
             </button>
           ))}
+          {/* Filtri avanzati per pazienti in attesa (punto 10) */}
+          <button
+            onClick={() => setFilter('pending_with_visits')}
+            className={`px-3 py-2 rounded-xl text-sm font-medium transition-colors ${
+              filter === 'pending_with_visits'
+                ? 'bg-orange-500 text-white'
+                : 'bg-white text-orange-600 border border-orange-200 hover:bg-orange-50'
+            }`}
+            title="In attesa con visite prenotate"
+          >
+            <span className="hidden sm:inline">Attesa + Visite</span>
+            <span className="sm:hidden">📅</span>
+          </button>
+          <button
+            onClick={() => setFilter('pending_without_visits')}
+            className={`px-3 py-2 rounded-xl text-sm font-medium transition-colors ${
+              filter === 'pending_without_visits'
+                ? 'bg-yellow-500 text-white'
+                : 'bg-white text-yellow-600 border border-yellow-200 hover:bg-yellow-50'
+            }`}
+            title="In attesa senza visite"
+          >
+            <span className="hidden sm:inline">Attesa No Visite</span>
+            <span className="sm:hidden">⏳</span>
+          </button>
           <button
             onClick={loadPatients}
             className="p-2 bg-white border border-sage-200 rounded-xl hover:bg-sage-50 transition-colors"
@@ -316,18 +342,18 @@ export function WhitelistManager() {
                       </button>
                     </>
                   ) : (
-                    <>
+                    <div className="flex flex-wrap gap-1 justify-end">
                       {!patient.isWhitelisted ? (
                         <button
                           onClick={() => handleWhitelist(patient.id, 'whitelist')}
-                          className="px-3 py-1 bg-green-500 text-white text-sm rounded-lg hover:bg-green-600 transition-colors"
+                          className="px-2 sm:px-3 py-1 bg-green-500 text-white text-xs sm:text-sm rounded-lg hover:bg-green-600 transition-colors whitespace-nowrap"
                         >
                           Approva
                         </button>
                       ) : (
                         <button
                           onClick={() => handleWhitelist(patient.id, 'unwhitelist')}
-                          className="px-3 py-1 bg-orange-100 text-orange-600 text-sm rounded-lg hover:bg-orange-200 transition-colors"
+                          className="px-2 sm:px-3 py-1 bg-orange-100 text-orange-600 text-xs sm:text-sm rounded-lg hover:bg-orange-200 transition-colors whitespace-nowrap"
                         >
                           Rimuovi
                         </button>
@@ -339,7 +365,7 @@ export function WhitelistManager() {
                       >
                         <Trash2 className="w-4 h-4 text-red-500" />
                       </button>
-                    </>
+                    </div>
                   )}
                 </div>
               </div>

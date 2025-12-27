@@ -239,14 +239,20 @@ export function AgendaCalendar() {
               <ChevronRight className="w-5 h-5 text-sage-600" />
             </button>
             
-            {/* Vai alla data - visibile per master e pazienti whitelist */}
+            {/* Vai alla data - visibile per master e pazienti whitelist (punto 11) */}
             {(isMaster || session?.user?.isWhitelisted) && (
               <div className="flex items-center gap-1 ml-2">
                 <input
                   type="date"
+                  defaultValue={format(new Date(), 'yyyy-MM-dd')}
+                  min="2020-01-01"
+                  max="2099-12-31"
                   onChange={(e) => {
                     if (e.target.value) {
-                      setCurrentWeekStart(startOfWeek(new Date(e.target.value), { weekStartsOn: 1 }));
+                      const year = parseInt(e.target.value.split('-')[0]);
+                      if (year >= 2020 && year <= 2099) {
+                        setCurrentWeekStart(startOfWeek(new Date(e.target.value), { weekStartsOn: 1 }));
+                      }
                     }
                   }}
                   className="px-2 py-1.5 text-sm border border-sage-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-sage-400"

@@ -15,6 +15,7 @@ import { CookieConsent } from '@/components/ui/CookieConsent';
 import { NutriBot } from '@/components/chat/NutriBot';
 import { SplashScreen } from '@/components/ui/SplashScreen';
 import { PWAInstallPrompt } from '@/components/ui/PWAInstallPrompt';
+import { PullToRefresh } from '@/components/ui/PullToRefresh';
 
 // =============================================================================
 // CONFIGURAZIONE FONT
@@ -208,6 +209,9 @@ export default function RootLayout({
           
           {/* PWA Install Prompt per mobile/tablet */}
           <PWAInstallPrompt />
+          
+          {/* Pull to Refresh per mobile (punto 8) */}
+          <PullToRefresh />
         </Providers>
       </body>
     </html>

@@ -24,7 +24,9 @@ import {
   XCircle,
   AlertCircle,
   TrendingUp,
-  Activity
+  Activity,
+  Home,
+  UserCheck
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { format, startOfWeek, endOfWeek, isToday, isTomorrow } from 'date-fns';
@@ -189,6 +191,52 @@ export function MasterDashboard({ user }: MasterDashboardProps) {
             </Link>
           </div>
         </motion.div>
+
+        {/* Bottoni navigazione master (come in admin) - punto 2 e 6 */}
+        <div className="flex flex-wrap gap-2 mb-6">
+          <Link
+            href="/area-personale"
+            className="flex items-center gap-2 px-3 sm:px-4 py-2 rounded-xl font-medium bg-sage-500 text-white shadow-md"
+          >
+            <Home className="w-4 h-4" />
+            <span className="hidden sm:inline">Dashboard</span>
+          </Link>
+          <Link
+            href="/agenda"
+            className="flex items-center gap-2 px-3 sm:px-4 py-2 rounded-xl font-medium bg-lavender-100 text-lavender-700 hover:bg-lavender-200 border border-lavender-200"
+          >
+            <Calendar className="w-4 h-4" />
+            <span className="hidden sm:inline">Agenda</span>
+          </Link>
+          <Link
+            href="/admin?tab=appointments"
+            className="flex items-center gap-2 px-3 sm:px-4 py-2 rounded-xl font-medium bg-white text-sage-600 hover:bg-sage-50 border border-sage-100"
+          >
+            <CalendarPlus className="w-4 h-4" />
+            <span className="hidden sm:inline">Appuntamenti</span>
+          </Link>
+          <Link
+            href="/admin?tab=whitelist"
+            className="flex items-center gap-2 px-3 sm:px-4 py-2 rounded-xl font-medium bg-white text-sage-600 hover:bg-sage-50 border border-sage-100"
+          >
+            <UserCheck className="w-4 h-4" />
+            <span className="hidden sm:inline">Whitelist</span>
+          </Link>
+          <Link
+            href="/admin?tab=timeblocks"
+            className="flex items-center gap-2 px-3 sm:px-4 py-2 rounded-xl font-medium bg-white text-sage-600 hover:bg-sage-50 border border-sage-100"
+          >
+            <Clock className="w-4 h-4" />
+            <span className="hidden sm:inline">Blocchi</span>
+          </Link>
+          <Link
+            href="/admin?tab=stats"
+            className="flex items-center gap-2 px-3 sm:px-4 py-2 rounded-xl font-medium bg-white text-sage-600 hover:bg-sage-50 border border-sage-100"
+          >
+            <BarChart3 className="w-4 h-4" />
+            <span className="hidden sm:inline">Statistiche</span>
+          </Link>
+        </div>
 
         {/* Richieste in Attesa - unica card statistica */}
         {stats.pendingRequests > 0 && (

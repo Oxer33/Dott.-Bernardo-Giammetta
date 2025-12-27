@@ -25,7 +25,7 @@ export async function GET(request: NextRequest) {
     }
     
     const { searchParams } = new URL(request.url);
-    const filter = searchParams.get('filter') || 'all'; // all, whitelisted, pending
+    const filter = searchParams.get('filter') || 'all'; // all, whitelisted, pending, pending_with_visits, pending_without_visits
     const search = searchParams.get('search') || '';
     
     // Query base
@@ -38,6 +38,14 @@ export async function GET(request: NextRequest) {
       whereClause.isWhitelisted = true;
     } else if (filter === 'pending') {
       whereClause.isWhitelisted = false;
+    } else if (filter === 'pending_with_visits') {
+      // Punto 10: Pazienti in attesa CON visite prenotate
+      whereClause.isWhitelisted = false;
+      whereClause.appointments = { some: {} };
+    } else if (filter === 'pending_without_visits') {
+      // Punto 10: Pazienti in attesa SENZA visite
+      whereClause.isWhitelisted = false;
+      whereClause.appointments = { none: {} };
     }
     
     // Filtro ricerca
