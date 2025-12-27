@@ -132,6 +132,13 @@ export const authOptions: NextAuthOptions = {
         session.user.id = token.sub || token.id as string || 'jwt-user';
         session.user.role = (token.role as 'ADMIN' | 'PATIENT') || 'PATIENT';
         session.user.isWhitelisted = (token.isWhitelisted as boolean) || false;
+        
+        // CRITICO: Copia email dal token alla sessione (necessario per isMasterAccount)
+        // L'email potrebbe non essere presente in session.user da OAuth
+        if (token.email) {
+          session.user.email = token.email as string;
+        }
+        
         // Ricontrolla se è master (per sicurezza)
         if (isMasterAccount(session.user.email)) {
           session.user.role = 'ADMIN';

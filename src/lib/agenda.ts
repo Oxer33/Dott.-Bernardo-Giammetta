@@ -288,6 +288,15 @@ export async function canUserBook(
   const isUserMaster = isMasterAccount(user.email);
   const isMaster = isMasterCalling || isUserMaster;
   
+  // DEBUG: Log dettagliato per capire il problema
+  console.log('[canUserBook DEBUG] callerEmail:', callerEmail);
+  console.log('[canUserBook DEBUG] user.email:', user.email);
+  console.log('[canUserBook DEBUG] isMasterCalling:', isMasterCalling);
+  console.log('[canUserBook DEBUG] isUserMaster:', isUserMaster);
+  console.log('[canUserBook DEBUG] isMaster (finale):', isMaster);
+  console.log('[canUserBook DEBUG] startTime:', startTime);
+  console.log('[canUserBook DEBUG] user.isWhitelisted:', user.isWhitelisted);
+  
   // Prepara warning per paziente non in whitelist (solo se master prenota per lui)
   let patientWarning: string | undefined;
   
