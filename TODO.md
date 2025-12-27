@@ -142,6 +142,26 @@
 - [x] **AgendaCalendar** nascosta descrizione per master
 - [x] **AgendaCalendar** "Vai alla data" per master e whitelist
 - [x] **TimeBlocksManager** rimosso + dal bottone "Nuovo Blocco"
+
+### Miglioramenti UI/UX - 27/12/2024 ✅ NUOVO
+- [x] **Navbar** click fuori chiude menu utente desktop
+- [x] **MasterDashboard** bottoni navigazione rapida (6 bottoni come admin)
+- [x] **MasterDashboard** bottone Agenda dedicato
+- [x] **AppointmentsList** fix layout quando si apre tastiera mobile
+- [x] **AdminStats** sezione Statistiche completa con grafici:
+  - Visite completate (settimana/mese/anno) con trend
+  - Visite cancellate (settimana/mese/anno)
+  - Picchi affluenza (fascia oraria, giorno, mese)
+  - Grafici distribuzione oraria/settimanale/mensile
+  - Trend ultimi 6 mesi con confronto completate/cancellate
+  - Statistiche pazienti (totali, approvati, in attesa, nuovi)
+  - Tasso di completamento annuale
+- [x] **WhitelistManager** bottoni responsive su più righe
+- [x] **WhitelistManager** filtri avanzati pazienti in attesa con/senza visite
+- [x] **API appointments** master può prenotare per pazienti in attesa
+- [x] **AgendaCalendar** date picker limitato anni 2020-2099, precompilato
+- [x] **PullToRefresh** nuovo componente refresh swipe-down su mobile
+- [x] **API stats** nuovo endpoint statistiche complete `/api/admin/stats`
 - [x] **LoadingSpinner** con varianti (default, leaf, dots, pulse)
 - [x] **Skeleton loaders** per card, table, page
 - [x] **ErrorMessage** e **ApiError** components
@@ -315,7 +335,7 @@
 
 ---
 
-## 💡 IDEE FUTURE
+## 💡 IDEE FUTURE (DA NON FARE)
 
 - [ ] Sistema recensioni integrato
 - [x] Chat bot per FAQ (NutriBot implementato!)
