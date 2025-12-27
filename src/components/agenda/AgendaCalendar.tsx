@@ -39,6 +39,8 @@ interface TimeSlot {
   blockNote?: string;
   patientName?: string;
   patientSurname?: string;
+  // Durata appuntamento per colori differenziati (60=lilla, 90=viola scuro)
+  appointmentDuration?: number;
 }
 
 interface DayAvailability {
@@ -181,6 +183,7 @@ export function AgendaCalendar() {
   };
 
   // Determina colore slot
+  // Punto 6: 90min viola scuro, 60min lilla, 120min rosso
   const getSlotColor = (slot: TimeSlot) => {
     if (slot.isAvailable) {
       return 'bg-green-100 hover:bg-green-200 text-green-800 cursor-pointer border-green-200';
@@ -192,7 +195,14 @@ export function AgendaCalendar() {
       return 'bg-amber-100 text-amber-700 cursor-not-allowed';
     }
     if (slot.blockType === 'appointment') {
-      return 'bg-blush-100 text-blush-700 cursor-not-allowed';
+      // Colori differenziati per durata
+      if (slot.appointmentDuration && slot.appointmentDuration >= 120) {
+        return 'bg-red-200 text-red-800 cursor-not-allowed'; // 120min = rosso
+      }
+      if (slot.appointmentDuration && slot.appointmentDuration >= 90) {
+        return 'bg-purple-300 text-purple-900 cursor-not-allowed'; // 90min = viola scuro
+      }
+      return 'bg-lavender-100 text-lavender-700 cursor-not-allowed'; // 60min = lilla
     }
     return 'bg-gray-100 text-gray-400 cursor-not-allowed';
   };

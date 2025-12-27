@@ -300,22 +300,27 @@ export function MasterBookingModal({
             </div>
           ) : (
             <>
-              {/* Header */}
-              <div className="p-6 border-b border-sage-100">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-xl font-display font-semibold text-sage-900">
-                    Gestione Agenda
-                  </h3>
-                  <button
-                    onClick={onClose}
-                    className="p-2 hover:bg-sage-100 rounded-lg transition-colors"
-                  >
-                    <X className="w-5 h-5 text-sage-600" />
-                  </button>
+              {/* Header con DATA e ORA BEN EVIDENTI */}
+              <div className="p-6 border-b border-sage-100 bg-gradient-to-r from-sage-50 to-lavender-50">
+                <button
+                  onClick={onClose}
+                  className="absolute top-4 right-4 p-2 hover:bg-white/50 rounded-lg transition-colors"
+                >
+                  <X className="w-5 h-5 text-sage-600" />
+                </button>
+                
+                {/* Data e ora come titolo principale */}
+                <div className="text-center">
+                  <p className="text-2xl font-display font-bold text-sage-900 capitalize">
+                    {format(new Date(selectedDate), "EEEE d MMMM", { locale: it })}
+                  </p>
+                  <p className="text-4xl font-bold text-sage-700 mt-1">
+                    {selectedTime}
+                  </p>
+                  <p className="text-sm text-sage-500 mt-1">
+                    {format(new Date(selectedDate), "yyyy", { locale: it })}
+                  </p>
                 </div>
-                <p className="text-sage-600 text-sm mt-1">
-                  {format(new Date(selectedDate), "EEEE d MMMM yyyy", { locale: it })} - ore {selectedTime}
-                </p>
               </div>
 
               {/* Selezione tipo azione */}

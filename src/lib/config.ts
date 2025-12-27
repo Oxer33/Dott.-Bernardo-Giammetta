@@ -10,15 +10,17 @@
 
 export const MASTER_ACCOUNTS = [
   'papa.danilo91tp@gmail.com',           // Danilo Papa - Developer
-  'bernardogiammetta@gmail.com',         // Dott. Bernardo Giammetta - Owner
   'dr.giammettabernardo@gmail.com',      // Dott. Bernardo Giammetta - Email principale
   'accomodationlapulena@gmail.com',      // La Pulena - Account secondario
 ] as const;
 
 // Verifica se un'email è un account master
+// IMPORTANTE: Confronto case-insensitive per evitare problemi
 export function isMasterAccount(email: string | null | undefined): boolean {
   if (!email) return false;
-  return MASTER_ACCOUNTS.includes(email.toLowerCase() as typeof MASTER_ACCOUNTS[number]);
+  const emailLower = email.toLowerCase();
+  // Confronto esplicito senza cast TypeScript problematico
+  return MASTER_ACCOUNTS.some(masterEmail => masterEmail.toLowerCase() === emailLower);
 }
 
 // =============================================================================

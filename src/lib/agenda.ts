@@ -61,6 +61,8 @@ export interface TimeSlot {
   // Info paziente (solo per admin quando blockType='appointment')
   patientName?: string;
   patientSurname?: string;
+  // Durata appuntamento per colori differenziati (60=lilla, 90=viola scuro)
+  appointmentDuration?: number;
 }
 
 export interface DayAvailability {
@@ -229,6 +231,8 @@ export async function getDayAvailability(
         slots[index].isAvailable = false;
         slots[index].isBlocked = true;
         slots[index].blockType = 'appointment';
+        // Aggiungi durata per colori differenziati (90min viola, 60min lilla)
+        slots[index].appointmentDuration = appointment.duration;
         // Aggiungi info paziente solo per admin
         if (includeBlockNotes && (patientName || patientSurname)) {
           slots[index].patientName = patientName;

@@ -69,7 +69,8 @@ export function AppointmentsList() {
   const [selectedApt, setSelectedApt] = useState<Appointment | null>(null);
   // Punto 2: Stato per modal modifica appuntamento
   const [editingApt, setEditingApt] = useState<Appointment | null>(null);
-  const [newDateTime, setNewDateTime] = useState('');
+  const [newDate, setNewDate] = useState(''); // Data separata (YYYY-MM-DD)
+  const [newTime, setNewTime] = useState(''); // Ora separata (HH:MM)
   const [newDuration, setNewDuration] = useState(60); // Punto 3: durata modificabile
 
   // Carica appuntamenti
@@ -171,28 +172,44 @@ export function AppointmentsList() {
     return 'bg-sage-50 text-sage-700 border-sage-100'; // 60 min = normale
   };
 
+  // Genera fasce orarie per il selettore (08:30 - 19:30)
+  const TIME_SLOTS = (() => {
+    const slots: string[] = [];
+    for (let hour = 8; hour < 20; hour++) {
+      for (let minute = 0; minute < 60; minute += 30) {
+        if (hour === 8 && minute === 0) continue; // Skip 08:00
+        slots.push(`${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`);
+      }
+    }
+    return slots;
+  })();
+
   // Punto 2 e 3: Funzione per riprogrammare appuntamento con durata modificabile
   const handleReschedule = async (appointmentId: string) => {
-    if (!newDateTime) return;
+    if (!newDate || !newTime) return;
     setActionLoading(appointmentId);
     try {
+      // Combina data e ora in formato ISO
+      const startTimeISO = `${newDate}T${newTime}:00`;
       const res = await fetch('/api/admin/appointments', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
           appointmentId, 
           action: 'reschedule', 
-          data: { startTime: newDateTime, duration: newDuration } 
+          data: { startTime: startTimeISO, duration: newDuration } 
         }),
       });
       const result = await res.json();
       if (result.success) {
         loadAppointments();
         setEditingApt(null);
-        setNewDateTime('');
+        setNewDate('');
+        setNewTime('');
         setNewDuration(60);
       } else {
         console.error('Errore salvataggio:', result.error);
+        alert('Errore: ' + result.error);
       }
     } catch (error) {
       console.error('Errore riprogrammazione:', error);
@@ -204,10 +221,10 @@ export function AppointmentsList() {
   // Helper per aprire modal modifica con valori preimpostati
   const openEditModal = (apt: Appointment) => {
     setEditingApt(apt);
-    // Formatta data per datetime-local (YYYY-MM-DDTHH:MM)
     const date = new Date(apt.startTime);
-    const formatted = date.toISOString().slice(0, 16);
-    setNewDateTime(formatted);
+    // Separa data e ora
+    setNewDate(date.toISOString().slice(0, 10)); // YYYY-MM-DD
+    setNewTime(date.toTimeString().slice(0, 5)); // HH:MM
     setNewDuration(apt.duration);
   };
 
@@ -545,37 +562,59 @@ export function AppointmentsList() {
         )}
       </div>
       
-      {/* Punto 2 e 3: Modal modifica appuntamento con durata selezionabile */}
+      {/* Punto 2 e 3: Modal modifica appuntamento con data/ora separati e fasce orarie */}
       {editingApt && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl p-6 max-w-md w-full shadow-xl">
-            <h3 className="text-lg font-semibold text-sage-800 mb-4 flex items-center gap-2">
-              <CalendarClock className="w-5 h-5 text-blue-500" />
-              Modifica Appuntamento
-            </h3>
-            <div className="space-y-4">
+          <div className="bg-white rounded-2xl p-6 max-w-md w-full shadow-xl max-h-[90vh] overflow-y-auto">
+            {/* Header con data evidenziata */}
+            <div className="text-center mb-6">
+              <p className="text-sm text-sage-500 mb-1">Modifica per</p>
+              <p className="font-semibold text-sage-800 text-lg">{getPatientName(editingApt)}</p>
+            </div>
+            
+            <div className="space-y-5">
+              {/* Data */}
               <div>
-                <label className="text-sm text-sage-600 block mb-1">Paziente</label>
-                <p className="font-medium text-sage-800">{getPatientName(editingApt)}</p>
-              </div>
-              <div>
-                <label className="text-sm text-sage-600 block mb-1">Nuova Data e Ora</label>
+                <label className="text-sm font-medium text-sage-700 block mb-2">📅 Data</label>
                 <input
-                  type="datetime-local"
-                  value={newDateTime}
-                  onChange={(e) => setNewDateTime(e.target.value)}
-                  className="w-full px-3 py-2 border border-sage-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-sage-400"
+                  type="date"
+                  value={newDate}
+                  onChange={(e) => setNewDate(e.target.value)}
+                  className="w-full px-4 py-3 border-2 border-sage-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-sage-400 focus:border-sage-400 text-lg font-medium text-center"
                 />
               </div>
+              
+              {/* Orario con fasce orarie selezionabili */}
               <div>
-                <label className="text-sm text-sage-600 block mb-1">Durata</label>
+                <label className="text-sm font-medium text-sage-700 block mb-2">🕐 Orario</label>
+                <div className="grid grid-cols-4 gap-2 max-h-48 overflow-y-auto p-1">
+                  {TIME_SLOTS.map((slot) => (
+                    <button
+                      key={slot}
+                      type="button"
+                      onClick={() => setNewTime(slot)}
+                      className={`py-2 px-2 rounded-lg text-sm font-medium transition-colors ${
+                        newTime === slot
+                          ? 'bg-sage-500 text-white shadow-md'
+                          : 'bg-sage-50 text-sage-700 hover:bg-sage-100 border border-sage-200'
+                      }`}
+                    >
+                      {slot}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              
+              {/* Durata */}
+              <div>
+                <label className="text-sm font-medium text-sage-700 block mb-2">⏱️ Durata</label>
                 <div className="flex gap-2">
                   <button
                     type="button"
                     onClick={() => setNewDuration(60)}
-                    className={`flex-1 py-2 px-3 rounded-lg border text-sm font-medium transition-colors ${
+                    className={`flex-1 py-3 px-3 rounded-xl border-2 text-sm font-medium transition-colors ${
                       newDuration === 60 
-                        ? 'bg-sage-500 text-white border-sage-500' 
+                        ? 'bg-lavender-100 text-lavender-700 border-lavender-300' 
                         : 'bg-white text-sage-600 border-sage-200 hover:bg-sage-50'
                     }`}
                   >
@@ -584,9 +623,9 @@ export function AppointmentsList() {
                   <button
                     type="button"
                     onClick={() => setNewDuration(90)}
-                    className={`flex-1 py-2 px-3 rounded-lg border text-sm font-medium transition-colors ${
+                    className={`flex-1 py-3 px-3 rounded-xl border-2 text-sm font-medium transition-colors ${
                       newDuration === 90 
-                        ? 'bg-sage-600 text-white border-sage-600' 
+                        ? 'bg-purple-600 text-white border-purple-600' 
                         : 'bg-white text-sage-600 border-sage-200 hover:bg-sage-50'
                     }`}
                   >
@@ -595,7 +634,7 @@ export function AppointmentsList() {
                   <button
                     type="button"
                     onClick={() => setNewDuration(120)}
-                    className={`flex-1 py-2 px-3 rounded-lg border text-sm font-medium transition-colors ${
+                    className={`flex-1 py-3 px-3 rounded-xl border-2 text-sm font-medium transition-colors ${
                       newDuration === 120 
                         ? 'bg-red-500 text-white border-red-500' 
                         : 'bg-white text-sage-600 border-sage-200 hover:bg-sage-50'
@@ -606,22 +645,23 @@ export function AppointmentsList() {
                 </div>
               </div>
             </div>
+            
             <div className="flex gap-3 mt-6">
               <button
-                onClick={() => { setEditingApt(null); setNewDateTime(''); setNewDuration(60); }}
-                className="flex-1 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200"
+                onClick={() => { setEditingApt(null); setNewDate(''); setNewTime(''); setNewDuration(60); }}
+                className="flex-1 py-3 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 font-medium"
               >
                 Annulla
               </button>
               <button
                 onClick={() => handleReschedule(editingApt.id)}
-                disabled={!newDateTime || actionLoading === editingApt.id}
-                className="flex-1 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:opacity-50 flex items-center justify-center gap-2"
+                disabled={!newDate || !newTime || actionLoading === editingApt.id}
+                className="flex-1 py-3 bg-sage-500 text-white rounded-xl hover:bg-sage-600 disabled:opacity-50 flex items-center justify-center gap-2 font-medium"
               >
                 {actionLoading === editingApt.id ? (
                   <Loader2 className="w-4 h-4 animate-spin" />
                 ) : (
-                  <>Salva Modifiche</>
+                  <>Salva</>
                 )}
               </button>
             </div>
