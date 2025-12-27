@@ -274,8 +274,23 @@ export async function PUT(request: NextRequest) {
         if (!data?.startTime || !data?.duration) {
           return NextResponse.json({ success: false, error: 'Nuova data e durata richiesti' }, { status: 400 });
         }
-        const newStart = new Date(data.startTime);
+        console.log('[RESCHEDULE] startTime ricevuto:', data.startTime, 'duration:', data.duration);
+        
+        // Parse data in modo robusto
+        let newStart: Date;
+        try {
+          newStart = new Date(data.startTime);
+          if (isNaN(newStart.getTime())) {
+            throw new Error('Data non valida');
+          }
+        } catch (e) {
+          console.error('[RESCHEDULE] Errore parsing data:', e);
+          return NextResponse.json({ success: false, error: 'Formato data non valido' }, { status: 400 });
+        }
+        
         const newEnd = new Date(newStart.getTime() + data.duration * 60 * 1000);
+        console.log('[RESCHEDULE] newStart:', newStart, 'newEnd:', newEnd);
+        
         updateData = {
           startTime: newStart,
           endTime: newEnd,

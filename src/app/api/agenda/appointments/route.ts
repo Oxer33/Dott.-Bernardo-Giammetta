@@ -66,8 +66,12 @@ export async function POST(request: NextRequest) {
     
     // Se admin/master e specifica un userId, prenota per quell'utente
     // CRITICO: Master deve poter prenotare per qualsiasi paziente
-    const isMaster = isMasterAccount(session.user.email);
-    if (targetUserId && (session.user.role === 'ADMIN' || isMaster)) {
+    // Usa ENTRAMBI i controlli: email E ruolo (per retrocompatibilità sessioni)
+    const isMaster = isMasterAccount(session.user.email) || session.user.role === 'ADMIN';
+    
+    console.log('[MASTER CHECK] email:', session.user.email, 'role:', session.user.role, 'isMaster:', isMaster);
+    
+    if (targetUserId && isMaster) {
       bookingUserId = targetUserId;
     }
     
@@ -94,7 +98,8 @@ export async function POST(request: NextRequest) {
 
     // Verifica che l'utente sia whitelistato (o sia admin/master che prenota)
     // PUNTO 9: Master può sempre prenotare per qualsiasi paziente (anche in attesa)
-    const isAdmin = session.user.role === 'ADMIN' || isMasterAccount(session.user.email);
+    // NOTA: isMaster già include controllo ruolo, quindi lo usiamo direttamente
+    const isAdmin = isMaster;
     
     // Se non è admin E il paziente per cui si prenota non è whitelisted, blocca
     // Ma se è admin, può prenotare per chiunque
@@ -151,11 +156,12 @@ export async function POST(request: NextRequest) {
       : VISIT_DURATION.FOLLOW_UP;
     
     // Passa l'email del chiamante per verifiche master (punti 1, 8, 9)
+    // IMPORTANTE: Se è master, passa un flag esplicito
     const canBook = await canUserBook(
       bookingUserId, 
       parseISO(startTime), 
       duration,
-      session.user.email || undefined
+      isMaster ? 'MASTER_OVERRIDE' : (session.user.email || undefined)
     );
     
     if (!canBook.canBook) {

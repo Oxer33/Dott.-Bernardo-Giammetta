@@ -284,9 +284,12 @@ export async function canUserBook(
   
   // Verifica se chi chiama è l'account master (callerEmail) o se l'utente target è master
   // CRITICO: Usa lista completa account master da config.ts
-  const isMasterCalling = isMasterAccount(callerEmail);
+  // NOTA: 'MASTER_OVERRIDE' è un flag esplicito passato dall'API quando il ruolo è ADMIN
+  const isMasterCalling = callerEmail === 'MASTER_OVERRIDE' || isMasterAccount(callerEmail);
   const isUserMaster = isMasterAccount(user.email);
   const isMaster = isMasterCalling || isUserMaster;
+  
+  console.log('[canUserBook] callerEmail:', callerEmail, 'isMasterCalling:', isMasterCalling, 'isMaster:', isMaster);
   
   // Prepara warning per paziente non in whitelist (solo se master prenota per lui)
   let patientWarning: string | undefined;
