@@ -1,7 +1,9 @@
 // =============================================================================
 // API: SCADENZA WHITELIST - DOTT. BERNARDO GIAMMETTA
-// Punto 11: Dopo 12 mesi dall'ultima visita, paziente torna in attesa
-// Endpoint da chiamare periodicamente (cron job) o manualmente
+// Punto 9: Dopo 12 mesi dall'ultima visita, paziente torna in attesa
+// DA CHIAMARE UNA VOLTA A SETTIMANA (non giornalmente)
+// ESCLUDE pazienti con patientStatus = "COMPLETED" (Ultimati)
+// Endpoint da chiamare via cron job settimanale o manualmente
 // GET /api/cron/whitelist-expiry
 // =============================================================================
 

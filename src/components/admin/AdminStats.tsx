@@ -20,7 +20,10 @@ import {
   RefreshCw,
   BarChart3,
   CalendarDays,
-  UserPlus
+  UserPlus,
+  Search,
+  Award,
+  X
 } from 'lucide-react';
 
 // =============================================================================
@@ -174,10 +177,31 @@ function TrendChart({ data }: { data: Array<{ month: string; completed: number; 
 // COMPONENTE ADMIN STATS
 // =============================================================================
 
+// Tipo per paziente selezionato
+interface PatientStats {
+  id: string;
+  name: string;
+  email: string;
+  totalVisits: number;
+  completedVisits: number;
+  cancelledVisits: number;
+  firstVisit: string | null;
+  lastVisit: string | null;
+  avgDaysBetweenVisits: number | null;
+  patientStatus: string;
+  isWhitelisted: boolean;
+}
+
 export function AdminStats() {
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState<StatsData | null>(null);
   const [error, setError] = useState<string | null>(null);
+  // Punto 5: Ricerca paziente
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState<PatientStats[]>([]);
+  const [selectedPatient, setSelectedPatient] = useState<PatientStats | null>(null);
+  const [searchLoading, setSearchLoading] = useState(false);
+  const [updatingStatus, setUpdatingStatus] = useState(false);
 
   // Carica dati statistiche
   const loadStats = async () => {
@@ -199,9 +223,77 @@ export function AdminStats() {
     }
   };
 
+  // Punto 5: Ricerca paziente
+  const searchPatients = async (query: string) => {
+    if (query.length < 2) {
+      setSearchResults([]);
+      return;
+    }
+    setSearchLoading(true);
+    try {
+      const res = await fetch(`/api/admin/patient-stats?search=${encodeURIComponent(query)}`);
+      const data = await res.json();
+      if (data.success) {
+        setSearchResults(data.patients || []);
+      }
+    } catch (err) {
+      console.error('Errore ricerca:', err);
+    } finally {
+      setSearchLoading(false);
+    }
+  };
+  
+  // Carica statistiche singolo paziente
+  const loadPatientStats = async (patientId: string) => {
+    setSearchLoading(true);
+    try {
+      const res = await fetch(`/api/admin/patient-stats?id=${patientId}`);
+      const data = await res.json();
+      if (data.success) {
+        setSelectedPatient(data.patient);
+        setSearchResults([]);
+        setSearchQuery('');
+      }
+    } catch (err) {
+      console.error('Errore caricamento paziente:', err);
+    } finally {
+      setSearchLoading(false);
+    }
+  };
+  
+  // Cambia stato paziente (Ultimato/Attivo)
+  const togglePatientStatus = async () => {
+    if (!selectedPatient) return;
+    setUpdatingStatus(true);
+    try {
+      const newStatus = selectedPatient.patientStatus === 'COMPLETED' ? 'ACTIVE' : 'COMPLETED';
+      const res = await fetch('/api/admin/patient-stats', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ patientId: selectedPatient.id, status: newStatus }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setSelectedPatient({ ...selectedPatient, patientStatus: newStatus });
+      }
+    } catch (err) {
+      console.error('Errore aggiornamento stato:', err);
+    } finally {
+      setUpdatingStatus(false);
+    }
+  };
+
   useEffect(() => {
     loadStats();
   }, []);
+  
+  // Debounce ricerca
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (searchQuery) searchPatients(searchQuery);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
 
   if (loading) {
     return (
@@ -235,6 +327,102 @@ export function AdminStats() {
         >
           <RefreshCw className="w-5 h-5 text-sage-500" />
         </button>
+      </div>
+
+      {/* Punto 5: Ricerca Paziente */}
+      <div className="bg-white rounded-xl p-4 border border-sage-100 shadow-sm">
+        <h3 className="text-sm font-medium text-sage-600 mb-3 flex items-center gap-2">
+          <Search className="w-4 h-4 text-purple-500" />
+          Statistiche Paziente
+        </h3>
+        <div className="relative">
+          <input
+            type="text"
+            placeholder="Cerca paziente per nome o email..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full px-4 py-2 pl-10 border border-sage-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-sage-400"
+          />
+          <Search className="absolute left-3 top-2.5 w-4 h-4 text-sage-400" />
+          {searchLoading && <Loader2 className="absolute right-3 top-2.5 w-4 h-4 text-sage-400 animate-spin" />}
+        </div>
+        
+        {/* Risultati ricerca */}
+        {searchResults.length > 0 && (
+          <div className="mt-2 border border-sage-100 rounded-lg max-h-40 overflow-auto">
+            {searchResults.map((p) => (
+              <button
+                key={p.id}
+                onClick={() => loadPatientStats(p.id)}
+                className="w-full px-3 py-2 text-left hover:bg-sage-50 flex items-center justify-between border-b last:border-0"
+              >
+                <div>
+                  <p className="font-medium text-sage-800">{p.name}</p>
+                  <p className="text-xs text-sage-500">{p.email}</p>
+                </div>
+                <span className="text-xs bg-sage-100 px-2 py-1 rounded">{p.totalVisits} visite</span>
+              </button>
+            ))}
+          </div>
+        )}
+        
+        {/* Card paziente selezionato */}
+        {selectedPatient && (
+          <div className="mt-4 bg-purple-50 rounded-xl p-4 border border-purple-100">
+            <div className="flex items-start justify-between mb-3">
+              <div>
+                <h4 className="font-semibold text-purple-900">{selectedPatient.name}</h4>
+                <p className="text-sm text-purple-600">{selectedPatient.email}</p>
+              </div>
+              <button onClick={() => setSelectedPatient(null)} className="p-1 hover:bg-purple-200 rounded">
+                <X className="w-4 h-4 text-purple-600" />
+              </button>
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
+              <div className="text-center p-2 bg-white rounded-lg">
+                <p className="text-2xl font-bold text-purple-700">{selectedPatient.completedVisits}</p>
+                <p className="text-xs text-purple-500">Visite completate</p>
+              </div>
+              <div className="text-center p-2 bg-white rounded-lg">
+                <p className="text-2xl font-bold text-red-600">{selectedPatient.cancelledVisits}</p>
+                <p className="text-xs text-red-500">Cancellate</p>
+              </div>
+              <div className="text-center p-2 bg-white rounded-lg">
+                <p className="text-2xl font-bold text-blue-600">
+                  {selectedPatient.avgDaysBetweenVisits || '-'}
+                </p>
+                <p className="text-xs text-blue-500">Giorni medi tra visite</p>
+              </div>
+              <div className="text-center p-2 bg-white rounded-lg">
+                <p className="text-lg font-bold text-sage-700">
+                  {selectedPatient.lastVisit ? new Date(selectedPatient.lastVisit).toLocaleDateString('it-IT') : '-'}
+                </p>
+                <p className="text-xs text-sage-500">Ultima visita</p>
+              </div>
+            </div>
+            {/* Bottone Ultimato */}
+            <button
+              onClick={togglePatientStatus}
+              disabled={updatingStatus}
+              className={`w-full py-2 rounded-lg font-medium flex items-center justify-center gap-2 transition-colors ${
+                selectedPatient.patientStatus === 'COMPLETED'
+                  ? 'bg-green-100 text-green-700 hover:bg-green-200'
+                  : 'bg-orange-100 text-orange-700 hover:bg-orange-200'
+              }`}
+            >
+              {updatingStatus ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <>
+                  <Award className="w-4 h-4" />
+                  {selectedPatient.patientStatus === 'COMPLETED' 
+                    ? 'Stato: Ultimato ✓ (clicca per riattivare)' 
+                    : 'Segna come Ultimato'}
+                </>
+              )}
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Sezione: Visite Completate */}
