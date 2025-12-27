@@ -14,11 +14,12 @@ import type { NextRequest } from 'next/server';
 const rateLimitMap = new Map<string, { count: number; resetTime: number }>();
 
 // Configurazione rate limits per tipo di route
+// Punto 12: Aumentato limite auth per evitare blocchi durante login/logout
 const RATE_LIMITS = {
   api: { limit: 100, window: 60 * 1000 },      // 100 req/min per API generiche
-  auth: { limit: 10, window: 60 * 1000 },      // 10 req/min per auth (anti-brute force)
+  auth: { limit: 30, window: 60 * 1000 },      // 30 req/min per auth (aumentato da 10)
   chat: { limit: 20, window: 60 * 1000 },      // 20 req/min per chat (già in route)
-  admin: { limit: 50, window: 60 * 1000 },     // 50 req/min per admin
+  admin: { limit: 100, window: 60 * 1000 },    // 100 req/min per admin (aumentato da 50)
 };
 
 function getRateLimitConfig(pathname: string) {

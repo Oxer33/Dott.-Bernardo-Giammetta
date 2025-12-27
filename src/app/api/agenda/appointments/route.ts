@@ -129,11 +129,13 @@ export async function POST(request: NextRequest) {
     const duration = type === 'FIRST_VISIT' 
       ? VISIT_DURATION.FIRST_VISIT 
       : VISIT_DURATION.FOLLOW_UP;
-      
+    
+    // Passa l'email del chiamante per verifiche master (punti 1, 8, 9)
     const canBook = await canUserBook(
       bookingUserId, 
       parseISO(startTime), 
-      duration
+      duration,
+      session.user.email || undefined
     );
     
     if (!canBook.canBook) {
@@ -141,6 +143,11 @@ export async function POST(request: NextRequest) {
         { success: false, error: canBook.reason },
         { status: 400 }
       );
+    }
+    
+    // Log warning se paziente non in whitelist (solo avviso, non blocco)
+    if (canBook.warning) {
+      console.log(`[BOOKING WARNING] ${canBook.warning} - Paziente: ${bookingUser.email}`);
     }
     
     // Crea appuntamento

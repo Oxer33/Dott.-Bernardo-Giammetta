@@ -109,6 +109,7 @@ export function MasterDashboard({ user }: MasterDashboardProps) {
     weekAppointments: 0,
     totalPatients: 0,
     pendingRequests: 0,
+    pendingWithVisits: 0, // Punto 3: pazienti in attesa con visite effettuate
   });
   const [loading, setLoading] = useState(true);
 
@@ -128,11 +129,16 @@ export function MasterDashboard({ user }: MasterDashboardProps) {
           return date >= weekStart && date <= weekEnd;
         }).length;
         
+        // Punto 3: Carica anche pazienti in attesa con visite
+        const resPendingWithVisits = await fetch('/api/admin/patients?filter=pending_with_visits');
+        const dataPendingWithVisits = await resPendingWithVisits.json();
+        
         setStats({
           totalAppointments: user.appointments.length,
           weekAppointments,
           totalPatients: data.success ? data.stats.whitelisted : 0,
           pendingRequests: data.success ? data.stats.pending : 0,
+          pendingWithVisits: dataPendingWithVisits.success ? dataPendingWithVisits.patients.length : 0,
         });
       } catch (error) {
         // Log solo in development
@@ -146,6 +152,7 @@ export function MasterDashboard({ user }: MasterDashboardProps) {
           weekAppointments: 0,
           totalPatients: 0,
           pendingRequests: 0,
+          pendingWithVisits: 0,
         });
       } finally {
         setLoading(false);
@@ -238,32 +245,61 @@ export function MasterDashboard({ user }: MasterDashboardProps) {
           </Link>
         </div>
 
-        {/* Richieste in Attesa - unica card statistica */}
-        {stats.pendingRequests > 0 && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-            className="mb-8"
-          >
-            <Link href="/admin">
-              <div className="bg-orange-50 border-2 border-orange-200 rounded-2xl p-6 hover:bg-orange-100 transition-colors cursor-pointer">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-4">
-                    <div className="w-14 h-14 rounded-xl bg-orange-100 flex items-center justify-center">
-                      <UserPlus className="w-7 h-7 text-orange-600" />
+        {/* Cards statistiche in attesa */}
+        <div className="grid sm:grid-cols-2 gap-4 mb-8">
+          {/* Richieste in Attesa */}
+          {stats.pendingRequests > 0 && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
+            >
+              <Link href="/admin?tab=whitelist">
+                <div className="bg-orange-50 border-2 border-orange-200 rounded-2xl p-6 hover:bg-orange-100 transition-colors cursor-pointer h-full">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                      <div className="w-14 h-14 rounded-xl bg-orange-100 flex items-center justify-center">
+                        <UserPlus className="w-7 h-7 text-orange-600" />
+                      </div>
+                      <div>
+                        <p className="text-orange-600 text-sm font-medium">Richieste in Attesa</p>
+                        <p className="text-3xl font-bold text-orange-700">{stats.pendingRequests}</p>
+                      </div>
                     </div>
-                    <div>
-                      <p className="text-orange-600 text-sm font-medium">Richieste in Attesa</p>
-                      <p className="text-3xl font-bold text-orange-700">{stats.pendingRequests}</p>
-                    </div>
+                    <ChevronRight className="w-6 h-6 text-orange-400" />
                   </div>
-                  <ChevronRight className="w-6 h-6 text-orange-400" />
                 </div>
-              </div>
-            </Link>
-          </motion.div>
-        )}
+              </Link>
+            </motion.div>
+          )}
+          
+          {/* Punto 3: In Attesa con Visita Effettuata */}
+          {stats.pendingWithVisits > 0 && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.15 }}
+            >
+              <Link href="/admin?tab=whitelist">
+                <div className="bg-purple-50 border-2 border-purple-200 rounded-2xl p-6 hover:bg-purple-100 transition-colors cursor-pointer h-full">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                      <div className="w-14 h-14 rounded-xl bg-purple-100 flex items-center justify-center">
+                        <Calendar className="w-7 h-7 text-purple-600" />
+                      </div>
+                      <div>
+                        <p className="text-purple-600 text-sm font-medium">In Attesa con Visita</p>
+                        <p className="text-3xl font-bold text-purple-700">{stats.pendingWithVisits}</p>
+                        <p className="text-xs text-purple-500">Da approvare dopo visita</p>
+                      </div>
+                    </div>
+                    <ChevronRight className="w-6 h-6 text-purple-400" />
+                  </div>
+                </div>
+              </Link>
+            </motion.div>
+          )}
+        </div>
 
         <div className="space-y-6">
             {/* Appuntamenti di oggi */}

@@ -23,7 +23,11 @@ export const metadata: Metadata = {
 // COMPONENTE PAGINA
 // =============================================================================
 
-export default async function AdminPage() {
+interface AdminPageProps {
+  searchParams: { tab?: string };
+}
+
+export default async function AdminPage({ searchParams }: AdminPageProps) {
   // Verifica autenticazione e ruolo admin
   const session = await getServerSession(authOptions);
   
@@ -35,5 +39,8 @@ export default async function AdminPage() {
     redirect('/');
   }
   
-  return <AdminDashboard user={session.user} />;
+  // Leggi tab dalla query string (punto 5)
+  const initialTab = searchParams.tab as 'appointments' | 'whitelist' | 'timeblocks' | 'stats' | undefined;
+  
+  return <AdminDashboard user={session.user} initialTab={initialTab} />;
 }

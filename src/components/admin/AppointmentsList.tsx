@@ -23,7 +23,8 @@ import {
   FileText,
   Edit3,
   Phone,
-  Mail
+  Mail,
+  CalendarClock
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { it } from 'date-fns/locale';
@@ -63,8 +64,12 @@ export function AppointmentsList() {
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [editingNotes, setEditingNotes] = useState<string | null>(null);
   const [notesText, setNotesText] = useState('');
+  const [savingNotes, setSavingNotes] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
   const [selectedApt, setSelectedApt] = useState<Appointment | null>(null);
+  // Punto 2: Stato per modal modifica appuntamento
+  const [editingApt, setEditingApt] = useState<Appointment | null>(null);
+  const [newDateTime, setNewDateTime] = useState('');
 
   // Carica appuntamenti
   const loadAppointments = async () => {
@@ -126,6 +131,67 @@ export function AppointmentsList() {
         // eslint-disable-next-line no-console
         console.error('Errore azione:', error);
       }
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  // Punto 10: Autosalvataggio note quando si esce dal campo
+  const handleNotesBlur = async (appointmentId: string, originalNotes: string | null) => {
+    // Salva solo se il testo è cambiato
+    if (notesText !== (originalNotes || '')) {
+      setSavingNotes(true);
+      try {
+        const res = await fetch('/api/admin/appointments', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ appointmentId, action: 'update_notes', data: { notes: notesText } }),
+        });
+        const result = await res.json();
+        if (result.success) {
+          // Aggiorna localmente senza ricaricare tutto
+          setAppointments(prev => prev.map(apt => 
+            apt.id === appointmentId ? { ...apt, notes: notesText } : apt
+          ));
+        }
+      } catch (error) {
+        console.error('Errore salvataggio nota:', error);
+      } finally {
+        setSavingNotes(false);
+      }
+    }
+    setEditingNotes(null);
+  };
+
+  // Punto 6: Helper per colore in base alla durata
+  const getDurationColor = (duration: number) => {
+    if (duration >= 120) return 'bg-red-100 text-red-700 border-red-200'; // 120 min = rosso
+    if (duration >= 90) return 'bg-sage-200 text-sage-800 border-sage-300'; // 90 min = più scuro
+    return 'bg-sage-50 text-sage-700 border-sage-100'; // 60 min = normale
+  };
+
+  // Punto 2: Funzione per riprogrammare appuntamento
+  const handleReschedule = async (appointmentId: string, duration: number) => {
+    if (!newDateTime) return;
+    setActionLoading(appointmentId);
+    try {
+      const res = await fetch('/api/admin/appointments', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          appointmentId, 
+          action: 'reschedule', 
+          data: { startTime: newDateTime, duration } 
+        }),
+      });
+      const result = await res.json();
+      if (result.success) {
+        loadAppointments();
+        setEditingApt(null);
+        setNewDateTime('');
+      }
+    } catch (error) {
+      console.error('Errore riprogrammazione:', error);
     } finally {
       setActionLoading(null);
     }
@@ -248,7 +314,7 @@ export function AppointmentsList() {
                   animate={{ opacity: 1 }}
                   transition={{ delay: index * 0.03 }}
                   layout={false}
-                  className="p-4 space-y-3"
+                  className="p-4 space-y-3 overflow-hidden"
                 >
                   {/* Header con paziente e stato */}
                   <div className="flex items-start justify-between">
@@ -270,9 +336,9 @@ export function AppointmentsList() {
                       <Calendar className="w-3 h-3" />
                       {format(new Date(apt.startTime), 'dd/MM/yy', { locale: it })}
                     </div>
-                    <div className="flex items-center gap-1 text-sage-700 bg-sage-50 px-2 py-1 rounded">
+                    <div className={`flex items-center gap-1 px-2 py-1 rounded border ${getDurationColor(apt.duration)}`}>
                       <Clock className="w-3 h-3" />
-                      {format(new Date(apt.startTime), 'HH:mm')}
+                      {format(new Date(apt.startTime), 'HH:mm')} ({apt.duration}min)
                     </div>
                     <span className={`px-2 py-1 rounded text-xs font-medium ${
                       apt.type === 'FIRST_VISIT' ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700'
@@ -281,26 +347,22 @@ export function AppointmentsList() {
                     </span>
                   </div>
                   
-                  {/* Note */}
+                  {/* Note - Punto 10: autosalvataggio onBlur */}
                   {editingNotes === apt.id ? (
                     <div className="flex gap-2">
                       <input
                         type="text"
                         value={notesText}
                         onChange={(e) => setNotesText(e.target.value)}
+                        onBlur={() => handleNotesBlur(apt.id, apt.notes)}
                         className="flex-1 px-3 py-2 text-sm border rounded-lg"
-                        placeholder="Aggiungi nota..."
+                        placeholder="Aggiungi nota... (salvataggio automatico)"
                         autoFocus
                       />
-                      <button onClick={() => handleAction(apt.id, 'update_notes', { notes: notesText })} className="p-2 bg-green-100 text-green-600 rounded-lg">
-                        <Check className="w-4 h-4" />
-                      </button>
-                      <button onClick={() => setEditingNotes(null)} className="p-2 bg-gray-100 text-gray-600 rounded-lg">
-                        <X className="w-4 h-4" />
-                      </button>
+                      {savingNotes && <Loader2 className="w-4 h-4 animate-spin text-sage-400 self-center" />}
                     </div>
                   ) : apt.notes ? (
-                    <p onClick={() => { setEditingNotes(apt.id); setNotesText(apt.notes || ''); }} className="text-sm text-sage-600 bg-sage-50 p-2 rounded-lg cursor-pointer">
+                    <p onClick={() => { setEditingNotes(apt.id); setNotesText(apt.notes || ''); }} className="text-sm text-sage-600 bg-sage-50 p-2 rounded-lg cursor-pointer hover:bg-sage-100">
                       {apt.notes}
                     </p>
                   ) : null}
@@ -323,6 +385,13 @@ export function AppointmentsList() {
                         )}
                         {apt.status === 'CONFIRMED' && (
                           <>
+                            <button 
+                              onClick={() => { setEditingApt(apt); setNewDateTime(apt.startTime.slice(0, 16)); }} 
+                              className="p-2 bg-blue-100 text-blue-600 rounded-lg" 
+                              title="Modifica data/ora"
+                            >
+                              <CalendarClock className="w-4 h-4" />
+                            </button>
                             <button onClick={() => handleAction(apt.id, 'complete')} className="p-2 bg-green-100 text-green-600 rounded-lg" title="Completato">
                               <Check className="w-4 h-4" />
                             </button>
@@ -406,9 +475,16 @@ export function AppointmentsList() {
                       <td className="px-4 py-3 max-w-[200px]">
                         {editingNotes === apt.id ? (
                           <div className="flex gap-1">
-                            <input type="text" value={notesText} onChange={(e) => setNotesText(e.target.value)} className="flex-1 px-2 py-1 text-sm border rounded" autoFocus />
-                            <button onClick={() => handleAction(apt.id, 'update_notes', { notes: notesText })} className="p-1 bg-green-100 text-green-600 rounded"><Check className="w-4 h-4" /></button>
-                            <button onClick={() => setEditingNotes(null)} className="p-1 bg-gray-100 text-gray-600 rounded"><X className="w-4 h-4" /></button>
+                            <input 
+                              type="text" 
+                              value={notesText} 
+                              onChange={(e) => setNotesText(e.target.value)} 
+                              onBlur={() => handleNotesBlur(apt.id, apt.notes)}
+                              className="flex-1 px-2 py-1 text-sm border rounded" 
+                              autoFocus 
+                              placeholder="Salvataggio automatico..."
+                            />
+                            {savingNotes && <Loader2 className="w-4 h-4 animate-spin text-sage-400" />}
                           </div>
                         ) : (
                           <div onClick={() => { setEditingNotes(apt.id); setNotesText(apt.notes || ''); }} className="text-sm text-sage-600 cursor-pointer hover:text-sage-800 flex items-center gap-1">
@@ -428,6 +504,13 @@ export function AppointmentsList() {
                           <div className="flex items-center gap-1">
                             {apt.status === 'CONFIRMED' && (
                               <>
+                                <button 
+                                  onClick={() => { setEditingApt(apt); setNewDateTime(apt.startTime.slice(0, 16)); }} 
+                                  className="p-1.5 bg-blue-100 text-blue-600 rounded hover:bg-blue-200" 
+                                  title="Modifica data/ora"
+                                >
+                                  <CalendarClock className="w-4 h-4" />
+                                </button>
                                 <button onClick={() => handleAction(apt.id, 'complete')} className="p-1.5 bg-green-100 text-green-600 rounded hover:bg-green-200" title="Completato"><Check className="w-4 h-4" /></button>
                                 <button onClick={() => handleAction(apt.id, 'cancel')} className="p-1.5 bg-orange-100 text-orange-600 rounded hover:bg-orange-200" title="Cancella"><X className="w-4 h-4" /></button>
                               </>
@@ -447,6 +530,56 @@ export function AppointmentsList() {
           </>
         )}
       </div>
+      
+      {/* Punto 2: Modal modifica appuntamento */}
+      {editingApt && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl p-6 max-w-md w-full shadow-xl">
+            <h3 className="text-lg font-semibold text-sage-800 mb-4 flex items-center gap-2">
+              <CalendarClock className="w-5 h-5 text-blue-500" />
+              Modifica Appuntamento
+            </h3>
+            <div className="space-y-4">
+              <div>
+                <label className="text-sm text-sage-600 block mb-1">Paziente</label>
+                <p className="font-medium text-sage-800">{getPatientName(editingApt)}</p>
+              </div>
+              <div>
+                <label className="text-sm text-sage-600 block mb-1">Nuova Data e Ora</label>
+                <input
+                  type="datetime-local"
+                  value={newDateTime}
+                  onChange={(e) => setNewDateTime(e.target.value)}
+                  className="w-full px-3 py-2 border border-sage-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-sage-400"
+                />
+              </div>
+              <div>
+                <label className="text-sm text-sage-600 block mb-1">Durata</label>
+                <p className="text-sage-700">{editingApt.duration} minuti ({getVisitType(editingApt.type)})</p>
+              </div>
+            </div>
+            <div className="flex gap-3 mt-6">
+              <button
+                onClick={() => { setEditingApt(null); setNewDateTime(''); }}
+                className="flex-1 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200"
+              >
+                Annulla
+              </button>
+              <button
+                onClick={() => handleReschedule(editingApt.id, editingApt.duration)}
+                disabled={!newDateTime || actionLoading === editingApt.id}
+                className="flex-1 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:opacity-50 flex items-center justify-center gap-2"
+              >
+                {actionLoading === editingApt.id ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <>Salva Modifiche</>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

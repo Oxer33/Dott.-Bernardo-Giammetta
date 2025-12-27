@@ -13,7 +13,8 @@ import {
   Clock, 
   BarChart3,
   UserCheck,
-  Home
+  Home,
+  CalendarDays
 } from 'lucide-react';
 import Link from 'next/link';
 import { AppointmentsList } from './AppointmentsList';
@@ -25,6 +26,8 @@ import { AdminStats } from './AdminStats';
 // TIPI
 // =============================================================================
 
+type TabType = 'appointments' | 'whitelist' | 'timeblocks' | 'stats';
+
 interface AdminDashboardProps {
   user: {
     id: string;
@@ -32,9 +35,8 @@ interface AdminDashboardProps {
     email?: string | null;
     role: 'ADMIN' | 'PATIENT';
   };
+  initialTab?: TabType; // Punto 5: tab iniziale da query string
 }
-
-type TabType = 'appointments' | 'whitelist' | 'timeblocks' | 'stats';
 
 // =============================================================================
 // TABS NAVIGATION
@@ -51,8 +53,9 @@ const tabs = [
 // COMPONENTE DASHBOARD
 // =============================================================================
 
-export function AdminDashboard({ user }: AdminDashboardProps) {
-  const [activeTab, setActiveTab] = useState<TabType>('appointments');
+export function AdminDashboard({ user, initialTab }: AdminDashboardProps) {
+  // Punto 5: usa initialTab se fornito, altrimenti default appointments
+  const [activeTab, setActiveTab] = useState<TabType>(initialTab || 'appointments');
   
   return (
     <div className="min-h-screen bg-cream-50">
@@ -82,6 +85,15 @@ export function AdminDashboard({ user }: AdminDashboardProps) {
           >
             <Home className="w-4 h-4" />
             <span className="hidden sm:inline">Dashboard</span>
+          </Link>
+          
+          {/* Bottone Agenda (punto 4) */}
+          <Link
+            href="/agenda"
+            className="flex items-center gap-2 px-4 py-2 rounded-xl font-medium transition-all bg-white text-sage-600 hover:bg-sage-50 border border-sage-100"
+          >
+            <CalendarDays className="w-4 h-4" />
+            <span className="hidden sm:inline">Agenda</span>
           </Link>
           
           {tabs.map((tab) => (

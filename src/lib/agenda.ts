@@ -266,9 +266,9 @@ export async function canUserBook(
   userId: string,
   startTime: Date,
   duration: number,
-  userEmail?: string
-): Promise<{ canBook: boolean; reason?: string; gapWarning?: string }> {
-  // 1. Verifica che l'utente sia in whitelist
+  callerEmail?: string // Email di chi sta effettuando la prenotazione (master/admin)
+): Promise<{ canBook: boolean; reason?: string; gapWarning?: string; warning?: string }> {
+  // 1. Verifica che l'utente target esista
   const user = await db.user.findUnique({
     where: { id: userId },
     select: { isWhitelisted: true, role: true, email: true },
@@ -278,21 +278,33 @@ export async function canUserBook(
     return { canBook: false, reason: 'Utente non trovato' };
   }
   
-  // Verifica se è l'account master
-  const isMaster = user.email === MASTER_EMAIL || userEmail === MASTER_EMAIL;
+  // Verifica se chi chiama è l'account master (callerEmail) o se l'utente target è master
+  const isMasterCalling = callerEmail === MASTER_EMAIL;
+  const isUserMaster = user.email === MASTER_EMAIL;
+  const isMaster = isMasterCalling || isUserMaster;
   
-  // Admin/Master può sempre prenotare (per conto dei pazienti)
+  // Prepara warning per paziente non in whitelist (solo se master prenota per lui)
+  let patientWarning: string | undefined;
+  
+  // Admin/Master può sempre prenotare per qualsiasi paziente
+  // Se il paziente non è in whitelist, mostra solo un avviso
   if (user.role !== 'ADMIN' && !isMaster && !user.isWhitelisted) {
-    return { 
-      canBook: false, 
-      reason: 'Devi essere un paziente registrato per prenotare. Contatta lo studio.' 
-    };
+    if (isMasterCalling) {
+      // Master può prenotare ma viene avvisato
+      patientWarning = 'Attenzione: questo paziente non è ancora stato approvato nella whitelist.';
+    } else {
+      return { 
+        canBook: false, 
+        reason: 'Devi essere un paziente registrato per prenotare. Contatta lo studio.' 
+      };
+    }
   }
   
-  // 2. Verifica preavviso minimo (48h) - Master esente
+  // 2. Verifica preavviso minimo (48h) - Master esente (può anche prenotare nel passato)
   const now = new Date();
   const hoursUntilAppointment = differenceInHours(startTime, now);
   
+  // Master può prenotare anche su date passate (punto 8)
   if (!isMaster && hoursUntilAppointment < MIN_BOOKING_NOTICE_HOURS) {
     return { 
       canBook: false, 
@@ -352,7 +364,7 @@ export async function canUserBook(
     }
   }
   
-  return { canBook: true, gapWarning };
+  return { canBook: true, gapWarning, warning: patientWarning };
 }
 
 // =============================================================================
