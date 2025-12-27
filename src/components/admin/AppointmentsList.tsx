@@ -70,6 +70,7 @@ export function AppointmentsList() {
   // Punto 2: Stato per modal modifica appuntamento
   const [editingApt, setEditingApt] = useState<Appointment | null>(null);
   const [newDateTime, setNewDateTime] = useState('');
+  const [newDuration, setNewDuration] = useState(60); // Punto 3: durata modificabile
 
   // Carica appuntamenti
   const loadAppointments = async () => {
@@ -170,8 +171,8 @@ export function AppointmentsList() {
     return 'bg-sage-50 text-sage-700 border-sage-100'; // 60 min = normale
   };
 
-  // Punto 2: Funzione per riprogrammare appuntamento
-  const handleReschedule = async (appointmentId: string, duration: number) => {
+  // Punto 2 e 3: Funzione per riprogrammare appuntamento con durata modificabile
+  const handleReschedule = async (appointmentId: string) => {
     if (!newDateTime) return;
     setActionLoading(appointmentId);
     try {
@@ -181,7 +182,7 @@ export function AppointmentsList() {
         body: JSON.stringify({ 
           appointmentId, 
           action: 'reschedule', 
-          data: { startTime: newDateTime, duration } 
+          data: { startTime: newDateTime, duration: newDuration } 
         }),
       });
       const result = await res.json();
@@ -189,12 +190,25 @@ export function AppointmentsList() {
         loadAppointments();
         setEditingApt(null);
         setNewDateTime('');
+        setNewDuration(60);
+      } else {
+        console.error('Errore salvataggio:', result.error);
       }
     } catch (error) {
       console.error('Errore riprogrammazione:', error);
     } finally {
       setActionLoading(null);
     }
+  };
+  
+  // Helper per aprire modal modifica con valori preimpostati
+  const openEditModal = (apt: Appointment) => {
+    setEditingApt(apt);
+    // Formatta data per datetime-local (YYYY-MM-DDTHH:MM)
+    const date = new Date(apt.startTime);
+    const formatted = date.toISOString().slice(0, 16);
+    setNewDateTime(formatted);
+    setNewDuration(apt.duration);
   };
 
   const handleDelete = async (appointmentId: string) => {
@@ -386,7 +400,7 @@ export function AppointmentsList() {
                         {apt.status === 'CONFIRMED' && (
                           <>
                             <button 
-                              onClick={() => { setEditingApt(apt); setNewDateTime(apt.startTime.slice(0, 16)); }} 
+                              onClick={() => openEditModal(apt)} 
                               className="p-2 bg-blue-100 text-blue-600 rounded-lg" 
                               title="Modifica data/ora"
                             >
@@ -505,7 +519,7 @@ export function AppointmentsList() {
                             {apt.status === 'CONFIRMED' && (
                               <>
                                 <button 
-                                  onClick={() => { setEditingApt(apt); setNewDateTime(apt.startTime.slice(0, 16)); }} 
+                                  onClick={() => openEditModal(apt)} 
                                   className="p-1.5 bg-blue-100 text-blue-600 rounded hover:bg-blue-200" 
                                   title="Modifica data/ora"
                                 >
@@ -531,7 +545,7 @@ export function AppointmentsList() {
         )}
       </div>
       
-      {/* Punto 2: Modal modifica appuntamento */}
+      {/* Punto 2 e 3: Modal modifica appuntamento con durata selezionabile */}
       {editingApt && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl p-6 max-w-md w-full shadow-xl">
@@ -555,18 +569,52 @@ export function AppointmentsList() {
               </div>
               <div>
                 <label className="text-sm text-sage-600 block mb-1">Durata</label>
-                <p className="text-sage-700">{editingApt.duration} minuti ({getVisitType(editingApt.type)})</p>
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setNewDuration(60)}
+                    className={`flex-1 py-2 px-3 rounded-lg border text-sm font-medium transition-colors ${
+                      newDuration === 60 
+                        ? 'bg-sage-500 text-white border-sage-500' 
+                        : 'bg-white text-sage-600 border-sage-200 hover:bg-sage-50'
+                    }`}
+                  >
+                    60 min
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setNewDuration(90)}
+                    className={`flex-1 py-2 px-3 rounded-lg border text-sm font-medium transition-colors ${
+                      newDuration === 90 
+                        ? 'bg-sage-600 text-white border-sage-600' 
+                        : 'bg-white text-sage-600 border-sage-200 hover:bg-sage-50'
+                    }`}
+                  >
+                    90 min
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setNewDuration(120)}
+                    className={`flex-1 py-2 px-3 rounded-lg border text-sm font-medium transition-colors ${
+                      newDuration === 120 
+                        ? 'bg-red-500 text-white border-red-500' 
+                        : 'bg-white text-sage-600 border-sage-200 hover:bg-sage-50'
+                    }`}
+                  >
+                    120 min
+                  </button>
+                </div>
               </div>
             </div>
             <div className="flex gap-3 mt-6">
               <button
-                onClick={() => { setEditingApt(null); setNewDateTime(''); }}
+                onClick={() => { setEditingApt(null); setNewDateTime(''); setNewDuration(60); }}
                 className="flex-1 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200"
               >
                 Annulla
               </button>
               <button
-                onClick={() => handleReschedule(editingApt.id, editingApt.duration)}
+                onClick={() => handleReschedule(editingApt.id)}
                 disabled={!newDateTime || actionLoading === editingApt.id}
                 className="flex-1 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:opacity-50 flex items-center justify-center gap-2"
               >

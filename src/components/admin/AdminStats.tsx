@@ -55,6 +55,11 @@ interface StatsData {
     whitelisted: number;
     pending: number;
     newThisMonth: number;
+    // Punto 4: maschi/femmine
+    male: number;
+    female: number;
+    malePercentage: number;
+    femalePercentage: number;
   };
   rates: {
     completion: number;
@@ -373,6 +378,48 @@ export function AdminStats() {
             icon={UserPlus}
             color="bg-blue-100 text-blue-600"
           />
+        </div>
+        
+        {/* Punto 4: Card Maschi/Femmine */}
+        <div className="grid sm:grid-cols-2 gap-4 mt-4">
+          <div className="bg-blue-50 rounded-xl p-4 border border-blue-100">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-blue-800">Maschi</p>
+                <p className="text-2xl font-bold text-blue-900">{stats.patients.male}</p>
+              </div>
+              <div className="text-right">
+                <div className="w-12 h-12 rounded-full bg-blue-200 flex items-center justify-center">
+                  <span className="text-lg font-bold text-blue-700">{stats.patients.malePercentage}%</span>
+                </div>
+              </div>
+            </div>
+            <div className="mt-2 bg-blue-200 rounded-full h-2 overflow-hidden">
+              <div 
+                className="h-full bg-blue-500 rounded-full"
+                style={{ width: `${stats.patients.malePercentage}%` }}
+              />
+            </div>
+          </div>
+          <div className="bg-pink-50 rounded-xl p-4 border border-pink-100">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-pink-800">Femmine</p>
+                <p className="text-2xl font-bold text-pink-900">{stats.patients.female}</p>
+              </div>
+              <div className="text-right">
+                <div className="w-12 h-12 rounded-full bg-pink-200 flex items-center justify-center">
+                  <span className="text-lg font-bold text-pink-700">{stats.patients.femalePercentage}%</span>
+                </div>
+              </div>
+            </div>
+            <div className="mt-2 bg-pink-200 rounded-full h-2 overflow-hidden">
+              <div 
+                className="h-full bg-pink-500 rounded-full"
+                style={{ width: `${stats.patients.femalePercentage}%` }}
+              />
+            </div>
+          </div>
         </div>
       </div>
 

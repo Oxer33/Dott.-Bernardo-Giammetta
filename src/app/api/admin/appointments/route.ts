@@ -242,11 +242,25 @@ export async function PUT(request: NextRequest) {
         updateData = { status: 'COMPLETED' };
         message = 'Visita completata';
         // Aggiorna lastVisitAt del paziente
-        const apt = await db.appointment.findUnique({ where: { id: appointmentId } });
+        const apt = await db.appointment.findUnique({ 
+          where: { id: appointmentId },
+          include: { user: { select: { isWhitelisted: true } } }
+        });
         if (apt) {
+          // Punto 8: Se paziente non è in whitelist, lo aggiungiamo dopo prima visita
+          const updateUserData: { lastVisitAt: Date; isWhitelisted?: boolean; whitelistedAt?: Date } = { 
+            lastVisitAt: new Date() 
+          };
+          
+          if (!apt.user.isWhitelisted) {
+            updateUserData.isWhitelisted = true;
+            updateUserData.whitelistedAt = new Date();
+            message = 'Visita completata - Paziente aggiunto alla whitelist';
+          }
+          
           await db.user.update({
             where: { id: apt.userId },
-            data: { lastVisitAt: new Date() },
+            data: updateUserData,
           });
         }
         break;

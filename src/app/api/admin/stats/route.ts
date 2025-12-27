@@ -218,6 +218,18 @@ export async function GET(request: NextRequest) {
         createdAt: { gte: monthStart }
       }
     });
+    
+    // Punto 4: Statistiche maschi/femmine
+    const malePatients = await db.user.count({
+      where: { role: 'PATIENT', gender: 'M' }
+    });
+    
+    const femalePatients = await db.user.count({
+      where: { role: 'PATIENT', gender: 'F' }
+    });
+    
+    const malePercentage = totalPatients > 0 ? Math.round((malePatients / totalPatients) * 100) : 0;
+    const femalePercentage = totalPatients > 0 ? Math.round((femalePatients / totalPatients) * 100) : 0;
 
     // =========================================================================
     // TASSO DI COMPLETAMENTO
@@ -306,7 +318,12 @@ export async function GET(request: NextRequest) {
           total: totalPatients,
           whitelisted: whitelistedPatients,
           pending: pendingPatients,
-          newThisMonth: newPatientsThisMonth
+          newThisMonth: newPatientsThisMonth,
+          // Punto 4: maschi/femmine
+          male: malePatients,
+          female: femalePatients,
+          malePercentage,
+          femalePercentage
         },
         // Tassi
         rates: {

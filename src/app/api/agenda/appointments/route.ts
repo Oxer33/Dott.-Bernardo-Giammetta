@@ -116,7 +116,25 @@ export async function POST(request: NextRequest) {
       },
     });
 
+    // Punto 7-8: Master ha libertà totale MA deve evitare duplicati accidentali
+    // Verifica che non ci sia già un appuntamento per questo paziente alla stessa data/ora
+    const existingAppointmentSameTime = await db.appointment.findFirst({
+      where: {
+        userId: bookingUserId,
+        startTime: parseISO(startTime),
+        status: { not: 'CANCELLED' },
+      },
+    });
+    
+    if (existingAppointmentSameTime) {
+      return NextResponse.json(
+        { success: false, error: 'Questo paziente ha già un appuntamento a questo orario.' },
+        { status: 400 }
+      );
+    }
+
     // Verifica limite prenotazioni (default 1 per whitelistati, illimitato per admin)
+    // Master può inserire più appuntamenti per lo stesso paziente (es. visite future)
     const maxBookings = isAdmin ? 999 : (bookingUser.maxActiveBookings || 1);
     if (activeBookingsCount >= maxBookings) {
       return NextResponse.json(

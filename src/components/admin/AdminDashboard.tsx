@@ -10,7 +10,7 @@ import { motion } from 'framer-motion';
 import { 
   Calendar, 
   Users, 
-  Clock, 
+  Lock, 
   BarChart3,
   UserCheck,
   Home,
@@ -45,7 +45,7 @@ interface AdminDashboardProps {
 const tabs = [
   { id: 'appointments' as TabType, label: 'Appuntamenti', icon: Calendar },
   { id: 'whitelist' as TabType, label: 'Whitelist', icon: UserCheck },
-  { id: 'timeblocks' as TabType, label: 'Blocchi Orari', icon: Clock },
+  { id: 'timeblocks' as TabType, label: 'Blocchi Orari', icon: Lock },
   { id: 'stats' as TabType, label: 'Statistiche', icon: BarChart3 },
 ];
 

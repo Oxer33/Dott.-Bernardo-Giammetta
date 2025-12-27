@@ -8,7 +8,9 @@ import { getServerSession } from 'next-auth';
 import { redirect } from 'next/navigation';
 import { authOptions } from '@/lib/auth';
 import { AgendaCalendar } from '@/components/agenda/AgendaCalendar';
+import { AgendaMasterView } from '@/components/agenda/AgendaMasterView';
 import Link from 'next/link';
+import { isMasterAccount } from '@/lib/config';
 
 // =============================================================================
 // METADATA SEO
@@ -88,7 +90,12 @@ export default async function AgendaPage() {
     );
   }
   
-  // Utente autorizzato (whitelist o admin) - mostra l'agenda
+  // Punto 1: Account master vede vista semplificata con navigazione
+  if (session.user.email && isMasterAccount(session.user.email)) {
+    return <AgendaMasterView />;
+  }
+  
+  // Utente autorizzato (whitelist) - mostra l'agenda normale con descrizione
   return (
     <div className="min-h-screen bg-cream-50">
       {/* Header */}

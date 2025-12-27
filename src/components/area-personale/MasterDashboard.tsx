@@ -13,6 +13,7 @@ import {
   Calendar, 
   Users, 
   Clock, 
+  Lock,
   Settings,
   BarChart3,
   UserPlus,
@@ -233,7 +234,7 @@ export function MasterDashboard({ user }: MasterDashboardProps) {
             href="/admin?tab=timeblocks"
             className="flex items-center gap-2 px-3 sm:px-4 py-2 rounded-xl font-medium bg-white text-sage-600 hover:bg-sage-50 border border-sage-100"
           >
-            <Clock className="w-4 h-4" />
+            <Lock className="w-4 h-4" />
             <span className="hidden sm:inline">Blocchi</span>
           </Link>
           <Link

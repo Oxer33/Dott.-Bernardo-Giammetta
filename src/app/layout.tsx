@@ -118,6 +118,7 @@ export const metadata: Metadata = {
   },
 };
 
+// Punto 6: Disabilita zoom su mobile per evitare problemi layout
 export const viewport: Viewport = {
   themeColor: [
     { media: '(prefers-color-scheme: light)', color: '#F9F9F9' },
@@ -125,7 +126,8 @@ export const viewport: Viewport = {
   ],
   width: 'device-width',
   initialScale: 1,
-  maximumScale: 5,
+  maximumScale: 1,
+  userScalable: false,
 };
 
 // =============================================================================

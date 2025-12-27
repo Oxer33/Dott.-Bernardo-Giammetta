@@ -50,6 +50,10 @@ model User {
   isWhitelisted Boolean   @default(false)
   whitelistedAt DateTime?
   
+  // Punto 5: Stato paziente: "ACTIVE" | "COMPLETED" (Ultimato = completato percorso)
+  // I pazienti "COMPLETED" non vengono rimossi dalla whitelist dopo 12 mesi
+  patientStatus String    @default("ACTIVE")
+  
   // Ruolo utente: "ADMIN" | "PATIENT"
   role          String    @default("PATIENT")
   

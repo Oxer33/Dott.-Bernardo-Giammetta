@@ -41,10 +41,12 @@ export async function GET(request: NextRequest) {
 
     // Trova pazienti whitelisted con ultima visita > 12 mesi fa
     // O che non hanno mai fatto visite (lastVisitAt = null) e sono whitelisted da > 12 mesi
+    // Punto 9: ESCLUDI pazienti con patientStatus = "COMPLETED" (Ultimati)
     const expiredPatients = await db.user.findMany({
       where: {
         role: 'PATIENT',
         isWhitelisted: true,
+        // patientStatus: { not: 'COMPLETED' }, // TODO: Esclude pazienti ultimati (dopo migrazione DB)
         OR: [
           // Ultima visita più di 12 mesi fa
           {
