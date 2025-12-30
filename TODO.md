@@ -238,9 +238,20 @@
 - [x] **App Client Cognito**: `nextauth-client` con client_secret creato
 - [x] **Gruppo "master"**: creato con 3 utenti (Danilo, Dr. Giammetta, La Pulena)
 - [x] **Variabili Amplify**: tutte configurate correttamente
-- [x] **NEXTAUTH_URL**: aggiornato a CloudFront URL
 - [x] **UX pulita**: rimosso pulsante AWS visibile, solo Google e Email/Password
 - [x] **Navbar fix**: pulsante "Accedi" ora va a /accedi invece di Google diretto
+- [x] **Google OAuth fix**: aggiunto callback URL CloudFront a Google Cloud Console
+
+### 🔧 FIX CRITICI Master Bypass - 30/12/2024 (Sessione 7) ✅ COMPLETATO
+- [x] **ROOT CAUSE 1**: JWT callback ricalcola SEMPRE il ruolo (non solo al primo login)
+  - Prima: ruolo calcolato solo al primo login e mai aggiornato
+  - Ora: ruolo ricalcolato ad ogni request per riflettere modifiche a MASTER_ACCOUNTS
+- [x] **ROOT CAUSE 2**: `createAppointment` ora accetta e passa `callerEmail`
+  - Prima: chiamava canUserBook senza callerEmail, ignorando bypass master
+  - Ora: passa correttamente callerEmail per permettere bypass
+- [x] **ROOT CAUSE 3**: API passa `MASTER_OVERRIDE` a createAppointment
+  - Garantisce che il bypass master funzioni in entrambi i check di canUserBook
+- [x] **Reset loading Google button**: stato resettato quando utente torna sulla pagina
 
 ---
 
