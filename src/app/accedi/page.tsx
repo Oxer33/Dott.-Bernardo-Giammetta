@@ -5,7 +5,7 @@
 
 'use client';
 
-import { useState, Suspense } from 'react';
+import { useState, Suspense, useEffect } from 'react';
 import { signIn } from 'next-auth/react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { motion } from 'framer-motion';
@@ -32,6 +32,11 @@ function AccediForm() {
   const [error, setError] = useState<string | null>(urlError);
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({ email: '', password: '' });
+
+  // Reset loading state quando l'utente torna sulla pagina (es. dopo errore OAuth)
+  useEffect(() => {
+    setIsGoogleLoading(false);
+  }, []);
 
   // Login con Google
   const handleGoogleSignIn = async () => {
