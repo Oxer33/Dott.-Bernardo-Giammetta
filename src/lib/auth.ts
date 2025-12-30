@@ -135,26 +135,33 @@ export const authOptions: NextAuthOptions = {
   // Callbacks per personalizzare comportamento
   callbacks: {
     // JWT callback - salva dati nel token
+    // IMPORTANTE: Ricalcoliamo SEMPRE il ruolo per garantire che modifiche a MASTER_ACCOUNTS
+    // abbiano effetto immediato senza richiedere logout/login
     async jwt({ token, user, account, profile }) {
+      // Al primo login, salva i dati base dell'utente
       if (user) {
         token.id = user.id;
         token.email = user.email;
         
-        // Determina se è master:
-        // 1. Email nella lista MASTER_ACCOUNTS (config.ts)
-        // 2. Utente nel gruppo "master" su Cognito
-        const isMasterByEmail = isMasterAccount(user.email);
+        // Log per debug Cognito
+        if (account?.provider === 'cognito') {
+          console.log('[COGNITO AUTH] User:', user.email, 'Groups:', (profile as any)?.['cognito:groups']);
+        }
+      }
+      
+      // CRITICO: Ricalcola SEMPRE il ruolo basandosi sull'email
+      // Questo garantisce che se aggiungiamo un'email a MASTER_ACCOUNTS, funziona subito
+      // senza richiedere logout/login dell'utente
+      if (token.email) {
+        const isMasterByEmail = isMasterAccount(token.email as string);
+        // Per Cognito, controlliamo anche i gruppi (solo al primo login quando profile è disponibile)
         const isMasterByCognito = account?.provider === 'cognito' && isCognitoMaster(profile);
         const isMaster = isMasterByEmail || isMasterByCognito;
         
         token.role = isMaster ? 'ADMIN' : 'PATIENT';
         token.isWhitelisted = isMaster;
-        
-        // Log per debug (rimuovere in produzione)
-        if (account?.provider === 'cognito') {
-          console.log('[COGNITO AUTH] User:', user.email, 'Groups:', (profile as any)?.['cognito:groups'], 'isMaster:', isMasterByCognito);
-        }
       }
+      
       return token;
     },
     

@@ -177,11 +177,13 @@ export async function POST(request: NextRequest) {
     }
     
     // Crea appuntamento
+    // CRITICO: Passa callerEmail per bypass master nel secondo check di canUserBook
     const appointment = await createAppointment(
       bookingUserId,
       parseISO(startTime),
       type,
-      notes
+      notes,
+      isMaster ? 'MASTER_OVERRIDE' : (session.user.email || undefined)
     );
     
     // Formatta data e ora per email

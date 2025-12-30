@@ -454,14 +454,16 @@ export async function createAppointment(
   userId: string,
   startTime: Date,
   type: 'FIRST_VISIT' | 'FOLLOW_UP',
-  notes?: string
+  notes?: string,
+  callerEmail?: string // CRITICO: Email del chiamante per bypass master
 ) {
   const duration = type === 'FIRST_VISIT' 
     ? VISIT_DURATION.FIRST_VISIT 
     : VISIT_DURATION.FOLLOW_UP;
   
   // Verifica ancora una volta la disponibilità
-  const canBook = await canUserBook(userId, startTime, duration);
+  // IMPORTANTE: Passa callerEmail per permettere bypass master
+  const canBook = await canUserBook(userId, startTime, duration, callerEmail);
   
   if (!canBook.canBook) {
     throw new Error(canBook.reason);
