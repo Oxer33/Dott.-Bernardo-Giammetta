@@ -1,6 +1,6 @@
 // =============================================================================
 // PAGINA ACCEDI - DOTT. BERNARDO GIAMMETTA
-// Pagina di login con Google OAuth e Email/Password
+// Pagina di login con Google OAuth, AWS Cognito e Email/Password
 // =============================================================================
 
 'use client';
@@ -29,6 +29,7 @@ function AccediForm() {
   
   const [isLoading, setIsLoading] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
+  const [isCognitoLoading, setIsCognitoLoading] = useState(false);
   const [error, setError] = useState<string | null>(urlError);
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({ email: '', password: '' });
@@ -42,6 +43,18 @@ function AccediForm() {
     } catch {
       setError('Si è verificato un errore. Riprova.');
       setIsGoogleLoading(false);
+    }
+  };
+
+  // Login con AWS Cognito (per account master)
+  const handleCognitoSignIn = async () => {
+    setIsCognitoLoading(true);
+    setError(null);
+    try {
+      await signIn('cognito', { callbackUrl });
+    } catch {
+      setError('Si è verificato un errore con Cognito. Riprova.');
+      setIsCognitoLoading(false);
     }
   };
 
@@ -207,6 +220,24 @@ function AccediForm() {
                   <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
                 </svg>
                 <span>Continua con Google</span>
+              </>
+            )}
+          </Button>
+
+          {/* Pulsante AWS Cognito - Solo per account master */}
+          <Button
+            onClick={handleCognitoSignIn}
+            disabled={isCognitoLoading}
+            className="w-full justify-center bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white border-0 shadow-sm mt-3"
+          >
+            {isCognitoLoading ? (
+              <div className="w-5 h-5 border-2 border-orange-300 border-t-white rounded-full animate-spin" />
+            ) : (
+              <>
+                <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/>
+                </svg>
+                <span>Accesso Master (AWS)</span>
               </>
             )}
           </Button>
