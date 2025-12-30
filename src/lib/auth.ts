@@ -1,15 +1,25 @@
 // =============================================================================
 // NEXTAUTH CONFIGURATION - DOTT. BERNARDO GIAMMETTA
-// Configurazione autenticazione con Google OAuth
+// Configurazione autenticazione con Google OAuth e AWS Cognito
 // =============================================================================
 
 import { NextAuthOptions } from 'next-auth';
 import GoogleProvider from 'next-auth/providers/google';
+import CognitoProvider from 'next-auth/providers/cognito';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import { PrismaAdapter } from '@auth/prisma-adapter';
 import { db } from '@/lib/db';
 import { isMasterAccount } from '@/lib/config';
 import bcrypt from 'bcryptjs';
+
+// =============================================================================
+// HELPER: Verifica se utente è nel gruppo master su Cognito
+// =============================================================================
+function isCognitoMaster(profile: any): boolean {
+  // Cognito passa i gruppi nel campo 'cognito:groups' del token
+  const groups = profile?.['cognito:groups'] || [];
+  return Array.isArray(groups) && groups.includes('master');
+}
 
 // Verifica se il database è configurato e accessibile
 const isDatabaseAvailable = async () => {
@@ -62,6 +72,18 @@ export const authOptions: NextAuthOptions = {
       },
     }),
     
+    // AWS Cognito - Per gestione account master e autenticazione alternativa
+    // I gruppi Cognito determinano i permessi: "master" = ADMIN
+    ...(process.env.COGNITO_CLIENT_ID && process.env.COGNITO_CLIENT_SECRET ? [
+      CognitoProvider({
+        clientId: process.env.COGNITO_CLIENT_ID,
+        clientSecret: process.env.COGNITO_CLIENT_SECRET,
+        issuer: process.env.COGNITO_ISSUER,
+        // Permette di collegare account a utenti esistenti con stessa email
+        allowDangerousEmailAccountLinking: true,
+      }),
+    ] : []),
+    
     // Autenticazione Email/Password
     CredentialsProvider({
       id: 'credentials',
@@ -113,15 +135,25 @@ export const authOptions: NextAuthOptions = {
   // Callbacks per personalizzare comportamento
   callbacks: {
     // JWT callback - salva dati nel token
-    async jwt({ token, user, account }) {
+    async jwt({ token, user, account, profile }) {
       if (user) {
         token.id = user.id;
-        // Account master = ADMIN, altrimenti PATIENT
-        const isMaster = isMasterAccount(user.email);
-        token.role = isMaster ? 'ADMIN' : 'PATIENT';
-        // Account master sono sempre in whitelist
-        token.isWhitelisted = isMaster;
         token.email = user.email;
+        
+        // Determina se è master:
+        // 1. Email nella lista MASTER_ACCOUNTS (config.ts)
+        // 2. Utente nel gruppo "master" su Cognito
+        const isMasterByEmail = isMasterAccount(user.email);
+        const isMasterByCognito = account?.provider === 'cognito' && isCognitoMaster(profile);
+        const isMaster = isMasterByEmail || isMasterByCognito;
+        
+        token.role = isMaster ? 'ADMIN' : 'PATIENT';
+        token.isWhitelisted = isMaster;
+        
+        // Log per debug (rimuovere in produzione)
+        if (account?.provider === 'cognito') {
+          console.log('[COGNITO AUTH] User:', user.email, 'Groups:', (profile as any)?.['cognito:groups'], 'isMaster:', isMasterByCognito);
+        }
       }
       return token;
     },

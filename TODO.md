@@ -230,6 +230,15 @@
 - [x] **canUserBook**: riconosce 'MASTER_OVERRIDE' come caller per bypass totale
 - [x] **Reschedule parsing robusto**: validazione data con try/catch e logging
 
+### 🔐 AWS Cognito Integration - 30/12/2024 (Sessione 6) ✅ NUOVO
+- [x] **CognitoProvider** aggiunto a NextAuth (non sostituisce Google, lo affianca)
+- [x] **Gruppi Cognito**: utenti nel gruppo "master" → role: ADMIN
+- [x] **Doppia verifica master**: email in MASTER_ACCOUNTS OR gruppo Cognito "master"
+- [x] **Variabili ambiente**: COGNITO_CLIENT_ID, COGNITO_CLIENT_SECRET, COGNITO_ISSUER
+- [ ] **TODO USER**: Configurare App Client Cognito con client_secret
+- [ ] **TODO USER**: Creare gruppo "master" su Cognito e assegnare utenti
+- [ ] **TODO USER**: Configurare Callback URL su Cognito
+
 ---
 
 ## ✅ COMPLETATO (Pagine e Admin)
