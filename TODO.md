@@ -230,14 +230,22 @@
 - [x] **canUserBook**: riconosce 'MASTER_OVERRIDE' come caller per bypass totale
 - [x] **Reschedule parsing robusto**: validazione data con try/catch e logging
 
-### 🔐 AWS Cognito Integration - 30/12/2024 (Sessione 6) ✅ NUOVO
+### 🔐 AWS Cognito Integration - 30/12/2024 (Sessione 6) ✅ COMPLETATO
 - [x] **CognitoProvider** aggiunto a NextAuth (non sostituisce Google, lo affianca)
 - [x] **Gruppi Cognito**: utenti nel gruppo "master" → role: ADMIN
 - [x] **Doppia verifica master**: email in MASTER_ACCOUNTS OR gruppo Cognito "master"
 - [x] **Variabili ambiente**: COGNITO_CLIENT_ID, COGNITO_CLIENT_SECRET, COGNITO_ISSUER
-- [ ] **TODO USER**: Configurare App Client Cognito con client_secret
-- [ ] **TODO USER**: Creare gruppo "master" su Cognito e assegnare utenti
-- [ ] **TODO USER**: Configurare Callback URL su Cognito
+- [x] **App Client Cognito**: `nextauth-client` con client_secret creato
+- [x] **Gruppo "master"**: creato con 3 utenti (Danilo, Dr. Giammetta, La Pulena)
+- [x] **Callback URL**: configurato su Cognito
+- [x] **Pulsante login**: "Accesso Master (AWS)" arancione nella pagina /accedi
+- [x] **Variabili Amplify**: COGNITO_CLIENT_ID, SECRET, ISSUER aggiunte
+
+### ⚠️ ATTENZIONE URL - Da verificare
+- NEXTAUTH_URL su Amplify: `https://main.d1hid7kq21kdxm.amplifyapp.com`
+- Callback Cognito configurato: `https://d84l1y8p4kdic.cloudfront.net`
+- **SOLUZIONE**: Aggiungere anche questo callback su Cognito:
+  `https://main.d1hid7kq21kdxm.amplifyapp.com/api/auth/callback/cognito`
 
 ---
 
