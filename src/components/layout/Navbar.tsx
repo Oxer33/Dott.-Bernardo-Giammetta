@@ -239,14 +239,15 @@ export function Navbar() {
                   </AnimatePresence>
                 </div>
               ) : (
-                <Button 
-                  variant="primary" 
-                  size="sm"
-                  onClick={() => signIn('google')}
-                >
-                  <User className="w-4 h-4" />
-                  <span>Accedi</span>
-                </Button>
+                <Link href="/accedi">
+                  <Button 
+                    variant="primary" 
+                    size="sm"
+                  >
+                    <User className="w-4 h-4" />
+                    <span>Accedi</span>
+                  </Button>
+                </Link>
               )}
             </div>
 
@@ -376,14 +377,15 @@ export function Navbar() {
                       </button>
                     </div>
                   ) : (
-                    <Button 
-                      variant="primary" 
-                      className="w-full justify-center"
-                      onClick={() => signIn('google')}
-                    >
-                      <User className="w-5 h-5" />
-                      <span>Accedi con Google</span>
-                    </Button>
+                    <Link href="/accedi" className="w-full">
+                      <Button 
+                        variant="primary" 
+                        className="w-full justify-center"
+                      >
+                        <User className="w-5 h-5" />
+                        <span>Accedi</span>
+                      </Button>
+                    </Link>
                   )}
                 </div>
               </div>
