@@ -365,4 +365,4 @@ npx prisma db push
 
 ---
 
-*Ultimo aggiornamento: 28 Dicembre 2024 - 00:30*
+*Ultimo aggiornamento: 02 Gennaio 2026 - 20:30*
