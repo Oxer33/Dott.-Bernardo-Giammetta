@@ -8,6 +8,7 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { db } from '@/lib/db';
 import { isMasterAccount } from '@/lib/config';
+import { sendWhitelistApprovedEmail } from '@/lib/aws-ses';
 
 export const dynamic = 'force-dynamic';
 
@@ -161,9 +162,23 @@ export async function PUT(request: NextRequest) {
       },
     });
     
+    // Invia email di notifica quando paziente viene approvato
+    if (action === 'whitelist' && updated.email) {
+      try {
+        await sendWhitelistApprovedEmail({
+          email: updated.email,
+          name: updated.name,
+        });
+        console.log(`[WHITELIST] Email di approvazione inviata a ${updated.email}`);
+      } catch (emailError) {
+        // Non blocchiamo l'operazione se l'email fallisce
+        console.error('[WHITELIST] Errore invio email:', emailError);
+      }
+    }
+    
     return NextResponse.json({
       success: true,
-      message: action === 'whitelist' ? 'Paziente approvato!' : 
+      message: action === 'whitelist' ? 'Paziente approvato! Email di notifica inviata.' : 
                action === 'unwhitelist' ? 'Paziente rimosso dalla whitelist' : 'Paziente aggiornato',
       patient: updated,
     });
