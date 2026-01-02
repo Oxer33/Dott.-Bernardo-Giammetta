@@ -270,6 +270,7 @@
   - ✅ Log email in database (modello EmailLog)
   - ✅ Cron reminders (1 settimana, 1 giorno, followup 25/60 giorni)
   - ✅ Template email variati (50 varianti per sembrare scritti a mano)
+- [x] **Integrazione AWS SES**: email automatica quando paziente viene approvato in whitelist
 
 ---
 
