@@ -18,7 +18,8 @@ import {
   FileText,
   ChevronRight,
   AlertCircle,
-  CheckCircle
+  CheckCircle,
+  X
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { format, isPast, isFuture } from 'date-fns';
@@ -33,8 +34,9 @@ interface Appointment {
   startTime: Date;
   duration: number;
   type: string;
-  status: string;
+  status: string; // CONFIRMED | CANCELLED | COMPLETED | NO_SHOW
   notes?: string | null;
+  cancelledAt?: Date | null;
 }
 
 interface PatientDashboardProps {
@@ -51,11 +53,19 @@ interface PatientDashboardProps {
 // =============================================================================
 
 export function PatientDashboard({ user }: PatientDashboardProps) {
+  // Separa appuntamenti per stato e data
   const upcomingAppointments = user.appointments.filter(a => 
-    isFuture(new Date(a.startTime))
+    isFuture(new Date(a.startTime)) && a.status === 'CONFIRMED'
   );
+  
+  // Storico: visite passate (completate, confermate passate, no-show)
   const pastAppointments = user.appointments.filter(a => 
-    isPast(new Date(a.startTime))
+    isPast(new Date(a.startTime)) && a.status !== 'CANCELLED'
+  );
+  
+  // Visite cancellate (per trasparenza)
+  const cancelledAppointments = user.appointments.filter(a => 
+    a.status === 'CANCELLED'
   );
 
   return (
@@ -143,7 +153,7 @@ export function PatientDashboard({ user }: PatientDashboardProps) {
               )}
             </motion.div>
 
-            {/* Storico appuntamenti */}
+            {/* Storico Visite Completate */}
             {pastAppointments.length > 0 && (
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
@@ -153,22 +163,63 @@ export function PatientDashboard({ user }: PatientDashboardProps) {
               >
                 <h2 className="text-xl font-semibold text-sage-800 flex items-center gap-2 mb-6">
                   <FileText className="w-5 h-5 text-sage-500" />
-                  Storico Visite
+                  Storico Visite ({pastAppointments.length})
                 </h2>
-                <div className="space-y-3">
-                  {pastAppointments.slice(0, 5).map((appointment) => (
+                <div className="space-y-3 max-h-80 overflow-y-auto">
+                  {pastAppointments.map((appointment) => (
                     <div
                       key={appointment.id}
                       className="flex items-center gap-4 p-3 bg-cream-50 rounded-lg"
                     >
-                      <CheckCircle className="w-5 h-5 text-sage-400" />
+                      <CheckCircle className={`w-5 h-5 ${
+                        appointment.status === 'COMPLETED' ? 'text-green-500' : 
+                        appointment.status === 'NO_SHOW' ? 'text-red-400' : 'text-sage-400'
+                      }`} />
                       <div className="flex-1">
                         <p className="text-sm font-medium text-sage-700">
                           {appointment.type === 'FIRST_VISIT' ? 'Prima Visita' : 'Controllo'}
+                          {appointment.status === 'COMPLETED' && <span className="ml-2 text-xs text-green-600">(Completata)</span>}
+                          {appointment.status === 'NO_SHOW' && <span className="ml-2 text-xs text-red-500">(Non presentato)</span>}
                         </p>
                         <p className="text-xs text-sage-500">
-                          {format(new Date(appointment.startTime), "d MMMM yyyy", { locale: it })}
+                          {format(new Date(appointment.startTime), "EEEE d MMMM yyyy 'alle' HH:mm", { locale: it })}
                         </p>
+                      </div>
+                      <div className="text-xs text-sage-400">
+                        {appointment.duration} min
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </motion.div>
+            )}
+
+            {/* Visite Cancellate */}
+            {cancelledAppointments.length > 0 && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3 }}
+                className="bg-white rounded-2xl p-6 shadow-soft border border-red-100"
+              >
+                <h2 className="text-lg font-semibold text-sage-800 flex items-center gap-2 mb-4">
+                  <AlertCircle className="w-5 h-5 text-red-400" />
+                  Visite Cancellate ({cancelledAppointments.length})
+                </h2>
+                <div className="space-y-2 max-h-40 overflow-y-auto">
+                  {cancelledAppointments.slice(0, 10).map((appointment) => (
+                    <div
+                      key={appointment.id}
+                      className="flex items-center gap-3 p-2 bg-red-50 rounded-lg text-sm"
+                    >
+                      <X className="w-4 h-4 text-red-400" />
+                      <div className="flex-1">
+                        <span className="text-sage-600">
+                          {appointment.type === 'FIRST_VISIT' ? 'Prima Visita' : 'Controllo'}
+                        </span>
+                        <span className="text-sage-400 ml-2">
+                          {format(new Date(appointment.startTime), "d MMM yyyy", { locale: it })}
+                        </span>
                       </div>
                     </div>
                   ))}

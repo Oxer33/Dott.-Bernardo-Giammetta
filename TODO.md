@@ -253,6 +253,24 @@
   - Garantisce che il bypass master funzioni in entrambi i check di canUserBook
 - [x] **Reset loading Google button**: stato resettato quando utente torna sulla pagina
 
+### 🔐 FIX CRITICI Pazienti & Email - 02/01/2026 (Sessione 8) ✅ COMPLETATO
+- [x] **BUG CRITICO RISOLTO**: Pazienti in whitelist non potevano prenotare
+  - **Root cause**: JWT callback impostava `isWhitelisted = isMaster` (sempre false per pazienti!)
+  - **Fix**: JWT ora legge `isWhitelisted` dal database per pazienti normali
+  - Effetto immediato: pazienti possono prenotare subito dopo essere messi in whitelist
+- [x] **Verifica email obbligatoria**: blocco prenotazioni per utenti con email non verificata
+  - Solo per utenti registrati con email/password (non OAuth)
+  - Messaggio chiaro: "Devi verificare la tua email prima di prenotare"
+- [x] **Storico visite completo** nell'area personale paziente:
+  - Visite completate con stato (Completata, Non presentato)
+  - Visite cancellate in sezione separata
+  - Scrollabile fino a 50 appuntamenti
+- [x] **Sistema email già esistente verificato**:
+  - ✅ Verifica email con token (register + verify-email)
+  - ✅ Log email in database (modello EmailLog)
+  - ✅ Cron reminders (1 settimana, 1 giorno, followup 25/60 giorni)
+  - ✅ Template email variati (50 varianti per sembrare scritti a mano)
+
 ---
 
 ## ✅ COMPLETATO (Pagine e Admin)

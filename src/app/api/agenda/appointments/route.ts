@@ -110,9 +110,24 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Verifica email verificata (per utenti con password)
-    // Skip per utenti OAuth (hanno emailVerified = null ma sono OK)
-    // Commento: per ora non blocchiamo, ma segnaliamo
+    // Verifica email verificata (per utenti registrati con password)
+    // Skip per utenti OAuth (non hanno password, usano Google)
+    // IMPORTANTE: Blocchiamo solo se l'utente ha password MA non ha verificato email
+    if (bookingUser.email && !isMaster) {
+      // Verifica se l'utente ha una password (registrazione email/password)
+      const userWithPassword = await db.user.findUnique({
+        where: { id: bookingUserId },
+        select: { password: true, emailVerified: true },
+      });
+      
+      // Se ha password ma non ha verificato email, blocca
+      if (userWithPassword?.password && !userWithPassword.emailVerified) {
+        return NextResponse.json(
+          { success: false, error: 'Devi verificare la tua email prima di prenotare. Controlla la tua casella di posta.' },
+          { status: 403 }
+        );
+      }
+    }
 
     // Conta prenotazioni attive dell'utente
     const activeBookingsCount = await db.appointment.count({

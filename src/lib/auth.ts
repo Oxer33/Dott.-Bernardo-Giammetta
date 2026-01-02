@@ -135,7 +135,7 @@ export const authOptions: NextAuthOptions = {
   // Callbacks per personalizzare comportamento
   callbacks: {
     // JWT callback - salva dati nel token
-    // IMPORTANTE: Ricalcoliamo SEMPRE il ruolo per garantire che modifiche a MASTER_ACCOUNTS
+    // IMPORTANTE: Ricalcoliamo SEMPRE ruolo e isWhitelisted per garantire che modifiche
     // abbiano effetto immediato senza richiedere logout/login
     async jwt({ token, user, account, profile }) {
       // Al primo login, salva i dati base dell'utente
@@ -149,9 +149,8 @@ export const authOptions: NextAuthOptions = {
         }
       }
       
-      // CRITICO: Ricalcola SEMPRE il ruolo basandosi sull'email
-      // Questo garantisce che se aggiungiamo un'email a MASTER_ACCOUNTS, funziona subito
-      // senza richiedere logout/login dell'utente
+      // CRITICO: Ricalcola SEMPRE ruolo e isWhitelisted
+      // Questo garantisce che modifiche a MASTER_ACCOUNTS o whitelist abbiano effetto immediato
       if (token.email) {
         const isMasterByEmail = isMasterAccount(token.email as string);
         // Per Cognito, controlliamo anche i gruppi (solo al primo login quando profile è disponibile)
@@ -159,7 +158,26 @@ export const authOptions: NextAuthOptions = {
         const isMaster = isMasterByEmail || isMasterByCognito;
         
         token.role = isMaster ? 'ADMIN' : 'PATIENT';
-        token.isWhitelisted = isMaster;
+        
+        // FIX CRITICO: Per pazienti, leggi isWhitelisted dal database
+        // Questo permette ai pazienti di prenotare subito dopo essere stati messi in whitelist
+        if (isMaster) {
+          token.isWhitelisted = true;
+        } else {
+          // Leggi dal database per pazienti normali
+          try {
+            const dbUser = await db.user.findUnique({
+              where: { email: token.email as string },
+              select: { isWhitelisted: true, emailVerified: true },
+            });
+            token.isWhitelisted = dbUser?.isWhitelisted || false;
+            token.emailVerified = dbUser?.emailVerified ? true : false;
+          } catch (error) {
+            // In caso di errore DB, mantieni il valore precedente o false
+            console.error('[JWT] Errore lettura isWhitelisted:', error);
+            token.isWhitelisted = token.isWhitelisted || false;
+          }
+        }
       }
       
       return token;
@@ -259,5 +277,6 @@ declare module 'next-auth/jwt' {
     id: string;
     role: 'ADMIN' | 'PATIENT';
     isWhitelisted: boolean;
+    emailVerified?: boolean;
   }
 }

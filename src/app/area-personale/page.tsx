@@ -60,13 +60,11 @@ export default async function AreaPersonalePage() {
       province: true,
       cap: true,
       appointments: {
-        where: {
-          status: 'CONFIRMED',
-        },
+        // Recupera TUTTI gli appuntamenti per storico completo (inclusi cancellati e completati)
         orderBy: {
-          startTime: 'asc',
+          startTime: 'desc',
         },
-        take: 10,
+        take: 50, // Ultimi 50 appuntamenti
       },
     },
   });
