@@ -72,13 +72,17 @@ export const authOptions: NextAuthOptions = {
       },
     }),
     
-    // AWS Cognito - Per gestione account master e autenticazione alternativa
+    // AWS Cognito - Per gestione account pazienti e master
     // I gruppi Cognito determinano i permessi: "master" = ADMIN
-    ...(process.env.COGNITO_CLIENT_ID && process.env.COGNITO_CLIENT_SECRET ? [
+    // Supporta sia COGNITO_ISSUER che COGNITO_USER_POOL_ID
+    ...(process.env.COGNITO_CLIENT_ID && process.env.COGNITO_CLIENT_SECRET && 
+        (process.env.COGNITO_ISSUER || process.env.COGNITO_USER_POOL_ID) ? [
       CognitoProvider({
         clientId: process.env.COGNITO_CLIENT_ID,
         clientSecret: process.env.COGNITO_CLIENT_SECRET,
-        issuer: process.env.COGNITO_ISSUER,
+        // Costruisce issuer da COGNITO_ISSUER o da COGNITO_USER_POOL_ID
+        issuer: process.env.COGNITO_ISSUER || 
+          `https://cognito-idp.eu-north-1.amazonaws.com/${process.env.COGNITO_USER_POOL_ID}`,
         // Permette di collegare account a utenti esistenti con stessa email
         allowDangerousEmailAccountLinking: true,
       }),
