@@ -27,10 +27,10 @@ export default function RegistratiPage() {
     }
   }, [status, session, router]);
 
-  // Redirect automatico a Cognito per registrazione
+  // Redirect automatico a Cognito PATIENTS per registrazione
   const handleRegister = async () => {
-    // signIn('cognito') porta alla pagina Cognito dove si può anche registrare
-    await signIn('cognito', { callbackUrl: '/area-personale' });
+    // signIn('cognito-patients') porta alla pagina Cognito dove si può anche registrare
+    await signIn('cognito-patients', { callbackUrl: '/area-personale' });
   };
 
   // Se sta caricando la sessione

@@ -13,11 +13,15 @@ const nextConfig = {
     NEXTAUTH_SECRET: process.env.NEXTAUTH_SECRET,
     NEXTAUTH_URL: process.env.NEXTAUTH_URL,
     DATABASE_URL: process.env.DATABASE_URL,
-    // AWS Cognito - CRITICO per autenticazione pazienti
-    COGNITO_CLIENT_ID: process.env.COGNITO_CLIENT_ID,
-    COGNITO_CLIENT_SECRET: process.env.COGNITO_CLIENT_SECRET,
-    COGNITO_ISSUER: process.env.COGNITO_ISSUER,
-    COGNITO_USER_POOL_ID: process.env.COGNITO_USER_POOL_ID,
+    // AWS Cognito - DUE POOL SEPARATI per sicurezza
+    // Pool ADMIN/STAFF - accesso completo al database
+    COGNITO_ADMIN_CLIENT_ID: process.env.COGNITO_ADMIN_CLIENT_ID,
+    COGNITO_ADMIN_USER_POOL_ID: process.env.COGNITO_ADMIN_USER_POOL_ID,
+    COGNITO_ADMIN_ISSUER: process.env.COGNITO_ADMIN_ISSUER,
+    // Pool PAZIENTI - regole prenotazione limitate
+    COGNITO_PATIENTS_CLIENT_ID: process.env.COGNITO_PATIENTS_CLIENT_ID,
+    COGNITO_PATIENTS_USER_POOL_ID: process.env.COGNITO_PATIENTS_USER_POOL_ID,
+    COGNITO_PATIENTS_ISSUER: process.env.COGNITO_PATIENTS_ISSUER,
   },
 
   // Immagini: permettiamo domini esterni per Unsplash/Pexels

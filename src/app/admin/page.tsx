@@ -32,7 +32,7 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
   const session = await getServerSession(authOptions);
   
   if (!session?.user) {
-    redirect('/api/auth/signin');
+    redirect('/admin/login');
   }
   
   if (session.user.role !== 'ADMIN') {

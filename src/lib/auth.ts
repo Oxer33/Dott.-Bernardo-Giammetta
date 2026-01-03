@@ -72,18 +72,32 @@ export const authOptions: NextAuthOptions = {
       },
     }),
     
-    // AWS Cognito - Per gestione account pazienti e master
-    // I gruppi Cognito determinano i permessi: "master" = ADMIN
-    // Supporta sia COGNITO_ISSUER che COGNITO_USER_POOL_ID
-    ...(process.env.COGNITO_CLIENT_ID && process.env.COGNITO_CLIENT_SECRET && 
-        (process.env.COGNITO_ISSUER || process.env.COGNITO_USER_POOL_ID) ? [
+    // ==========================================================================
+    // AWS COGNITO - DUE POOL SEPARATI PER SICUREZZA
+    // Pool ADMIN: accesso completo al database, può inserire visite nel passato
+    // Pool PATIENTS: regole prenotazione limitate (es. 48h anticipo)
+    // ==========================================================================
+    
+    // COGNITO ADMIN - Per staff medico con accesso completo
+    ...(process.env.COGNITO_ADMIN_CLIENT_ID && process.env.COGNITO_ADMIN_ISSUER ? [
       CognitoProvider({
-        clientId: process.env.COGNITO_CLIENT_ID,
-        clientSecret: process.env.COGNITO_CLIENT_SECRET,
-        // Costruisce issuer da COGNITO_ISSUER o da COGNITO_USER_POOL_ID
-        issuer: process.env.COGNITO_ISSUER || 
-          `https://cognito-idp.eu-north-1.amazonaws.com/${process.env.COGNITO_USER_POOL_ID}`,
-        // Permette di collegare account a utenti esistenti con stessa email
+        id: 'cognito-admin',
+        name: 'Staff Login',
+        clientId: process.env.COGNITO_ADMIN_CLIENT_ID,
+        clientSecret: '', // Public client - no secret
+        issuer: process.env.COGNITO_ADMIN_ISSUER,
+        allowDangerousEmailAccountLinking: true,
+      }),
+    ] : []),
+    
+    // COGNITO PATIENTS - Per pazienti con regole prenotazione
+    ...(process.env.COGNITO_PATIENTS_CLIENT_ID && process.env.COGNITO_PATIENTS_ISSUER ? [
+      CognitoProvider({
+        id: 'cognito-patients',
+        name: 'Accesso Pazienti',
+        clientId: process.env.COGNITO_PATIENTS_CLIENT_ID,
+        clientSecret: '', // Public client - no secret
+        issuer: process.env.COGNITO_PATIENTS_ISSUER,
         allowDangerousEmailAccountLinking: true,
       }),
     ] : []),
@@ -147,9 +161,14 @@ export const authOptions: NextAuthOptions = {
         token.id = user.id;
         token.email = user.email;
         
+        // Salva il provider usato per il login (cognito-admin vs cognito-patients)
+        if (account?.provider) {
+          token.provider = account.provider;
+        }
+        
         // Log per debug Cognito
-        if (account?.provider === 'cognito') {
-          console.log('[COGNITO AUTH] User:', user.email, 'Groups:', (profile as any)?.['cognito:groups']);
+        if (account?.provider?.startsWith('cognito')) {
+          console.log('[COGNITO AUTH] Provider:', account.provider, 'User:', user.email);
         }
       }
       
@@ -157,9 +176,11 @@ export const authOptions: NextAuthOptions = {
       // Questo garantisce che modifiche a MASTER_ACCOUNTS o whitelist abbiano effetto immediato
       if (token.email) {
         const isMasterByEmail = isMasterAccount(token.email as string);
-        // Per Cognito, controlliamo anche i gruppi (solo al primo login quando profile è disponibile)
-        const isMasterByCognito = account?.provider === 'cognito' && isCognitoMaster(profile);
-        const isMaster = isMasterByEmail || isMasterByCognito;
+        // Se login da cognito-admin, è automaticamente ADMIN
+        const isMasterByCognitoPool = token.provider === 'cognito-admin';
+        // Per retrocompatibilità, controlliamo anche i gruppi Cognito
+        const isMasterByCognitoGroups = account?.provider?.startsWith('cognito') && isCognitoMaster(profile);
+        const isMaster = isMasterByEmail || isMasterByCognitoPool || isMasterByCognitoGroups;
         
         token.role = isMaster ? 'ADMIN' : 'PATIENT';
         
@@ -282,5 +303,6 @@ declare module 'next-auth/jwt' {
     role: 'ADMIN' | 'PATIENT';
     isWhitelisted: boolean;
     emailVerified?: boolean;
+    provider?: string; // cognito-admin, cognito-patients, google, credentials
   }
 }

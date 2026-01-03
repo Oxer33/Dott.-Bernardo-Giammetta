@@ -312,11 +312,44 @@
   - Flow: Registrati → Verifica Email → Prenota
 - [x] **Backup vecchie pagine**:
   - Salvate in `DA CANCELLARE/` (non tracciato da git)
-- [x] **Variabili Amplify aggiornate** (dall'utente):
-  - `COGNITO_CLIENT_ID=1ecaje9g00o1kpsl3jvmll456q`
-  - `COGNITO_CLIENT_SECRET=1ub2tlpkndjn964vlgsb3slmjpktkljofjqnoahbbr0tt060a8t8`
-  - `COGNITO_ISSUER=https://cognito-idp.eu-north-1.amazonaws.com/eu-north-1_Xi3V8ZVoy`
-  - `NEXTAUTH_URL=https://bernardogiammetta.com`
+
+### 🔐 Architettura Due Pool Cognito - 03/01/2026 (Sessione 10) ✅ COMPLETATO
+**IMPORTANTE: Pool separati per sicurezza e regole di accesso diverse!**
+
+#### Pool ADMIN (dr-giammetta-master)
+- **User Pool ID**: `eu-north-1_essCzamqc`
+- **Client ID**: `70ks8clo1fo29shce517nc082v`
+- **Scopo**: Staff medico con accesso completo al database
+- **Permessi**: Può inserire visite nel passato, modificare tutto
+- **Login**: `/admin/login` → usa provider `cognito-admin`
+
+#### Pool PATIENTS (dr.giammetta-patients)
+- **User Pool ID**: `eu-north-1_Xi3V8ZVoy`
+- **Client ID**: `1ecaje9g00o1kpsl3jvmll456q`
+- **Scopo**: Pazienti con regole prenotazione limitate
+- **Permessi**: Regole prenotazione (es. 48h anticipo), solo visite future
+- **Login**: `/accedi` → usa provider `cognito-patients`
+- **Registrazione**: `/registrati` → Cognito self-service
+
+#### Modifiche codice:
+- [x] `next.config.js`: Nuove variabili `COGNITO_ADMIN_*` e `COGNITO_PATIENTS_*`
+- [x] `auth.ts`: Due provider Cognito separati (`cognito-admin`, `cognito-patients`)
+- [x] `/accedi`: Usa `signIn('cognito-patients')`
+- [x] `/registrati`: Usa `signIn('cognito-patients')`
+- [x] `/admin/login`: Nuova pagina per staff con `signIn('cognito-admin')`
+- [x] `/admin`: Redirect a `/admin/login` se non autenticato
+- [x] Debug endpoint aggiornato per nuove variabili
+
+#### Variabili Amplify (aggiornate dall'utente):
+```
+COGNITO_ADMIN_CLIENT_ID=70ks8clo1fo29shce517nc082v
+COGNITO_ADMIN_USER_POOL_ID=eu-north-1_essCzamqc
+COGNITO_ADMIN_ISSUER=https://cognito-idp.eu-north-1.amazonaws.com/eu-north-1_essCzamqc
+
+COGNITO_PATIENTS_CLIENT_ID=1ecaje9g00o1kpsl3jvmll456q
+COGNITO_PATIENTS_USER_POOL_ID=eu-north-1_Xi3V8ZVoy
+COGNITO_PATIENTS_ISSUER=https://cognito-idp.eu-north-1.amazonaws.com/eu-north-1_Xi3V8ZVoy
+```
 
 ---
 
@@ -507,4 +540,4 @@
 
 ---
 
-*Ultimo aggiornamento: 03 Gennaio 2026 - 11:45*
+*Ultimo aggiornamento: 03 Gennaio 2026 - 22:50*

@@ -54,13 +54,13 @@ function AccediForm() {
     }
   }, [urlError]);
 
-  // Login con Cognito (redirect alla pagina hosted UI di Cognito)
+  // Login con Cognito PATIENTS (redirect alla pagina hosted UI di Cognito)
   const handleCognitoSignIn = async () => {
     setIsLoading(true);
     setError(null);
     try {
-      // signIn('cognito') reindirizza alla pagina di login hosted di Cognito
-      await signIn('cognito', { callbackUrl });
+      // signIn('cognito-patients') reindirizza alla pagina di login hosted di Cognito per pazienti
+      await signIn('cognito-patients', { callbackUrl });
     } catch {
       setError('Si è verificato un errore. Riprova.');
       setIsLoading(false);
