@@ -300,6 +300,24 @@
    ```
 3. **Attendi approvazione SES**: produzione (caso #176743190600620)
 
+### 🔄 Migrazione UI a Cognito - 03/01/2026 (Sessione 9 - Parte 2) ✅ COMPLETATO
+- [x] **Nuova pagina `/accedi`**:
+  - Login unificato tramite Cognito hosted UI
+  - Rimosse form email/password locali
+  - UI/UX mantenuta con design system esistente
+  - Gestione errori OAuth
+- [x] **Nuova pagina `/registrati`**:
+  - Redirect a Cognito per registrazione self-service
+  - Info vantaggi registrazione
+  - Flow: Registrati → Verifica Email → Prenota
+- [x] **Backup vecchie pagine**:
+  - Salvate in `DA CANCELLARE/` (non tracciato da git)
+- [x] **Variabili Amplify aggiornate** (dall'utente):
+  - `COGNITO_CLIENT_ID=1ecaje9g00o1kpsl3jvmll456q`
+  - `COGNITO_CLIENT_SECRET=1ub2tlpkndjn964vlgsb3slmjpktkljofjqnoahbbr0tt060a8t8`
+  - `COGNITO_ISSUER=https://cognito-idp.eu-north-1.amazonaws.com/eu-north-1_Xi3V8ZVoy`
+  - `NEXTAUTH_URL=https://bernardogiammetta.com`
+
 ---
 
 ## ✅ COMPLETATO (Pagine e Admin)
@@ -489,4 +507,4 @@
 
 ---
 
-*Ultimo aggiornamento: 03 Gennaio 2026 - 11:15*
+*Ultimo aggiornamento: 03 Gennaio 2026 - 11:45*
