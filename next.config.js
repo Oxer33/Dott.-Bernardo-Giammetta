@@ -13,6 +13,11 @@ const nextConfig = {
     NEXTAUTH_SECRET: process.env.NEXTAUTH_SECRET,
     NEXTAUTH_URL: process.env.NEXTAUTH_URL,
     DATABASE_URL: process.env.DATABASE_URL,
+    // AWS Cognito - CRITICO per autenticazione pazienti
+    COGNITO_CLIENT_ID: process.env.COGNITO_CLIENT_ID,
+    COGNITO_CLIENT_SECRET: process.env.COGNITO_CLIENT_SECRET,
+    COGNITO_ISSUER: process.env.COGNITO_ISSUER,
+    COGNITO_USER_POOL_ID: process.env.COGNITO_USER_POOL_ID,
   },
 
   // Immagini: permettiamo domini esterni per Unsplash/Pexels
