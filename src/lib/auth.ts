@@ -84,7 +84,7 @@ export const authOptions: NextAuthOptions = {
         id: 'cognito-admin',
         name: 'Staff Login',
         clientId: process.env.COGNITO_ADMIN_CLIENT_ID,
-        clientSecret: '', // Public client - no secret
+        clientSecret: process.env.COGNITO_ADMIN_CLIENT_SECRET || '',
         issuer: process.env.COGNITO_ADMIN_ISSUER,
         allowDangerousEmailAccountLinking: true,
       }),
@@ -96,7 +96,7 @@ export const authOptions: NextAuthOptions = {
         id: 'cognito-patients',
         name: 'Accesso Pazienti',
         clientId: process.env.COGNITO_PATIENTS_CLIENT_ID,
-        clientSecret: '', // Public client - no secret
+        clientSecret: process.env.COGNITO_PATIENTS_CLIENT_SECRET || '',
         issuer: process.env.COGNITO_PATIENTS_ISSUER,
         allowDangerousEmailAccountLinking: true,
       }),

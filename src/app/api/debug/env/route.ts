@@ -17,6 +17,7 @@ export async function GET() {
     COGNITO_ADMIN_CLIENT_ID_preview: process.env.COGNITO_ADMIN_CLIENT_ID 
       ? `${process.env.COGNITO_ADMIN_CLIENT_ID.substring(0, 10)}...` 
       : 'NON CONFIGURATA',
+    COGNITO_ADMIN_CLIENT_SECRET: !!process.env.COGNITO_ADMIN_CLIENT_SECRET,
     COGNITO_ADMIN_USER_POOL_ID: process.env.COGNITO_ADMIN_USER_POOL_ID || 'NON CONFIGURATA',
     COGNITO_ADMIN_ISSUER: process.env.COGNITO_ADMIN_ISSUER || 'NON CONFIGURATA',
     admin_provider_will_load: !!(
@@ -33,6 +34,7 @@ export async function GET() {
     COGNITO_PATIENTS_CLIENT_ID_preview: process.env.COGNITO_PATIENTS_CLIENT_ID 
       ? `${process.env.COGNITO_PATIENTS_CLIENT_ID.substring(0, 10)}...` 
       : 'NON CONFIGURATA',
+    COGNITO_PATIENTS_CLIENT_SECRET: !!process.env.COGNITO_PATIENTS_CLIENT_SECRET,
     COGNITO_PATIENTS_USER_POOL_ID: process.env.COGNITO_PATIENTS_USER_POOL_ID || 'NON CONFIGURATA',
     COGNITO_PATIENTS_ISSUER: process.env.COGNITO_PATIENTS_ISSUER || 'NON CONFIGURATA',
     patients_provider_will_load: !!(
