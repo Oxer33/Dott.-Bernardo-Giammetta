@@ -272,6 +272,34 @@
   - ✅ Template email variati (50 varianti per sembrare scritti a mano)
 - [x] **Integrazione AWS SES**: email automatica quando paziente viene approvato in whitelist
 
+### 🔐 AWS Cognito & SES - 03/01/2026 (Sessione 9) ✅ COMPLETATO
+- [x] **Nuovo User Pool Cognito creato**: `eu-north-1_Xi3V8ZVoy`
+  - App Client: `bernardogiammetta.com-patients` (ID: `1ecaje9g00o1kpsl3jvmll456q`)
+  - Attributi: email, given_name, family_name, birthdate, gender
+  - Registrazione self-service abilitata
+  - Verifica email obbligatoria
+- [x] **AWS SES configurato**:
+  - Dominio `bernardogiammetta.com` verificato
+  - DKIM configurato con successo
+  - 3 record CNAME aggiunti su Aruba DNS
+  - Richiesta accesso produzione inviata (caso #176743190600620)
+- [x] **Variabili ambiente aggiornate** in `.env.example`:
+  - `COGNITO_CLIENT_ID`, `COGNITO_CLIENT_SECRET`, `COGNITO_ISSUER` (nuovo User Pool)
+  - `AWS_SES_ACCESS_KEY_ID`, `AWS_SES_SECRET_ACCESS_KEY`, `AWS_SES_FROM_EMAIL`, `AWS_SES_REGION`
+
+#### ⚠️ AZIONI RICHIESTE SU AWS AMPLIFY:
+1. **Recupera Client Secret** dalla console Cognito:
+   - Vai su Cognito > User Pools > `eu-north-1_Xi3V8ZVoy`
+   - App integration > App clients > `bernardogiammetta.com-patients`
+   - Mostra client secret e copialo
+2. **Aggiorna variabili su Amplify Console**:
+   ```
+   COGNITO_CLIENT_ID=1ecaje9g00o1kpsl3jvmll456q
+   COGNITO_CLIENT_SECRET=<il-secret-recuperato>
+   COGNITO_ISSUER=https://cognito-idp.eu-north-1.amazonaws.com/eu-north-1_Xi3V8ZVoy
+   ```
+3. **Attendi approvazione SES**: produzione (caso #176743190600620)
+
 ---
 
 ## ✅ COMPLETATO (Pagine e Admin)
@@ -461,4 +489,4 @@
 
 ---
 
-*Ultimo aggiornamento: 02 Gennaio 2026 - 20:45*
+*Ultimo aggiornamento: 03 Gennaio 2026 - 11:15*
