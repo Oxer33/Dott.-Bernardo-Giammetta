@@ -1,77 +1,83 @@
 // =============================================================================
 // API DEBUG ENVIRONMENT - DOTT. BERNARDO GIAMMETTA
 // Endpoint per verificare quali variabili ambiente sono configurate
-// PROTETTO: Solo account admin possono accedere
+// TEMPORANEAMENTE PUBBLICO per debug Cognito
 // =============================================================================
 
 import { NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
-import { isMasterAccount } from '@/lib/config';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET() {
-  // SICUREZZA: Solo admin può vedere info debug
-  const session = await getServerSession(authOptions);
-  if (!session?.user?.email || !isMasterAccount(session.user.email)) {
-    return NextResponse.json({ error: 'Non autorizzato' }, { status: 403 });
+  // DEBUG COGNITO - Verifica quali variabili Cognito sono presenti
+  const cognitoStatus = {
+    COGNITO_CLIENT_ID: !!process.env.COGNITO_CLIENT_ID,
+    COGNITO_CLIENT_ID_preview: process.env.COGNITO_CLIENT_ID 
+      ? `${process.env.COGNITO_CLIENT_ID.substring(0, 10)}...` 
+      : 'NON CONFIGURATA',
+    COGNITO_CLIENT_SECRET: !!process.env.COGNITO_CLIENT_SECRET,
+    COGNITO_CLIENT_SECRET_preview: process.env.COGNITO_CLIENT_SECRET 
+      ? `${process.env.COGNITO_CLIENT_SECRET.substring(0, 10)}...` 
+      : 'NON CONFIGURATA',
+    COGNITO_ISSUER: process.env.COGNITO_ISSUER || 'NON CONFIGURATA',
+    COGNITO_USER_POOL_ID: process.env.COGNITO_USER_POOL_ID || 'NON CONFIGURATA',
+    
+    // Calcola l'issuer che verrà usato
+    computed_issuer: process.env.COGNITO_ISSUER || 
+      (process.env.COGNITO_USER_POOL_ID 
+        ? `https://cognito-idp.eu-north-1.amazonaws.com/${process.env.COGNITO_USER_POOL_ID}`
+        : 'IMPOSSIBILE CALCOLARE - MANCA COGNITO_USER_POOL_ID'),
+    
+    // Verifica se il provider Cognito verrà caricato
+    cognito_provider_will_load: !!(
+      process.env.COGNITO_CLIENT_ID && 
+      process.env.COGNITO_CLIENT_SECRET && 
+      (process.env.COGNITO_ISSUER || process.env.COGNITO_USER_POOL_ID)
+    ),
+  };
+
+  // Variabili mancanti per Cognito
+  const cognitoMissing = [];
+  if (!process.env.COGNITO_CLIENT_ID) cognitoMissing.push('COGNITO_CLIENT_ID');
+  if (!process.env.COGNITO_CLIENT_SECRET) cognitoMissing.push('COGNITO_CLIENT_SECRET');
+  if (!process.env.COGNITO_ISSUER && !process.env.COGNITO_USER_POOL_ID) {
+    cognitoMissing.push('COGNITO_ISSUER o COGNITO_USER_POOL_ID');
   }
-  // Verifica quali variabili sono presenti (NON mostra i valori per sicurezza)
+
+  // Altre variabili
   const envStatus = {
-    // Database
     DATABASE_URL: !!process.env.DATABASE_URL,
-    DATABASE_URL_preview: process.env.DATABASE_URL 
-      ? `${process.env.DATABASE_URL.substring(0, 20)}...` 
-      : 'NON CONFIGURATA',
-    
-    // OpenRouter (NutriBot)
-    OPENROUTER_API_KEY: !!process.env.OPENROUTER_API_KEY,
-    OPENROUTER_API_KEY_preview: process.env.OPENROUTER_API_KEY 
-      ? `${process.env.OPENROUTER_API_KEY.substring(0, 15)}...${process.env.OPENROUTER_API_KEY.slice(-5)}` 
-      : 'NON CONFIGURATA',
-    
-    // NextAuth
     NEXTAUTH_URL: process.env.NEXTAUTH_URL || 'NON CONFIGURATA',
     NEXTAUTH_SECRET: !!process.env.NEXTAUTH_SECRET,
-    
-    // Google OAuth
     GOOGLE_CLIENT_ID: !!process.env.GOOGLE_CLIENT_ID,
-    GOOGLE_CLIENT_ID_preview: process.env.GOOGLE_CLIENT_ID 
-      ? `${process.env.GOOGLE_CLIENT_ID.substring(0, 20)}...` 
-      : 'NON CONFIGURATA',
     GOOGLE_CLIENT_SECRET: !!process.env.GOOGLE_CLIENT_SECRET,
-    
-    // Optional
-    RESEND_API_KEY: !!process.env.RESEND_API_KEY,
-    NEXT_PUBLIC_SITE_URL: process.env.NEXT_PUBLIC_SITE_URL || 'NON CONFIGURATA',
-    
-    // Info sistema
     NODE_ENV: process.env.NODE_ENV,
     timestamp: new Date().toISOString(),
   };
 
-  // Calcola quante variabili critiche mancano
-  const criticalMissing = [];
-  if (!process.env.OPENROUTER_API_KEY) criticalMissing.push('OPENROUTER_API_KEY');
-  if (!process.env.NEXTAUTH_SECRET) criticalMissing.push('NEXTAUTH_SECRET');
-  if (!process.env.NEXTAUTH_URL) criticalMissing.push('NEXTAUTH_URL');
-  if (!process.env.GOOGLE_CLIENT_ID) criticalMissing.push('GOOGLE_CLIENT_ID');
-  if (!process.env.GOOGLE_CLIENT_SECRET) criticalMissing.push('GOOGLE_CLIENT_SECRET');
-  if (!process.env.DATABASE_URL) criticalMissing.push('DATABASE_URL');
-
   return NextResponse.json({
-    status: criticalMissing.length === 0 ? 'OK' : 'MISSING_ENV_VARS',
-    criticalMissing,
-    message: criticalMissing.length > 0 
-      ? `Mancano ${criticalMissing.length} variabili critiche su Amplify!` 
-      : 'Tutte le variabili critiche sono configurate',
+    // FOCUS PRINCIPALE: Status Cognito
+    cognito_status: cognitoMissing.length === 0 ? '✅ PRONTO' : '❌ INCOMPLETO',
+    cognito_missing: cognitoMissing,
+    cognito_message: cognitoMissing.length > 0 
+      ? `PROBLEMA: Mancano ${cognitoMissing.length} variabili Cognito su Amplify!`
+      : 'Tutte le variabili Cognito sono configurate!',
+    cognitoStatus,
+    
+    // Altre info
     envStatus,
-    instructions: criticalMissing.length > 0 ? {
-      step1: 'Vai su AWS Amplify Console → la tua app',
-      step2: 'Clicca su "Environment variables"',
-      step3: 'Aggiungi le variabili mancanti',
-      step4: 'Clicca "Save" e poi "Redeploy"',
+    
+    // Istruzioni se mancano variabili
+    fix_required: cognitoMissing.length > 0 ? {
+      step1: 'Vai su AWS Amplify Console',
+      step2: 'Environment variables',
+      step3: 'Aggiungi le variabili mancanti:',
+      variables_to_add: {
+        COGNITO_CLIENT_ID: '1ideutif218p5idkf7th8300mj',
+        COGNITO_CLIENT_SECRET: 'va217ttg96cripmpuf6jn4mjh3ecr0tt30488qupb64hu79jfq1',
+        COGNITO_USER_POOL_ID: 'eu-north-1_essCzamqc',
+      },
+      step4: 'Salva e Redeploy',
     } : null,
   });
 }
