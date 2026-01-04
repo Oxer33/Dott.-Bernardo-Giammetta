@@ -50,6 +50,9 @@ const getAdapter = () => {
 };
 
 export const authOptions: NextAuthOptions = {
+  // DEBUG TEMPORANEO per vedere errori specifici Cognito
+  debug: true,
+  
   // Adapter Prisma per salvare utenti nel database
   // ABILITATO: Le tabelle sono state create con prisma db push
   adapter: getAdapter(),
@@ -83,10 +86,15 @@ export const authOptions: NextAuthOptions = {
     ...(process.env.COGNITO_ADMIN_CLIENT_ID && process.env.COGNITO_ADMIN_ISSUER ? [
       CognitoProvider({
         id: 'cognito-admin',
-        name: 'Staff Login',
+        name: 'Admin Login',
         clientId: process.env.COGNITO_ADMIN_CLIENT_ID,
         clientSecret: process.env.COGNITO_ADMIN_CLIENT_SECRET || '',
         issuer: process.env.COGNITO_ADMIN_ISSUER,
+        authorization: {
+          params: {
+            scope: 'openid email profile',
+          },
+        },
         allowDangerousEmailAccountLinking: true,
       }),
     ] : []),
@@ -100,6 +108,11 @@ export const authOptions: NextAuthOptions = {
         clientId: process.env.COGNITO_PATIENTS_CLIENT_ID,
         clientSecret: process.env.COGNITO_PATIENTS_CLIENT_SECRET || '',
         issuer: process.env.COGNITO_PATIENTS_ISSUER,
+        authorization: {
+          params: {
+            scope: 'openid email profile',
+          },
+        },
         allowDangerousEmailAccountLinking: true,
       }),
     ] : []),
@@ -270,8 +283,7 @@ export const authOptions: NextAuthOptions = {
     },
   },
   
-  // Debug in development
-  debug: process.env.NODE_ENV === 'development',
+  // Debug è già impostato sopra (debug: true) per troubleshooting Cognito
 };
 
 // =============================================================================
