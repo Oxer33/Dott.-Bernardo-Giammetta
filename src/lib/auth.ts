@@ -82,14 +82,15 @@ export const authOptions: NextAuthOptions = {
     // ==========================================================================
     
     // COGNITO ADMIN - Per staff medico con accesso completo
-    // ISSUER dalle variabili d'ambiente (formato cognito-idp)
-    ...(process.env.COGNITO_ADMIN_CLIENT_ID && process.env.COGNITO_ADMIN_ISSUER ? [
+    // ISSUER = Hosted UI domain (NON cognito-idp!) per evitare redirect_mismatch
+    ...(process.env.COGNITO_ADMIN_CLIENT_ID ? [
       CognitoProvider({
         id: 'cognito-admin',
         name: 'Admin Login',
         clientId: process.env.COGNITO_ADMIN_CLIENT_ID,
         clientSecret: process.env.COGNITO_ADMIN_CLIENT_SECRET || '',
-        issuer: process.env.COGNITO_ADMIN_ISSUER,
+        // IMPORTANTE: Usa il dominio Hosted UI, non cognito-idp
+        issuer: 'https://dr-giammetta-admin.auth.eu-north-1.amazoncognito.com',
         authorization: {
           params: {
             scope: 'openid email profile',
@@ -100,14 +101,15 @@ export const authOptions: NextAuthOptions = {
     ] : []),
     
     // COGNITO PATIENTS - Per pazienti con regole prenotazione
-    // ISSUER dalle variabili d'ambiente (formato cognito-idp)
-    ...(process.env.COGNITO_PATIENTS_CLIENT_ID && process.env.COGNITO_PATIENTS_ISSUER ? [
+    // ISSUER = Hosted UI domain (auto-generato da Cognito)
+    ...(process.env.COGNITO_PATIENTS_CLIENT_ID ? [
       CognitoProvider({
         id: 'cognito-patients',
         name: 'Accesso Pazienti',
         clientId: process.env.COGNITO_PATIENTS_CLIENT_ID,
         clientSecret: process.env.COGNITO_PATIENTS_CLIENT_SECRET || '',
-        issuer: process.env.COGNITO_PATIENTS_ISSUER,
+        // IMPORTANTE: Usa il dominio Hosted UI, non cognito-idp
+        issuer: 'https://eu-north-1xi3v8zvoy.auth.eu-north-1.amazoncognito.com',
         authorization: {
           params: {
             scope: 'openid email profile',
