@@ -96,6 +96,18 @@ export const authOptions: NextAuthOptions = {
             scope: 'openid email profile',
           },
         },
+        // Mapping esplicito del profilo Cognito per NextAuth
+        profile(profile) {
+          return {
+            id: profile.sub,
+            name: profile.name || profile.email,
+            email: profile.email,
+            image: profile.picture || null,
+            // Campi custom per NextAuth - verranno sovrascritti dal JWT callback
+            role: 'ADMIN' as const,
+            isWhitelisted: true,
+          };
+        },
         allowDangerousEmailAccountLinking: true,
       }),
     ] : []),
@@ -114,6 +126,18 @@ export const authOptions: NextAuthOptions = {
           params: {
             scope: 'openid email profile',
           },
+        },
+        // Mapping esplicito del profilo Cognito per NextAuth
+        profile(profile) {
+          return {
+            id: profile.sub,
+            name: profile.name || profile.email,
+            email: profile.email,
+            image: profile.picture || null,
+            // Campi custom per NextAuth - verranno sovrascritti dal JWT callback
+            role: 'PATIENT' as const,
+            isWhitelisted: false,
+          };
         },
         allowDangerousEmailAccountLinking: true,
       }),
