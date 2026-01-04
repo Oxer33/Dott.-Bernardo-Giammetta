@@ -137,7 +137,7 @@ function AccediForm() {
             )}
           </button>
 
-          {/* Info box registrazione */}
+          {/* Info box registrazione con link */}
           <div className="mt-6 p-4 bg-lavender-50 rounded-xl border border-lavender-100">
             <div className="flex items-start gap-3">
               <UserPlus className="w-5 h-5 text-lavender-600 flex-shrink-0 mt-0.5" />
@@ -146,7 +146,13 @@ function AccediForm() {
                   Non hai ancora un account?
                 </h3>
                 <p className="text-sm text-lavender-700">
-                  Cliccando su &quot;Accedi&quot; potrai anche registrarti come nuovo paziente. 
+                  <Link 
+                    href="/registrati" 
+                    className="text-lavender-800 font-medium hover:underline"
+                  >
+                    Registrati qui
+                  </Link>
+                  {' '}per creare un nuovo account paziente.
                   Ti verranno richiesti i tuoi dati e riceverai un&apos;email di verifica.
                 </p>
               </div>
@@ -194,6 +200,16 @@ function AccediForm() {
             className="text-sage-600 hover:text-sage-800 text-sm font-medium transition-colors"
           >
             ← Torna alla Home
+          </Link>
+        </div>
+
+        {/* Link admin - discreto in fondo */}
+        <div className="text-center mt-8">
+          <Link
+            href="/admin/login"
+            className="text-sage-400 hover:text-sage-600 text-xs transition-colors"
+          >
+            Login Admin
           </Link>
         </div>
       </motion.div>
