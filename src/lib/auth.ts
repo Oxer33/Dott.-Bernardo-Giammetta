@@ -79,6 +79,7 @@ export const authOptions: NextAuthOptions = {
     // ==========================================================================
     
     // COGNITO ADMIN - Per staff medico con accesso completo
+    // URL OAuth espliciti per evitare redirect_mismatch
     ...(process.env.COGNITO_ADMIN_CLIENT_ID && process.env.COGNITO_ADMIN_ISSUER ? [
       CognitoProvider({
         id: 'cognito-admin',
@@ -87,10 +88,21 @@ export const authOptions: NextAuthOptions = {
         clientSecret: process.env.COGNITO_ADMIN_CLIENT_SECRET || '',
         issuer: process.env.COGNITO_ADMIN_ISSUER,
         allowDangerousEmailAccountLinking: true,
+        authorization: {
+          url: 'https://dr-giammetta-admin.auth.eu-north-1.amazoncognito.com/oauth2/authorize',
+          params: {
+            scope: 'openid email profile',
+            response_type: 'code',
+          },
+        },
+        token: 'https://dr-giammetta-admin.auth.eu-north-1.amazoncognito.com/oauth2/token',
+        userinfo: 'https://dr-giammetta-admin.auth.eu-north-1.amazoncognito.com/oauth2/userInfo',
       }),
     ] : []),
     
     // COGNITO PATIENTS - Per pazienti con regole prenotazione
+    // URL OAuth espliciti per evitare redirect_mismatch
+    // NOTA: Verifica il dominio corretto su Cognito Console per il pool patients
     ...(process.env.COGNITO_PATIENTS_CLIENT_ID && process.env.COGNITO_PATIENTS_ISSUER ? [
       CognitoProvider({
         id: 'cognito-patients',
@@ -99,6 +111,15 @@ export const authOptions: NextAuthOptions = {
         clientSecret: process.env.COGNITO_PATIENTS_CLIENT_SECRET || '',
         issuer: process.env.COGNITO_PATIENTS_ISSUER,
         allowDangerousEmailAccountLinking: true,
+        authorization: {
+          url: 'https://dr-giammetta-patients.auth.eu-north-1.amazoncognito.com/oauth2/authorize',
+          params: {
+            scope: 'openid email profile',
+            response_type: 'code',
+          },
+        },
+        token: 'https://dr-giammetta-patients.auth.eu-north-1.amazoncognito.com/oauth2/token',
+        userinfo: 'https://dr-giammetta-patients.auth.eu-north-1.amazoncognito.com/oauth2/userInfo',
       }),
     ] : []),
     
