@@ -50,9 +50,6 @@ const getAdapter = () => {
 };
 
 export const authOptions: NextAuthOptions = {
-  // DEBUG TEMPORANEO per vedere errori specifici Cognito
-  debug: true,
-  
   // Adapter Prisma per salvare utenti nel database
   // ABILITATO: Le tabelle sono state create con prisma db push
   adapter: getAdapter(),
@@ -82,63 +79,27 @@ export const authOptions: NextAuthOptions = {
     // ==========================================================================
     
     // COGNITO ADMIN - Per staff medico con accesso completo
-    // ISSUER = Hosted UI domain (NON cognito-idp!) per evitare redirect_mismatch
-    ...(process.env.COGNITO_ADMIN_CLIENT_ID ? [
-      CognitoProvider({
-        id: 'cognito-admin',
-        name: 'Admin Login',
-        clientId: process.env.COGNITO_ADMIN_CLIENT_ID,
-        clientSecret: process.env.COGNITO_ADMIN_CLIENT_SECRET || '',
-        // IMPORTANTE: Usa il dominio Hosted UI, non cognito-idp
-        issuer: 'https://dr-giammetta-admin.auth.eu-north-1.amazoncognito.com',
-        authorization: {
-          params: {
-            scope: 'openid email profile',
-          },
-        },
-        // Mapping esplicito del profilo Cognito per NextAuth
-        profile(profile) {
-          return {
-            id: profile.sub,
-            name: profile.name || profile.email,
-            email: profile.email,
-            image: profile.picture || null,
-            // Campi custom per NextAuth - verranno sovrascritti dal JWT callback
-            role: 'ADMIN' as const,
-            isWhitelisted: true,
-          };
-        },
-        allowDangerousEmailAccountLinking: true,
-      }),
-    ] : []),
+    // NOTA: Admin temporaneamente disabilitato - da sistemare
+    // ...(process.env.COGNITO_ADMIN_CLIENT_ID ? [
+    //   CognitoProvider({
+    //     id: 'cognito-admin',
+    //     name: 'Admin Login',
+    //     clientId: process.env.COGNITO_ADMIN_CLIENT_ID,
+    //     clientSecret: process.env.COGNITO_ADMIN_CLIENT_SECRET || '',
+    //     issuer: 'https://dr-giammetta-admin.auth.eu-north-1.amazoncognito.com',
+    //     allowDangerousEmailAccountLinking: true,
+    //   }),
+    // ] : []),
     
     // COGNITO PATIENTS - Per pazienti con regole prenotazione
-    // ISSUER = Hosted UI domain (auto-generato da Cognito)
+    // Configurazione MINIMA che funzionava prima
     ...(process.env.COGNITO_PATIENTS_CLIENT_ID ? [
       CognitoProvider({
         id: 'cognito-patients',
         name: 'Accesso Pazienti',
         clientId: process.env.COGNITO_PATIENTS_CLIENT_ID,
         clientSecret: process.env.COGNITO_PATIENTS_CLIENT_SECRET || '',
-        // IMPORTANTE: Usa il dominio Hosted UI, non cognito-idp
-        issuer: 'https://eu-north-1xi3v8zvoy.auth.eu-north-1.amazoncognito.com',
-        authorization: {
-          params: {
-            scope: 'openid email profile',
-          },
-        },
-        // Mapping esplicito del profilo Cognito per NextAuth
-        profile(profile) {
-          return {
-            id: profile.sub,
-            name: profile.name || profile.email,
-            email: profile.email,
-            image: profile.picture || null,
-            // Campi custom per NextAuth - verranno sovrascritti dal JWT callback
-            role: 'PATIENT' as const,
-            isWhitelisted: false,
-          };
-        },
+        issuer: process.env.COGNITO_PATIENTS_ISSUER,
         allowDangerousEmailAccountLinking: true,
       }),
     ] : []),
