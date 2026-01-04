@@ -79,17 +79,17 @@ export const authOptions: NextAuthOptions = {
     // ==========================================================================
     
     // COGNITO ADMIN - Per staff medico con accesso completo
-    // NOTA: Admin temporaneamente disabilitato - da sistemare
-    // ...(process.env.COGNITO_ADMIN_CLIENT_ID ? [
-    //   CognitoProvider({
-    //     id: 'cognito-admin',
-    //     name: 'Admin Login',
-    //     clientId: process.env.COGNITO_ADMIN_CLIENT_ID,
-    //     clientSecret: process.env.COGNITO_ADMIN_CLIENT_SECRET || '',
-    //     issuer: 'https://dr-giammetta-admin.auth.eu-north-1.amazoncognito.com',
-    //     allowDangerousEmailAccountLinking: true,
-    //   }),
-    // ] : []),
+    // Configurazione IDENTICA ai pazienti (senza profile() function!)
+    ...(process.env.COGNITO_ADMIN_CLIENT_ID ? [
+      CognitoProvider({
+        id: 'cognito-admin',
+        name: 'Admin Login',
+        clientId: process.env.COGNITO_ADMIN_CLIENT_ID,
+        clientSecret: process.env.COGNITO_ADMIN_CLIENT_SECRET || '',
+        issuer: process.env.COGNITO_ADMIN_ISSUER,
+        allowDangerousEmailAccountLinking: true,
+      }),
+    ] : []),
     
     // COGNITO PATIENTS - Per pazienti con regole prenotazione
     // Configurazione MINIMA che funzionava prima
