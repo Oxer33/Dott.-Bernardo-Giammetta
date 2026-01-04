@@ -79,30 +79,27 @@ export const authOptions: NextAuthOptions = {
     // ==========================================================================
     
     // COGNITO ADMIN - Per staff medico con accesso completo
-    // ISSUER = dominio Cognito (NextAuth auto-scopre gli endpoint OAuth)
-    ...(process.env.COGNITO_ADMIN_CLIENT_ID ? [
+    // ISSUER dalle variabili d'ambiente (formato cognito-idp)
+    ...(process.env.COGNITO_ADMIN_CLIENT_ID && process.env.COGNITO_ADMIN_ISSUER ? [
       CognitoProvider({
         id: 'cognito-admin',
         name: 'Staff Login',
         clientId: process.env.COGNITO_ADMIN_CLIENT_ID,
         clientSecret: process.env.COGNITO_ADMIN_CLIENT_SECRET || '',
-        // Usa il DOMINIO Cognito come issuer (non cognito-idp URL)
-        issuer: 'https://dr-giammetta-admin.auth.eu-north-1.amazoncognito.com',
+        issuer: process.env.COGNITO_ADMIN_ISSUER,
         allowDangerousEmailAccountLinking: true,
       }),
     ] : []),
     
     // COGNITO PATIENTS - Per pazienti con regole prenotazione
-    // ISSUER = dominio Cognito (NextAuth auto-scopre gli endpoint OAuth)
-    // TODO: Verifica dominio corretto su Cognito Console → Pool patients → App integration → Domain
-    ...(process.env.COGNITO_PATIENTS_CLIENT_ID ? [
+    // ISSUER dalle variabili d'ambiente (formato cognito-idp)
+    ...(process.env.COGNITO_PATIENTS_CLIENT_ID && process.env.COGNITO_PATIENTS_ISSUER ? [
       CognitoProvider({
         id: 'cognito-patients',
         name: 'Accesso Pazienti',
         clientId: process.env.COGNITO_PATIENTS_CLIENT_ID,
         clientSecret: process.env.COGNITO_PATIENTS_CLIENT_SECRET || '',
-        // Usa il DOMINIO Cognito come issuer (non cognito-idp URL)
-        issuer: 'https://dr-giammetta-patients.auth.eu-north-1.amazoncognito.com',
+        issuer: process.env.COGNITO_PATIENTS_ISSUER,
         allowDangerousEmailAccountLinking: true,
       }),
     ] : []),
