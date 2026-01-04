@@ -79,47 +79,31 @@ export const authOptions: NextAuthOptions = {
     // ==========================================================================
     
     // COGNITO ADMIN - Per staff medico con accesso completo
-    // URL OAuth espliciti per evitare redirect_mismatch
-    ...(process.env.COGNITO_ADMIN_CLIENT_ID && process.env.COGNITO_ADMIN_ISSUER ? [
+    // ISSUER = dominio Cognito (NextAuth auto-scopre gli endpoint OAuth)
+    ...(process.env.COGNITO_ADMIN_CLIENT_ID ? [
       CognitoProvider({
         id: 'cognito-admin',
         name: 'Staff Login',
         clientId: process.env.COGNITO_ADMIN_CLIENT_ID,
         clientSecret: process.env.COGNITO_ADMIN_CLIENT_SECRET || '',
-        issuer: process.env.COGNITO_ADMIN_ISSUER,
+        // Usa il DOMINIO Cognito come issuer (non cognito-idp URL)
+        issuer: 'https://dr-giammetta-admin.auth.eu-north-1.amazoncognito.com',
         allowDangerousEmailAccountLinking: true,
-        authorization: {
-          url: 'https://dr-giammetta-admin.auth.eu-north-1.amazoncognito.com/oauth2/authorize',
-          params: {
-            scope: 'openid email profile',
-            response_type: 'code',
-          },
-        },
-        token: 'https://dr-giammetta-admin.auth.eu-north-1.amazoncognito.com/oauth2/token',
-        userinfo: 'https://dr-giammetta-admin.auth.eu-north-1.amazoncognito.com/oauth2/userInfo',
       }),
     ] : []),
     
     // COGNITO PATIENTS - Per pazienti con regole prenotazione
-    // URL OAuth espliciti per evitare redirect_mismatch
-    // NOTA: Verifica il dominio corretto su Cognito Console per il pool patients
-    ...(process.env.COGNITO_PATIENTS_CLIENT_ID && process.env.COGNITO_PATIENTS_ISSUER ? [
+    // ISSUER = dominio Cognito (NextAuth auto-scopre gli endpoint OAuth)
+    // TODO: Verifica dominio corretto su Cognito Console → Pool patients → App integration → Domain
+    ...(process.env.COGNITO_PATIENTS_CLIENT_ID ? [
       CognitoProvider({
         id: 'cognito-patients',
         name: 'Accesso Pazienti',
         clientId: process.env.COGNITO_PATIENTS_CLIENT_ID,
         clientSecret: process.env.COGNITO_PATIENTS_CLIENT_SECRET || '',
-        issuer: process.env.COGNITO_PATIENTS_ISSUER,
+        // Usa il DOMINIO Cognito come issuer (non cognito-idp URL)
+        issuer: 'https://dr-giammetta-patients.auth.eu-north-1.amazoncognito.com',
         allowDangerousEmailAccountLinking: true,
-        authorization: {
-          url: 'https://dr-giammetta-patients.auth.eu-north-1.amazoncognito.com/oauth2/authorize',
-          params: {
-            scope: 'openid email profile',
-            response_type: 'code',
-          },
-        },
-        token: 'https://dr-giammetta-patients.auth.eu-north-1.amazoncognito.com/oauth2/token',
-        userinfo: 'https://dr-giammetta-patients.auth.eu-north-1.amazoncognito.com/oauth2/userInfo',
       }),
     ] : []),
     
