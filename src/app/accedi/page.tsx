@@ -9,7 +9,7 @@ import { useState, Suspense, useEffect } from 'react';
 import { signIn, useSession } from 'next-auth/react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { motion } from 'framer-motion';
-import { Leaf, Loader2, AlertTriangle, LogIn, UserPlus } from 'lucide-react';
+import { Leaf, Loader2, AlertTriangle, LogIn, UserPlus, Shield } from 'lucide-react';
 import Link from 'next/link';
 
 // =============================================================================
@@ -26,6 +26,7 @@ function AccediForm() {
   const urlError = searchParams.get('error');
   
   const [isLoading, setIsLoading] = useState(false);
+  const [loadingType, setLoadingType] = useState<'login' | 'register' | 'admin' | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   // Se già loggato, redirect
@@ -57,6 +58,7 @@ function AccediForm() {
   // Login con Cognito PATIENTS (redirect alla pagina hosted UI di Cognito)
   const handleCognitoSignIn = async () => {
     setIsLoading(true);
+    setLoadingType('login');
     setError(null);
     try {
       // signIn('cognito-patients') reindirizza alla pagina di login hosted di Cognito per pazienti
@@ -64,6 +66,36 @@ function AccediForm() {
     } catch {
       setError('Si è verificato un errore. Riprova.');
       setIsLoading(false);
+      setLoadingType(null);
+    }
+  };
+
+  // Registrazione con Cognito PATIENTS (va alla stessa Hosted UI, l'utente clicca "Sign up")
+  const handleCognitoRegister = async () => {
+    setIsLoading(true);
+    setLoadingType('register');
+    setError(null);
+    try {
+      // La Hosted UI di Cognito ha il link "Sign up" per registrarsi
+      await signIn('cognito-patients', { callbackUrl });
+    } catch {
+      setError('Si è verificato un errore. Riprova.');
+      setIsLoading(false);
+      setLoadingType(null);
+    }
+  };
+
+  // Login Admin con Cognito ADMIN
+  const handleAdminSignIn = async () => {
+    setIsLoading(true);
+    setLoadingType('admin');
+    setError(null);
+    try {
+      await signIn('cognito-admin', { callbackUrl: '/admin' });
+    } catch {
+      setError('Si è verificato un errore. Riprova.');
+      setIsLoading(false);
+      setLoadingType(null);
     }
   };
 
@@ -118,46 +150,51 @@ function AccediForm() {
             </motion.div>
           )}
 
-          {/* Pulsante principale Cognito */}
-          <button
-            onClick={handleCognitoSignIn}
-            disabled={isLoading}
-            className="w-full flex items-center justify-center gap-3 py-4 bg-gradient-to-r from-sage-500 to-sage-600 text-white rounded-xl hover:from-sage-600 hover:to-sage-700 transition-all font-medium disabled:opacity-50 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
-          >
-            {isLoading ? (
-              <>
-                <Loader2 className="w-5 h-5 animate-spin" />
-                <span>Reindirizzamento...</span>
-              </>
-            ) : (
-              <>
-                <LogIn className="w-5 h-5" />
-                <span>Accedi al tuo Account</span>
-              </>
-            )}
-          </button>
+          {/* Bottoni principali - ACCEDI e REGISTRATI */}
+          <div className="space-y-4">
+            {/* Bottone ACCEDI */}
+            <button
+              onClick={handleCognitoSignIn}
+              disabled={isLoading}
+              className="w-full flex items-center justify-center gap-3 py-4 bg-gradient-to-r from-sage-500 to-sage-600 text-white rounded-xl hover:from-sage-600 hover:to-sage-700 transition-all font-medium disabled:opacity-50 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+            >
+              {isLoading && loadingType === 'login' ? (
+                <>
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                  <span>Reindirizzamento...</span>
+                </>
+              ) : (
+                <>
+                  <LogIn className="w-5 h-5" />
+                  <span>Accedi al tuo Account</span>
+                </>
+              )}
+            </button>
 
-          {/* Info box registrazione con link */}
-          <div className="mt-6 p-4 bg-lavender-50 rounded-xl border border-lavender-100">
-            <div className="flex items-start gap-3">
-              <UserPlus className="w-5 h-5 text-lavender-600 flex-shrink-0 mt-0.5" />
-              <div>
-                <h3 className="font-medium text-lavender-800 mb-1">
-                  Non hai ancora un account?
-                </h3>
-                <p className="text-sm text-lavender-700">
-                  <Link 
-                    href="/registrati" 
-                    className="text-lavender-800 font-medium hover:underline"
-                  >
-                    Registrati qui
-                  </Link>
-                  {' '}per creare un nuovo account paziente.
-                  Ti verranno richiesti i tuoi dati e riceverai un&apos;email di verifica.
-                </p>
-              </div>
-            </div>
+            {/* Bottone REGISTRATI */}
+            <button
+              onClick={handleCognitoRegister}
+              disabled={isLoading}
+              className="w-full flex items-center justify-center gap-3 py-4 bg-gradient-to-r from-lavender-500 to-lavender-600 text-white rounded-xl hover:from-lavender-600 hover:to-lavender-700 transition-all font-medium disabled:opacity-50 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+            >
+              {isLoading && loadingType === 'register' ? (
+                <>
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                  <span>Reindirizzamento...</span>
+                </>
+              ) : (
+                <>
+                  <UserPlus className="w-5 h-5" />
+                  <span>Registrati come Nuovo Paziente</span>
+                </>
+              )}
+            </button>
           </div>
+
+          {/* Info registrazione */}
+          <p className="mt-4 text-center text-sm text-sage-600">
+            Nella pagina successiva potrai accedere o creare un nuovo account.
+          </p>
 
           {/* Info processo */}
           <div className="mt-6 space-y-3">
@@ -203,14 +240,15 @@ function AccediForm() {
           </Link>
         </div>
 
-        {/* Link admin - discreto in fondo */}
+        {/* Link admin - discreto in fondo, va direttamente a Cognito */}
         <div className="text-center mt-8">
-          <Link
-            href="/admin/login"
-            className="text-sage-400 hover:text-sage-600 text-xs transition-colors"
+          <button
+            onClick={handleAdminSignIn}
+            disabled={isLoading}
+            className="text-sage-400 hover:text-sage-600 text-xs transition-colors disabled:opacity-50"
           >
-            Login Admin
-          </Link>
+            {isLoading && loadingType === 'admin' ? 'Reindirizzamento...' : 'Login Admin'}
+          </button>
         </div>
       </motion.div>
     </div>

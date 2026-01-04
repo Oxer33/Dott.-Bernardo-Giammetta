@@ -1,0 +1,158 @@
+Crea un sito web MODERNO e all'avanguardia per un biologo nutrizionista con le seguenti caratteristiche:
+
+REQUISITI GENERALI:
+- Dominio: www.bernardogiammetta.com, esamina il sito https://www.metodo-ongaro.com/ da prendere come esempio, è una bomba
+- Design ULTRA-MODERNO: minimalista, pulito, spazi bianchi generosi, micro-animazioni
+- Estetica contemporanea 2024-2025: glassmorphism, gradients sottili, ombre morbide
+- Responsive (mobile-first) con interazioni fluide
+- Palette colori moderna: verde salvia/eucalipto, beige caldo, bianco puro, accenti oro rosa o terracotta
+- Tipografia moderna: font variabili come Inter, Clash Display, Plus Jakarta Sans
+- RICCO DI IMMAGINI HD: layout visuale immersivo, hero sections impattanti
+- PAROLE CHIAVE IN CORSIVO: termini tecnici e concetti importanti enfatizzati elegantemente
+- Animazioni smooth: scroll parallax, fade-in, hover effects contemporanei
+
+ELEMENTI DI DESIGN MODERNO:
+- Hero section full-screen con video di sfondo o immagini cinematografiche
+- Scroll fluido con effetti parallax
+- Cards con hover effects (lift, glow, blur background)
+- Micro-interazioni su bottoni e link
+- Bento grid layout (stile Apple) per sezioni contenuti
+- Dark mode toggle (opzionale)
+- Sticky navigation bar trasparente con blur effect
+- Transizioni di pagina fluide
+- Cursore personalizzato (opzionale, discreto)
+- Progress bar di lettura per articoli blog
+
+STRUTTURA DEL SITO:
+1. Homepage ULTRA-MODERNA
+   - Hero full-screen con immagine/video HD di alta qualità
+   - Overlay gradient con testo grande e impattante
+   - Foto professionale con effetto floating o 3D subtle
+   - Tagline con parole chiave in corsivo elegante
+   - Scroll indicator animato
+   - Sezione "Chi sono" con split-screen: foto grande a sinistra, testo a destra
+   - Bento grid per servizi con immagini hover-zoomable
+   - Contatore animato (es. "500+ pazienti seguiti", "15 anni esperienza")
+   - Testimonials carousel moderno con foto circolari
+   - Instagram feed integrato
+   - CTA button con gradient e animazione hover
+   - Footer minimalista con link social icon-only
+
+2. Chi sono / About
+   - Layout asimmetrico moderno
+   - Galleria immagini in masonry grid o slider cinematografico
+   - Timeline interattiva con scroll-triggered animations
+   - Foto professionali con effetti hover
+   - Certificazioni visualizzate come badges moderni
+   - Video di presentazione embedded (YouTube/Vimeo)
+   - Termini chiave in corsivo con subtle highlight al passaggio mouse
+
+3. Servizi
+   - Cards moderne con glassmorphism effect
+   - Ogni servizio con immagine HD full-bleed
+   - Icon set moderno e coerente (Lucide, Phosphor, Heroicons)
+   - Accordion espandibili con animazioni smooth
+   - Pricing table moderna (se applicabile)
+   - Modal pop-up per dettagli servizi
+   - Call-to-action floating button sempre visibile
+
+4. Portfolio/Risultati (opzionale)
+   - Grid fotografica stile Instagram
+   - Before/after slider interattivo
+   - Case studies con storytelling visuale
+   - Lightbox moderno per ingrandire immagini
+
+5. Blog/Risorse
+   - Card layout in griglia moderna
+   - Immagini featured di copertina HD
+   - Tag system con chip design
+   - Ricerca con autocomplete
+   - Tempo di lettura e data pubblicazione
+   - Articoli con parole chiave in corsivo e immagini inline ottimizzate
+   - Social share buttons moderni
+
+6. Contatti
+   - Form minimalista con validazione real-time
+   - Mappa interattiva Google Maps custom-styled
+   - Foto studio in gallery carousel
+   - Bottoni social con hover effects
+   - WhatsApp floating button (opzionale)
+
+STILE FOTOGRAFICO MODERNO:
+- Immagini luminose, alta risoluzione, professionali
+- Palette coordinata con i colori del sito
+- Mix di: lifestyle photography, flat lay food, ambienti minimalisti
+- Foto editate con filtri coerenti (leggero desaturato o warm tone)
+- Illustrazioni vettoriali moderne come complemento
+- Placeholder di alta qualità da Unsplash/Pexels con keyword specifiche
+
+IMPLEMENTAZIONE TECNICA MODERNA:
+- Framework: Next.js 14+ con App Router, React 18+, TypeScript
+- Styling: Tailwind CSS con custom design system
+- Animazioni: Framer Motion o GSAP per scroll animations
+- Immagini: Next/Image con lazy loading, WebP/AVIF, blur placeholder
+- Icons: Lucide React o Heroicons
+- Forms: React Hook Form con Zod validation
+- CMS Headless: Sanity.io o Contentful per gestione contenuti facile
+- Hosting: Vercel o Netlify per performance eccellenti
+- Analytics: Google Analytics 4 o Plausible
+
+PAROLE CHIAVE IN CORSIVO - AUTOMAZIONE:
+Crea un array di keywords da stilizzare automaticamente:
+- Termini scientifici: "metabolismo", "microbiota", "nutrizione funzionale", "biochimica"
+- Valori: "benessere", "salute", "equilibrio", "consapevolezza", "personalizzazione"
+- Specializzazioni: "nutrizione sportiva", "alimentazione plant-based", "medicina integrativa"
+- Implementa un utility component che wrappa automaticamente queste parole in <em>
+
+PERFORMANCE E MODERNITÀ:
+- Lighthouse score 90+ su tutti i parametri
+- Core Web Vitals ottimizzati
+- Animazioni a 60fps
+- Preload delle immagini critical
+- Prefetch delle pagine per navigazione istantanea
+- Service Worker per funzionalità PWA (opzionale)
+
+SEO E ACCESSIBILITÀ MODERNA:
+- Semantic HTML5
+- Schema.org markup per professionista sanitario
+- Alt text descrittivi per tutte le immagini
+- ARIA labels
+- Contrast ratio WCAG AAA
+- Keyboard navigation completa
+
+OUTPUT RICHIESTO:
+1. Codice completo del progetto con architettura moderna
+2. Design system documentato (colori, spacing, typography)
+3. Componenti React riutilizzabili e modulari
+4. Lista parole chiave per corsivo automatico
+5. Guida all'upload immagini con specifiche (dimensioni, formato, stile)
+6. Script di deployment automatizzato
+7. Documentazione CMS per aggiornamenti autonomi
+8. Checklist per connettere dominio esistente
+9. README con preview screenshot del design
+
+ISPIRAZIONE DESIGN:
+Pensa a siti moderni come: Apple.com (pulizia), Airbnb (photography), Stripe (animazioni), Linear.app (minimalismo), Vercel.com (performance)
+
+Note: Il sito deve sembrare lanciato nel 2026, non nel 2015. Ogni elemento deve essere pensato per un'esperienza utente fluida, veloce e visivamente sorprendente, mantenendo la serietà professionale richiesta per un professionista sanitario.
+
+alcune parole chiave devono essere in corsivo
+Color Palette: #86A788 #FFFDEC #FFE2E2 #FFCFCF - Color Hunt (https://colorhunt.co/palette/86a788fffdecffe2e2ffcfcf)
+
+IMPORTANTISSIMO:
+il sito dovrà avere un'agenda per i miei appuntamenti. Questa è una parte fondamentale del sito.
+L'agenda deve essere suddivisa in fasce orarie di 30 minuti e ogni visita dura un'ora (due fasce consecutive di 30 minuti), tranne la prima visita di ogni paziente che inserisco io a mano che devo poter inserire ad occupare 90 minuti (3 fasce orarie consecutive) quindi se seleziono domenica alle 14 automaticamente in agenda devono vedersi come impegnate le fasce orarie 14-14:30 e 14:30-15 e 15-15:30. Similmente deve avvnire con tutte le visite di routine da due fasce orarie, ne seleziono una e si impegna anche la successiva per arrivare a 60 minuti.
+Inoltre durante la settimana ho degli impegni fissi quindi devo avere la possibilità di bloccare alcune caselle dell'agenda (ad esmepio devo poter selezionare il mercoledì dalle 9 alle 11 e deve diventare occupata in tutte le settimane successive finchè non lo cambio io dalla console di comando).
+oltre ai miei impegni ricorsivi, che si ripetono identici ogni settimana, devo poter segnare delle fasce orarie in cui potrei occasionalmente essere occupato e che valgono solo per quella specifica data e orario e non per tutte le settimane (usiamo colori diversi ma simili per impegni ricorsivi e occasionali. Devo poter inserire una nota per entrambe i tipi di impegni, visibile solo a me ovviamente!
+chiunque deve poter visualizzare la mia agenda senza poter vedere ovviamente i nomi degli altri utenti che hanno prenotato visite, sono dati medici estremamente sensibili.
+Nel momento in cui un utente vuole diventare paziente e quindi gli segno la prima visita voglio che questo account (eventualmente possiamo valutare l'utilizzo dell'autenticazione tramite mail di Google come è canonico in tutti i siti al giorno d'oggi in cui posso fare il login semplicemente tramite account google) e devo avere la possibilità di mettere in whitelist questo specifico account.
+Gli account in whitelist devono avere la possibilità di prenotare una fascia oraria di 60 minuti (continuativi, come sopra selezionaon un orario e gli impegna due fasce di 30 minuti) per la prossima visita e non devono poter prenotare più di una visita (ovvero se ha la prima visita segnata in agenda non deve poterne segnare altre, deve avere una sola visita alla volta attiva per evitare spam) quindi ogni account in whitelist deve poter avere masismo un solo impegno con me, finchè non è decorsa la data e ora della visita (o la annulla) non deve poterne prenotare altre.
+Inoltre l'utente in whitelist non deve poter prenotare una visita nelle successive 48 ore, come preavviso minimo. deve però poter annullare la visita in qualsiasi momento.
+
+parliamo adesso dell'automazione delle mail:
+dobbiamo integrare un servizio mail tramite Resend che manda una mail al paziente quando si prenota o cancella una visita e ne manda una anche a me in entrambe i casi.
+ai pazienti deve arrivare una mail dopo 25 giorni che hanno fatto una visita che li avverte della necessità di prenotare la visita successiva (se non l'ha già prenotata, per monitorare lo stato del paziente) ed anche una mail reminder una settimana prima della visita prenotata e un'altra ancora il giorno prima.
+se il paziente non effettua una visita per 60 giorni deve ricevere una mail che lo avverte che è passato troppo tempo e diventa impellente l'importanza di fare una visita per monitorare il suo stato di salute.
+Dovrai inoltre creare 50 tipi di mail diverse per ognuna di queste casistiche in modo che non sembrano mail automatiche ma che sembrano scritte sul momento a mano da me e quindi dobbiamo fare in modo che ricevano sempre mail diverse, non so come possiamo fare meglio questa cosa, pensaci tu amico mio! Sei il nostro genio dell'informatica e la nostra speranza! Usa tutta la tua potenza! hai risorse e tempo infinito! Fai tutto in autonomia!
+Inolter se ti vneissero delle belle idee non esitare ad implementarle.
+Il sito lo hosteremo su AWS, passando dal push su github, ma intanto lanciamolo in locale per vedere che cosa mangifica tiri fuori

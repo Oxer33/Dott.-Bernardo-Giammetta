@@ -32,7 +32,8 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
   const session = await getServerSession(authOptions);
   
   if (!session?.user) {
-    redirect('/admin/login');
+    // Redirect alla pagina di accesso - il link "Login Admin" porta direttamente a Cognito
+    redirect('/accedi');
   }
   
   if (session.user.role !== 'ADMIN') {
