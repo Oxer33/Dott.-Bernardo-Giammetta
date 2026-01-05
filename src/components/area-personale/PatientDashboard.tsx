@@ -44,15 +44,79 @@ interface PatientDashboardProps {
     id: string;
     name: string | null;
     email: string | null;
+    firstName?: string | null;
+    lastName?: string | null;
     appointments: Appointment[];
   };
 }
+
+// Helper per ottenere il nome da mostrare
+const getDisplayName = (user: PatientDashboardProps['user']): string => {
+  // Priorità: firstName, poi name (primo nome), poi email prima della @
+  if (user.firstName) {
+    return user.firstName;
+  }
+  if (user.name) {
+    return user.name.split(' ')[0];
+  }
+  if (user.email) {
+    return user.email.split('@')[0];
+  }
+  return 'Paziente';
+};
+
+// Helper per ottenere l'iniziale
+const getInitial = (user: PatientDashboardProps['user']): string => {
+  if (user.firstName) {
+    return user.firstName.charAt(0).toUpperCase();
+  }
+  if (user.name) {
+    return user.name.charAt(0).toUpperCase();
+  }
+  if (user.email) {
+    return user.email.charAt(0).toUpperCase();
+  }
+  return 'P';
+};
 
 // =============================================================================
 // COMPONENTE
 // =============================================================================
 
 export function PatientDashboard({ user }: PatientDashboardProps) {
+  // Stati per gestione cancellazione
+  const [cancellingId, setCancellingId] = useState<string | null>(null);
+  const [confirmCancelId, setConfirmCancelId] = useState<string | null>(null);
+  const [cancelError, setCancelError] = useState<string | null>(null);
+  const [cancelSuccess, setCancelSuccess] = useState(false);
+
+  // Funzione per cancellare appuntamento
+  const handleCancelAppointment = async (appointmentId: string) => {
+    setCancellingId(appointmentId);
+    setCancelError(null);
+    
+    try {
+      const response = await fetch(`/api/agenda/appointments/${appointmentId}`, {
+        method: 'DELETE',
+      });
+      
+      const data = await response.json();
+      
+      if (data.success) {
+        setCancelSuccess(true);
+        setConfirmCancelId(null);
+        // Ricarica la pagina per aggiornare i dati
+        setTimeout(() => window.location.reload(), 1500);
+      } else {
+        setCancelError(data.error || 'Errore nella cancellazione');
+      }
+    } catch (error) {
+      setCancelError('Errore di connessione. Riprova.');
+    } finally {
+      setCancellingId(null);
+    }
+  };
+
   // Separa appuntamenti per stato e data
   const upcomingAppointments = user.appointments.filter(a => 
     isFuture(new Date(a.startTime)) && a.status === 'CONFIRMED'
@@ -79,11 +143,11 @@ export function PatientDashboard({ user }: PatientDashboardProps) {
         >
           <div className="flex items-center gap-4 mb-2">
             <div className="w-14 h-14 rounded-full bg-gradient-to-br from-sage-400 to-sage-600 flex items-center justify-center text-white font-bold text-xl">
-              {user.name?.charAt(0) || 'U'}
+              {getInitial(user)}
             </div>
             <div>
               <h1 className="text-2xl font-display font-bold text-sage-900">
-                Benvenuto, {user.name?.split(' ')[0] || 'Paziente'}!
+                Benvenuto, {getDisplayName(user)}!
               </h1>
               <p className="text-sage-600">{user.email}</p>
             </div>
@@ -113,27 +177,78 @@ export function PatientDashboard({ user }: PatientDashboardProps) {
                 </Link>
               </div>
 
+              {/* Messaggio successo cancellazione */}
+              {cancelSuccess && (
+                <div className="mb-4 p-4 bg-green-50 border border-green-200 rounded-xl flex items-center gap-3">
+                  <CheckCircle className="w-5 h-5 text-green-600" />
+                  <p className="text-green-700">Appuntamento cancellato con successo!</p>
+                </div>
+              )}
+
+              {/* Errore cancellazione */}
+              {cancelError && (
+                <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-xl flex items-center gap-3">
+                  <AlertCircle className="w-5 h-5 text-red-600" />
+                  <p className="text-red-700">{cancelError}</p>
+                  <button onClick={() => setCancelError(null)} className="ml-auto">
+                    <X className="w-4 h-4 text-red-400" />
+                  </button>
+                </div>
+              )}
+
               {upcomingAppointments.length > 0 ? (
                 <div className="space-y-4">
                   {upcomingAppointments.map((appointment) => (
                     <div
                       key={appointment.id}
-                      className="flex items-center gap-4 p-4 bg-sage-50 rounded-xl border border-sage-100"
+                      className="p-4 bg-sage-50 rounded-xl border border-sage-100"
                     >
-                      <div className="w-12 h-12 rounded-xl bg-sage-100 flex items-center justify-center">
-                        <Calendar className="w-6 h-6 text-sage-600" />
+                      <div className="flex items-center gap-4">
+                        <div className="w-12 h-12 rounded-xl bg-sage-100 flex items-center justify-center">
+                          <Calendar className="w-6 h-6 text-sage-600" />
+                        </div>
+                        <div className="flex-1">
+                          <p className="font-medium text-sage-800">
+                            {appointment.type === 'FIRST_VISIT' ? 'Prima Visita' : 'Controllo'}
+                          </p>
+                          <p className="text-sm text-sage-600">
+                            {format(new Date(appointment.startTime), "EEEE d MMMM 'alle' HH:mm", { locale: it })}
+                          </p>
+                        </div>
+                        <div className="flex items-center gap-2 text-sm text-sage-500">
+                          <Clock className="w-4 h-4" />
+                          {appointment.duration} min
+                        </div>
                       </div>
-                      <div className="flex-1">
-                        <p className="font-medium text-sage-800">
-                          {appointment.type === 'FIRST_VISIT' ? 'Prima Visita' : 'Controllo'}
-                        </p>
-                        <p className="text-sm text-sage-600">
-                          {format(new Date(appointment.startTime), "EEEE d MMMM 'alle' HH:mm", { locale: it })}
-                        </p>
-                      </div>
-                      <div className="flex items-center gap-2 text-sm text-sage-500">
-                        <Clock className="w-4 h-4" />
-                        {appointment.duration} min
+                      
+                      {/* Bottone cancella / conferma */}
+                      <div className="mt-3 pt-3 border-t border-sage-200">
+                        {confirmCancelId === appointment.id ? (
+                          <div className="flex items-center gap-2 justify-end">
+                            <span className="text-sm text-red-600 mr-2">Confermi la cancellazione?</span>
+                            <button
+                              onClick={() => handleCancelAppointment(appointment.id)}
+                              disabled={cancellingId === appointment.id}
+                              className="px-3 py-1.5 bg-red-500 text-white text-sm rounded-lg hover:bg-red-600 disabled:opacity-50"
+                            >
+                              {cancellingId === appointment.id ? 'Cancellando...' : 'Sì, cancella'}
+                            </button>
+                            <button
+                              onClick={() => setConfirmCancelId(null)}
+                              className="px-3 py-1.5 bg-gray-200 text-gray-700 text-sm rounded-lg hover:bg-gray-300"
+                            >
+                              No
+                            </button>
+                          </div>
+                        ) : (
+                          <button
+                            onClick={() => setConfirmCancelId(appointment.id)}
+                            className="flex items-center gap-1 text-sm text-red-500 hover:text-red-700 ml-auto"
+                          >
+                            <X className="w-4 h-4" />
+                            Cancella appuntamento
+                          </button>
+                        )}
                       </div>
                     </div>
                   ))}

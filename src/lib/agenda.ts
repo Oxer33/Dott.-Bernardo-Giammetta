@@ -63,6 +63,8 @@ export interface TimeSlot {
   patientSurname?: string;
   // Durata appuntamento per colori differenziati (60=lilla, 90=viola scuro)
   appointmentDuration?: number;
+  // ID appuntamento per permettere eliminazione dall'agenda (solo admin)
+  appointmentId?: string;
 }
 
 export interface DayAvailability {
@@ -233,10 +235,14 @@ export async function getDayAvailability(
         slots[index].blockType = 'appointment';
         // Aggiungi durata per colori differenziati (90min viola, 60min lilla)
         slots[index].appointmentDuration = appointment.duration;
-        // Aggiungi info paziente solo per admin
-        if (includeBlockNotes && (patientName || patientSurname)) {
-          slots[index].patientName = patientName;
-          slots[index].patientSurname = patientSurname;
+        // Aggiungi info paziente e ID appuntamento solo per admin
+        if (includeBlockNotes) {
+          if (patientName || patientSurname) {
+            slots[index].patientName = patientName;
+            slots[index].patientSurname = patientSurname;
+          }
+          // ID appuntamento per permettere eliminazione dall'agenda
+          slots[index].appointmentId = appointment.id;
         }
       }
     });
@@ -496,6 +502,10 @@ export async function createAppointment(
 // CANCELLA APPUNTAMENTO
 // =============================================================================
 
+// Costanti per limite anti-spam
+const MAX_CANCELLATIONS_IN_PERIOD = 3;  // Massimo 3 cancellazioni
+const CANCELLATION_PERIOD_DAYS = 30;     // In 30 giorni
+
 export async function cancelAppointment(
   appointmentId: string,
   userId: string
@@ -505,7 +515,7 @@ export async function cancelAppointment(
     where: { id: appointmentId },
     include: {
       user: {
-        select: { id: true, role: true },
+        select: { id: true, role: true, email: true },
       },
     },
   });
@@ -517,11 +527,38 @@ export async function cancelAppointment(
   // Verifica permessi
   const requestingUser = await db.user.findUnique({
     where: { id: userId },
-    select: { role: true },
+    select: { role: true, email: true },
   });
   
-  if (appointment.userId !== userId && requestingUser?.role !== 'ADMIN') {
+  const isAdmin = requestingUser?.role === 'ADMIN' || 
+    (requestingUser?.email && isMasterAccount(requestingUser.email));
+  
+  if (appointment.userId !== userId && !isAdmin) {
     throw new Error('Non hai i permessi per cancellare questo appuntamento');
+  }
+  
+  // Anti-spam: Se è un paziente (non admin), verifica limite cancellazioni
+  if (!isAdmin) {
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - CANCELLATION_PERIOD_DAYS);
+    
+    // Conta cancellazioni negli ultimi 30 giorni
+    const recentCancellations = await db.appointment.count({
+      where: {
+        userId: appointment.userId,
+        status: 'CANCELLED',
+        cancelledAt: {
+          gte: thirtyDaysAgo,
+        },
+      },
+    });
+    
+    if (recentCancellations >= MAX_CANCELLATIONS_IN_PERIOD) {
+      throw new Error(
+        `Hai raggiunto il limite di ${MAX_CANCELLATIONS_IN_PERIOD} cancellazioni negli ultimi ${CANCELLATION_PERIOD_DAYS} giorni. ` +
+        `Per prenotare nuovamente, contatta lo studio al numero 392 0979135.`
+      );
+    }
   }
   
   // Cancella l'appuntamento

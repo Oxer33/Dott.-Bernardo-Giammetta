@@ -274,7 +274,6 @@ export async function PUT(request: NextRequest) {
         if (!data?.startTime || !data?.duration) {
           return NextResponse.json({ success: false, error: 'Nuova data e durata richiesti' }, { status: 400 });
         }
-        console.log('[RESCHEDULE] startTime ricevuto:', data.startTime, 'duration:', data.duration);
         
         // Parse data in modo robusto
         let newStart: Date;
@@ -289,11 +288,38 @@ export async function PUT(request: NextRequest) {
         }
         
         const newEnd = new Date(newStart.getTime() + data.duration * 60 * 1000);
-        console.log('[RESCHEDULE] newStart:', newStart, 'newEnd:', newEnd);
+        
+        // Verifica disponibilità: controlla che non ci siano altri appuntamenti nella fascia oraria
+        // Nota: il modello ha solo startTime e duration, quindi calcoliamo manualmente
+        const existingAppointments = await db.appointment.findMany({
+          where: {
+            id: { not: appointmentId },
+            status: { in: ['CONFIRMED', 'COMPLETED'] },
+            // Prendi appuntamenti nello stesso giorno per evitare query troppo ampie
+            startTime: {
+              gte: new Date(newStart.getFullYear(), newStart.getMonth(), newStart.getDate()),
+              lt: new Date(newStart.getFullYear(), newStart.getMonth(), newStart.getDate() + 1),
+            },
+          },
+        });
+        
+        // Verifica manuale dei conflitti
+        const hasConflict = existingAppointments.some(apt => {
+          const aptStart = new Date(apt.startTime);
+          const aptEnd = new Date(aptStart.getTime() + apt.duration * 60 * 1000);
+          // Conflitto se gli intervalli si sovrappongono
+          return (newStart < aptEnd && newEnd > aptStart);
+        });
+        
+        if (hasConflict) {
+          return NextResponse.json({ 
+            success: false, 
+            error: 'Fascia oraria non disponibile: esiste già un appuntamento in questo orario' 
+          }, { status: 400 });
+        }
         
         updateData = {
           startTime: newStart,
-          endTime: newEnd,
           duration: data.duration,
         };
         message = 'Appuntamento riprogrammato';

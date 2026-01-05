@@ -41,6 +41,8 @@ interface TimeSlot {
   patientSurname?: string;
   // Durata appuntamento per colori differenziati (60=lilla, 90=viola scuro)
   appointmentDuration?: number;
+  // ID appuntamento per eliminazione dall'agenda (solo admin)
+  appointmentId?: string;
 }
 
 interface DayAvailability {
@@ -61,7 +63,7 @@ export function AgendaCalendar() {
   const [currentWeekStart, setCurrentWeekStart] = useState(() => startOfWeek(new Date(), { weekStartsOn: 1 }));
   const [availability, setAvailability] = useState<DayAvailability[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedSlot, setSelectedSlot] = useState<{ date: string; time: string } | null>(null);
+  const [selectedSlot, setSelectedSlot] = useState<{ date: string; time: string; appointmentId?: string } | null>(null);
   const [bookingModal, setBookingModal] = useState(false);
   const [bookingLoading, setBookingLoading] = useState(false);
   const [bookingSuccess, setBookingSuccess] = useState(false);
@@ -111,10 +113,10 @@ export function AgendaCalendar() {
   };
 
   // Gestione selezione slot
-  const handleSlotClick = (date: string, time: string, isAvailable: boolean) => {
+  const handleSlotClick = (date: string, time: string, isAvailable: boolean, appointmentId?: string) => {
     // Per utenti master, apri sempre il modal speciale (anche su slot occupati per vedere/gestire)
     if (isMaster) {
-      setSelectedSlot({ date, time });
+      setSelectedSlot({ date, time, appointmentId });
       setMasterModal(true);
       return;
     }
@@ -351,7 +353,7 @@ export function AgendaCalendar() {
                     return (
                       <button
                         key={`${day.dateString}-${slot.time}`}
-                        onClick={() => handleSlotClick(day.dateString, slot.time, slot.isAvailable)}
+                        onClick={() => handleSlotClick(day.dateString, slot.time, slot.isAvailable, slot.appointmentId)}
                         disabled={!slot.isAvailable && !isMaster}
                         title={isMaster && slot.blockNote ? slot.blockNote : undefined}
                         className={cn(
@@ -528,6 +530,7 @@ export function AgendaCalendar() {
           }}
           selectedDate={selectedSlot.date}
           selectedTime={selectedSlot.time}
+          appointmentId={selectedSlot.appointmentId}
           onSuccess={() => {
             fetchAvailability();
             setMasterModal(false);

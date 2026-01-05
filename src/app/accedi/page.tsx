@@ -70,19 +70,19 @@ function AccediForm() {
     }
   };
 
-  // Registrazione con Cognito PATIENTS (va alla stessa Hosted UI, l'utente clicca "Sign up")
-  const handleCognitoRegister = async () => {
+  // Registrazione con Cognito PATIENTS (redirect diretto alla pagina di signup)
+  const handleCognitoRegister = () => {
     setIsLoading(true);
     setLoadingType('register');
     setError(null);
-    try {
-      // La Hosted UI di Cognito ha il link "Sign up" per registrarsi
-      await signIn('cognito-patients', { callbackUrl });
-    } catch {
-      setError('Si è verificato un errore. Riprova.');
-      setIsLoading(false);
-      setLoadingType(null);
-    }
+    
+    // Costruisce URL di signup direttamente per evitare che l'utente debba cliccare "Sign up"
+    const cognitoDomain = 'https://eu-north-1xi3v8zvoy.auth.eu-north-1.amazoncognito.com';
+    const clientId = process.env.NEXT_PUBLIC_COGNITO_PATIENTS_CLIENT_ID || '1ecaje9g00o1kpsl3jvmll456q';
+    const redirectUri = encodeURIComponent(`${window.location.origin}/api/auth/callback/cognito-patients`);
+    const signupUrl = `${cognitoDomain}/signup?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=code&scope=openid+email+profile`;
+    
+    window.location.href = signupUrl;
   };
 
   // Login Admin con Cognito ADMIN

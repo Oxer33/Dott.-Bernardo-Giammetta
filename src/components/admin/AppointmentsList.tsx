@@ -386,6 +386,7 @@ export function AppointmentsList() {
                         value={notesText}
                         onChange={(e) => setNotesText(e.target.value)}
                         onBlur={() => handleNotesBlur(apt.id, apt.notes)}
+                        onKeyDown={(e) => { if (e.key === 'Enter') e.currentTarget.blur(); }}
                         className="flex-1 px-3 py-2 text-sm border rounded-lg"
                         placeholder="Aggiungi nota... (salvataggio automatico)"
                         autoFocus
@@ -511,6 +512,7 @@ export function AppointmentsList() {
                               value={notesText} 
                               onChange={(e) => setNotesText(e.target.value)} 
                               onBlur={() => handleNotesBlur(apt.id, apt.notes)}
+                              onKeyDown={(e) => { if (e.key === 'Enter') e.currentTarget.blur(); }}
                               className="flex-1 px-2 py-1 text-sm border rounded" 
                               autoFocus 
                               placeholder="Salvataggio automatico..."

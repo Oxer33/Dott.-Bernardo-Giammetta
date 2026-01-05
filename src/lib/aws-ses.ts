@@ -289,6 +289,82 @@ Non vedo l'ora di iniziare questo percorso insieme!
   });
 }
 
+/**
+ * Invia email conferma appuntamento a paziente
+ */
+export async function sendAppointmentConfirmationEmail(params: { 
+  email: string; 
+  name?: string | null;
+  date: string;      // es. "Lunedì 15 Gennaio 2024"
+  time: string;      // es. "10:30"
+  duration: number;  // in minuti
+  type: string;      // "FIRST_VISIT" o "FOLLOW_UP"
+}): Promise<SendEmailResult> {
+  const name = params.name || 'paziente';
+  const visitType = params.type === 'FIRST_VISIT' ? 'Prima Visita' : 'Visita di Controllo';
+  
+  const html = generateEmailHTML({
+    greeting: `Ciao ${name}! 📅`,
+    body: `
+Il tuo appuntamento è stato confermato!
+
+<strong>Dettagli appuntamento:</strong>
+📅 <strong>Data:</strong> ${params.date}
+🕐 <strong>Ora:</strong> ${params.time}
+⏱️ <strong>Durata:</strong> ${params.duration} minuti
+📋 <strong>Tipo:</strong> ${visitType}
+
+<strong>Promemoria:</strong>
+- Presentati qualche minuto prima dell'orario
+- Porta con te eventuali referti o analisi recenti
+- Se devi cancellare, fallo con almeno 48h di anticipo
+
+Ti aspetto!
+    `.trim(),
+    ctaText: 'Vai all\'Area Personale',
+    ctaUrl: 'https://www.bernardogiammetta.com/area-personale',
+  });
+
+  return sendEmailSES({
+    to: params.email,
+    subject: `📅 Appuntamento Confermato - ${params.date} alle ${params.time}`,
+    html,
+    text: `Ciao ${name}!\n\nIl tuo appuntamento è stato confermato!\n\nData: ${params.date}\nOra: ${params.time}\nDurata: ${params.duration} minuti\nTipo: ${visitType}\n\nTi aspetto!\nDott. Bernardo Giammetta`,
+  });
+}
+
+/**
+ * Invia email cancellazione appuntamento a paziente
+ */
+export async function sendAppointmentCancellationEmail(params: { 
+  email: string; 
+  name?: string | null;
+  date: string;
+  time: string;
+}): Promise<SendEmailResult> {
+  const name = params.name || 'paziente';
+  
+  const html = generateEmailHTML({
+    greeting: `Ciao ${name},`,
+    body: `
+Il tuo appuntamento del <strong>${params.date}</strong> alle <strong>${params.time}</strong> è stato cancellato.
+
+Se desideri prenotare un nuovo appuntamento, puoi farlo direttamente dal sito nella sezione Agenda.
+
+Se hai domande o hai bisogno di assistenza, non esitare a contattarmi.
+    `.trim(),
+    ctaText: 'Prenota Nuovo Appuntamento',
+    ctaUrl: 'https://www.bernardogiammetta.com/agenda',
+  });
+
+  return sendEmailSES({
+    to: params.email,
+    subject: `Appuntamento Cancellato - ${params.date}`,
+    html,
+    text: `Ciao ${name},\n\nIl tuo appuntamento del ${params.date} alle ${params.time} è stato cancellato.\n\nPer prenotare un nuovo appuntamento: https://www.bernardogiammetta.com/agenda\n\nDott. Bernardo Giammetta`,
+  });
+}
+
 // =============================================================================
 // VERIFICA CONFIGURAZIONE
 // =============================================================================

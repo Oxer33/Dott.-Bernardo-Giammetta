@@ -20,6 +20,7 @@ import {
   AlertCircle,
   Loader2,
   Users,
+  Trash2,
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { it } from 'date-fns/locale';
@@ -44,9 +45,10 @@ interface MasterBookingModalProps {
   selectedDate: string; // YYYY-MM-DD
   selectedTime: string; // HH:MM
   onSuccess: () => void;
+  appointmentId?: string; // ID appuntamento esistente per eliminazione
 }
 
-type ActionType = 'appointment' | 'block_occasional' | 'block_recurring';
+type ActionType = 'appointment' | 'block_occasional' | 'block_recurring' | 'delete_appointment';
 
 // =============================================================================
 // COSTANTI
@@ -91,9 +93,11 @@ export function MasterBookingModal({
   selectedDate,
   selectedTime,
   onSuccess,
+  appointmentId,
 }: MasterBookingModalProps) {
   // Stati
   const [actionType, setActionType] = useState<ActionType>('appointment');
+  const [confirmDelete, setConfirmDelete] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [patients, setPatients] = useState<Patient[]>([]);
   const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
@@ -110,7 +114,9 @@ export function MasterBookingModal({
   // Reset quando si apre il modal
   useEffect(() => {
     if (isOpen) {
-      setActionType('appointment');
+      // Se c'è un appuntamento esistente, mostra opzione eliminazione
+      setActionType(appointmentId ? 'delete_appointment' : 'appointment');
+      setConfirmDelete(false);
       setSearchQuery('');
       setPatients([]);
       setSelectedPatient(null);
@@ -125,7 +131,7 @@ export function MasterBookingModal({
       const dayOfWeek = new Date(selectedDate).getDay();
       setRecurringDay(dayOfWeek === 0 ? 1 : dayOfWeek);
     }
-  }, [isOpen, selectedTime, selectedDate]);
+  }, [isOpen, selectedTime, selectedDate, appointmentId]);
 
   // Calcola orario fine quando cambia inizio o durata
   useEffect(() => {
@@ -253,6 +259,17 @@ export function MasterBookingModal({
         if (!data.success) {
           throw new Error(data.error || 'Errore nella creazione del blocco');
         }
+      } else if (actionType === 'delete_appointment' && appointmentId) {
+        // Elimina appuntamento esistente
+        const response = await fetch(`/api/agenda/appointments/${appointmentId}`, {
+          method: 'DELETE',
+        });
+
+        const data = await response.json();
+        
+        if (!data.success) {
+          throw new Error(data.error || 'Errore nell\'eliminazione dell\'appuntamento');
+        }
       }
 
       setSuccess(true);
@@ -328,7 +345,22 @@ export function MasterBookingModal({
                 <label className="block text-sm font-medium text-sage-700 mb-3">
                   Cosa vuoi fare?
                 </label>
-                <div className="grid grid-cols-3 gap-2">
+                <div className={cn("grid gap-2", appointmentId ? "grid-cols-4" : "grid-cols-3")}>
+                  {/* Bottone elimina appuntamento - solo se c'è un appuntamento esistente */}
+                  {appointmentId && (
+                    <button
+                      onClick={() => setActionType('delete_appointment')}
+                      className={cn(
+                        'p-3 rounded-xl border-2 transition-all text-center',
+                        actionType === 'delete_appointment'
+                          ? 'border-red-500 bg-red-50'
+                          : 'border-sage-200 hover:border-red-300'
+                      )}
+                    >
+                      <Trash2 className="w-5 h-5 mx-auto mb-1 text-red-600" />
+                      <span className="text-xs font-medium text-red-700">Elimina</span>
+                    </button>
+                  )}
                   <button
                     onClick={() => setActionType('appointment')}
                     className={cn(
@@ -370,6 +402,46 @@ export function MasterBookingModal({
 
               {/* Content in base al tipo */}
               <div className="p-6 space-y-4">
+                {/* Eliminazione appuntamento */}
+                {actionType === 'delete_appointment' && appointmentId && (
+                  <div className="text-center py-4">
+                    <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-red-100 flex items-center justify-center">
+                      <Trash2 className="w-8 h-8 text-red-600" />
+                    </div>
+                    <h3 className="text-lg font-semibold text-sage-900 mb-2">
+                      Eliminare questo appuntamento?
+                    </h3>
+                    <p className="text-sage-600 mb-4">
+                      L'appuntamento verrà cancellato e lo slot tornerà disponibile.
+                    </p>
+                    {!confirmDelete ? (
+                      <button
+                        onClick={() => setConfirmDelete(true)}
+                        className="px-6 py-3 bg-red-500 text-white rounded-xl hover:bg-red-600 font-medium"
+                      >
+                        Sì, elimina appuntamento
+                      </button>
+                    ) : (
+                      <div className="flex gap-3 justify-center">
+                        <button
+                          onClick={handleConfirm}
+                          disabled={loading}
+                          className="px-6 py-3 bg-red-600 text-white rounded-xl hover:bg-red-700 font-medium disabled:opacity-50 flex items-center gap-2"
+                        >
+                          {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
+                          Conferma eliminazione
+                        </button>
+                        <button
+                          onClick={() => setConfirmDelete(false)}
+                          className="px-6 py-3 bg-gray-200 text-gray-700 rounded-xl hover:bg-gray-300"
+                        >
+                          Annulla
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                )}
+
                 {actionType === 'appointment' && (
                   <>
                     {/* Ricerca paziente */}
