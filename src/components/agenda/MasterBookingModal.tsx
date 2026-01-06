@@ -48,7 +48,7 @@ interface MasterBookingModalProps {
   appointmentId?: string; // ID appuntamento esistente per eliminazione
 }
 
-type ActionType = 'appointment' | 'block_occasional' | 'block_recurring' | 'delete_appointment';
+type ActionType = 'appointment' | 'block_occasional' | 'block_recurring' | 'delete_appointment' | 'hard_delete';
 
 // =============================================================================
 // COSTANTI
@@ -204,7 +204,8 @@ export function MasterBookingModal({
           return;
         }
 
-        const startTimeISO = `${selectedDate}T${startTime}:00.000Z`;
+        // Non usare Z (UTC) - l'orario deve essere interpretato come locale italiano
+        const startTimeISO = `${selectedDate}T${startTime}:00`;
         
         const response = await fetch('/api/agenda/appointments', {
           method: 'POST',
@@ -213,6 +214,7 @@ export function MasterBookingModal({
             startTime: startTimeISO,
             type: duration === 90 ? 'FIRST_VISIT' : 'FOLLOW_UP',
             userId: selectedPatient.id,
+            duration: duration, // Passa durata esplicita per 120min
           }),
         });
 
@@ -260,8 +262,19 @@ export function MasterBookingModal({
           throw new Error(data.error || 'Errore nella creazione del blocco');
         }
       } else if (actionType === 'delete_appointment' && appointmentId) {
-        // Elimina appuntamento esistente
+        // Annulla appuntamento (tracciato) - imposta status CANCELLED
         const response = await fetch(`/api/agenda/appointments/${appointmentId}`, {
+          method: 'DELETE',
+        });
+
+        const data = await response.json();
+        
+        if (!data.success) {
+          throw new Error(data.error || 'Errore nell\'annullamento dell\'appuntamento');
+        }
+      } else if (actionType === 'hard_delete' && appointmentId) {
+        // Elimina completamente (non tracciato) - rimuove dal database
+        const response = await fetch(`/api/agenda/appointments/${appointmentId}?hard=true`, {
           method: 'DELETE',
         });
 
@@ -340,86 +353,147 @@ export function MasterBookingModal({
                 </div>
               </div>
 
-              {/* Selezione tipo azione */}
+              {/* Selezione tipo azione - UI diversa se c'è appuntamento esistente */}
               <div className="p-6 border-b border-sage-100">
                 <label className="block text-sm font-medium text-sage-700 mb-3">
                   Cosa vuoi fare?
                 </label>
-                <div className={cn("grid gap-2", appointmentId ? "grid-cols-4" : "grid-cols-3")}>
-                  {/* Bottone elimina appuntamento - solo se c'è un appuntamento esistente */}
-                  {appointmentId && (
+                
+                {/* Se c'è un appuntamento esistente, mostra solo 2 opzioni */}
+                {appointmentId ? (
+                  <div className="grid grid-cols-2 gap-3">
+                    {/* Annulla (tracciato) - mantiene record nel sistema */}
                     <button
                       onClick={() => setActionType('delete_appointment')}
                       className={cn(
-                        'p-3 rounded-xl border-2 transition-all text-center',
+                        'p-4 rounded-xl border-2 transition-all text-center',
                         actionType === 'delete_appointment'
+                          ? 'border-orange-500 bg-orange-50'
+                          : 'border-sage-200 hover:border-orange-300'
+                      )}
+                    >
+                      <X className="w-6 h-6 mx-auto mb-2 text-orange-600" />
+                      <span className="text-sm font-medium text-orange-700">Annulla</span>
+                      <span className="block text-xs text-orange-500">(tracciato)</span>
+                    </button>
+                    {/* Elimina (non tracciato) - rimuove completamente */}
+                    <button
+                      onClick={() => setActionType('hard_delete')}
+                      className={cn(
+                        'p-4 rounded-xl border-2 transition-all text-center',
+                        actionType === 'hard_delete'
                           ? 'border-red-500 bg-red-50'
                           : 'border-sage-200 hover:border-red-300'
                       )}
                     >
-                      <Trash2 className="w-5 h-5 mx-auto mb-1 text-red-600" />
-                      <span className="text-xs font-medium text-red-700">Elimina</span>
+                      <Trash2 className="w-6 h-6 mx-auto mb-2 text-red-600" />
+                      <span className="text-sm font-medium text-red-700">Elimina</span>
+                      <span className="block text-xs text-red-500">(non tracciato)</span>
                     </button>
-                  )}
-                  <button
-                    onClick={() => setActionType('appointment')}
-                    className={cn(
-                      'p-3 rounded-xl border-2 transition-all text-center',
-                      actionType === 'appointment'
-                        ? 'border-sage-500 bg-sage-50'
-                        : 'border-sage-200 hover:border-sage-300'
-                    )}
-                  >
-                    <Users className="w-5 h-5 mx-auto mb-1 text-sage-600" />
-                    <span className="text-xs font-medium text-sage-700">Appuntamento</span>
-                  </button>
-                  <button
-                    onClick={() => setActionType('block_occasional')}
-                    className={cn(
-                      'p-3 rounded-xl border-2 transition-all text-center',
-                      actionType === 'block_occasional'
-                        ? 'border-amber-500 bg-amber-50'
-                        : 'border-sage-200 hover:border-sage-300'
-                    )}
-                  >
-                    <CalendarOff className="w-5 h-5 mx-auto mb-1 text-amber-600" />
-                    <span className="text-xs font-medium text-sage-700">Blocco</span>
-                  </button>
-                  <button
-                    onClick={() => setActionType('block_recurring')}
-                    className={cn(
-                      'p-3 rounded-xl border-2 transition-all text-center',
-                      actionType === 'block_recurring'
-                        ? 'border-purple-500 bg-purple-50'
-                        : 'border-sage-200 hover:border-sage-300'
-                    )}
-                  >
-                    <Repeat className="w-5 h-5 mx-auto mb-1 text-purple-600" />
-                    <span className="text-xs font-medium text-sage-700">Ricorrente</span>
-                  </button>
-                </div>
+                  </div>
+                ) : (
+                  /* Se slot vuoto, mostra opzioni per creare */
+                  <div className="grid grid-cols-3 gap-2">
+                    <button
+                      onClick={() => setActionType('appointment')}
+                      className={cn(
+                        'p-3 rounded-xl border-2 transition-all text-center',
+                        actionType === 'appointment'
+                          ? 'border-sage-500 bg-sage-50'
+                          : 'border-sage-200 hover:border-sage-300'
+                      )}
+                    >
+                      <Users className="w-5 h-5 mx-auto mb-1 text-sage-600" />
+                      <span className="text-xs font-medium text-sage-700">Appuntamento</span>
+                    </button>
+                    <button
+                      onClick={() => setActionType('block_occasional')}
+                      className={cn(
+                        'p-3 rounded-xl border-2 transition-all text-center',
+                        actionType === 'block_occasional'
+                          ? 'border-amber-500 bg-amber-50'
+                          : 'border-sage-200 hover:border-sage-300'
+                      )}
+                    >
+                      <CalendarOff className="w-5 h-5 mx-auto mb-1 text-amber-600" />
+                      <span className="text-xs font-medium text-sage-700">Blocco</span>
+                    </button>
+                    <button
+                      onClick={() => setActionType('block_recurring')}
+                      className={cn(
+                        'p-3 rounded-xl border-2 transition-all text-center',
+                        actionType === 'block_recurring'
+                          ? 'border-purple-500 bg-purple-50'
+                          : 'border-sage-200 hover:border-sage-300'
+                      )}
+                    >
+                      <Repeat className="w-5 h-5 mx-auto mb-1 text-purple-600" />
+                      <span className="text-xs font-medium text-sage-700">Ricorrente</span>
+                    </button>
+                  </div>
+                )}
               </div>
 
               {/* Content in base al tipo */}
               <div className="p-6 space-y-4">
-                {/* Eliminazione appuntamento */}
+                {/* Annulla appuntamento (tracciato) */}
                 {actionType === 'delete_appointment' && appointmentId && (
+                  <div className="text-center py-4">
+                    <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-orange-100 flex items-center justify-center">
+                      <X className="w-8 h-8 text-orange-600" />
+                    </div>
+                    <h3 className="text-lg font-semibold text-sage-900 mb-2">
+                      Annullare questo appuntamento?
+                    </h3>
+                    <p className="text-sage-600 mb-4">
+                      L'appuntamento verrà segnato come <strong>annullato</strong> e rimarrà visibile nello storico.
+                    </p>
+                    {!confirmDelete ? (
+                      <button
+                        onClick={() => setConfirmDelete(true)}
+                        className="px-6 py-3 bg-orange-500 text-white rounded-xl hover:bg-orange-600 font-medium"
+                      >
+                        Sì, annulla appuntamento
+                      </button>
+                    ) : (
+                      <div className="flex gap-3 justify-center">
+                        <button
+                          onClick={handleConfirm}
+                          disabled={loading}
+                          className="px-6 py-3 bg-orange-600 text-white rounded-xl hover:bg-orange-700 font-medium disabled:opacity-50 flex items-center gap-2"
+                        >
+                          {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
+                          Conferma annullamento
+                        </button>
+                        <button
+                          onClick={() => setConfirmDelete(false)}
+                          className="px-6 py-3 bg-gray-200 text-gray-700 rounded-xl hover:bg-gray-300"
+                        >
+                          Indietro
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Elimina appuntamento (non tracciato) */}
+                {actionType === 'hard_delete' && appointmentId && (
                   <div className="text-center py-4">
                     <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-red-100 flex items-center justify-center">
                       <Trash2 className="w-8 h-8 text-red-600" />
                     </div>
                     <h3 className="text-lg font-semibold text-sage-900 mb-2">
-                      Eliminare questo appuntamento?
+                      Eliminare definitivamente?
                     </h3>
                     <p className="text-sage-600 mb-4">
-                      L'appuntamento verrà cancellato e lo slot tornerà disponibile.
+                      L'appuntamento verrà <strong>eliminato completamente</strong> dal sistema. Non sarà più visibile nello storico.
                     </p>
                     {!confirmDelete ? (
                       <button
                         onClick={() => setConfirmDelete(true)}
                         className="px-6 py-3 bg-red-500 text-white rounded-xl hover:bg-red-600 font-medium"
                       >
-                        Sì, elimina appuntamento
+                        Sì, elimina definitivamente
                       </button>
                     ) : (
                       <div className="flex gap-3 justify-center">
@@ -435,7 +509,7 @@ export function MasterBookingModal({
                           onClick={() => setConfirmDelete(false)}
                           className="px-6 py-3 bg-gray-200 text-gray-700 rounded-xl hover:bg-gray-300"
                         >
-                          Annulla
+                          Indietro
                         </button>
                       </div>
                     )}

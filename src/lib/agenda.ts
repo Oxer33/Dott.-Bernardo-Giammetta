@@ -461,11 +461,13 @@ export async function createAppointment(
   startTime: Date,
   type: 'FIRST_VISIT' | 'FOLLOW_UP',
   notes?: string,
-  callerEmail?: string // CRITICO: Email del chiamante per bypass master
+  callerEmail?: string, // CRITICO: Email del chiamante per bypass master
+  customDuration?: number // Durata personalizzata (es. 120min)
 ) {
-  const duration = type === 'FIRST_VISIT' 
+  // Usa durata personalizzata se fornita, altrimenti default dal tipo
+  const duration = customDuration || (type === 'FIRST_VISIT' 
     ? VISIT_DURATION.FIRST_VISIT 
-    : VISIT_DURATION.FOLLOW_UP;
+    : VISIT_DURATION.FOLLOW_UP);
   
   // Verifica ancora una volta la disponibilità
   // IMPORTANTE: Passa callerEmail per permettere bypass master
@@ -508,7 +510,8 @@ const CANCELLATION_PERIOD_DAYS = 30;     // In 30 giorni
 
 export async function cancelAppointment(
   appointmentId: string,
-  userId: string
+  userId: string,
+  userEmail?: string | null  // Email per verifiche con Cognito
 ) {
   // Verifica che l'appuntamento esista e appartenga all'utente (o sia admin)
   const appointment = await db.appointment.findUnique({
@@ -524,16 +527,31 @@ export async function cancelAppointment(
     throw new Error('Appuntamento non trovato');
   }
   
-  // Verifica permessi
-  const requestingUser = await db.user.findUnique({
+  // Verifica permessi - prima prova con ID, poi con email (per Cognito)
+  let requestingUser = await db.user.findUnique({
     where: { id: userId },
-    select: { role: true, email: true },
+    select: { id: true, role: true, email: true },
   });
   
-  const isAdmin = requestingUser?.role === 'ADMIN' || 
-    (requestingUser?.email && isMasterAccount(requestingUser.email));
+  // Se non trova per ID ma abbiamo email, cerca per email (compatibilità Cognito)
+  if (!requestingUser && userEmail) {
+    requestingUser = await db.user.findUnique({
+      where: { email: userEmail },
+      select: { id: true, role: true, email: true },
+    });
+  }
   
-  if (appointment.userId !== userId && !isAdmin) {
+  const isAdmin = requestingUser?.role === 'ADMIN' || 
+    (requestingUser?.email && isMasterAccount(requestingUser.email)) ||
+    (userEmail && isMasterAccount(userEmail));
+  
+  // Verifica permessi: l'utente deve essere il proprietario O admin
+  // Confronta sia per ID che per email (compatibilità Cognito)
+  const isOwner = appointment.userId === userId || 
+    appointment.userId === requestingUser?.id ||
+    (userEmail && appointment.user?.email === userEmail);
+  
+  if (!isOwner && !isAdmin) {
     throw new Error('Non hai i permessi per cancellare questo appuntamento');
   }
   

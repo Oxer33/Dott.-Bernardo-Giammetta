@@ -26,6 +26,8 @@ const createAppointmentSchema = z.object({
   notes: z.string().optional(),
   // Per admin: può prenotare per un altro utente
   userId: z.string().optional(),
+  // Durata personalizzata (60, 90, 120 minuti) - se non specificata usa default dal tipo
+  duration: z.number().min(30).max(180).optional(),
 });
 
 // =============================================================================
@@ -59,7 +61,7 @@ export async function POST(request: NextRequest) {
       );
     }
     
-    const { startTime, type, notes, userId: targetUserId } = validationResult.data;
+    const { startTime, type, notes, userId: targetUserId, duration: customDuration } = validationResult.data;
     
     // Determina per chi è la prenotazione
     let bookingUserId = session.user.id;
@@ -166,9 +168,10 @@ export async function POST(request: NextRequest) {
     }
 
     // Verifica possibilità di prenotare (slot libero, orario valido, ecc.)
-    const duration = type === 'FIRST_VISIT' 
+    // Usa durata personalizzata se fornita (es. 120min), altrimenti default dal tipo
+    const duration = customDuration || (type === 'FIRST_VISIT' 
       ? VISIT_DURATION.FIRST_VISIT 
-      : VISIT_DURATION.FOLLOW_UP;
+      : VISIT_DURATION.FOLLOW_UP);
     
     // Passa l'email del chiamante per verifiche master (punti 1, 8, 9)
     // IMPORTANTE: Se è master, passa un flag esplicito
@@ -198,7 +201,8 @@ export async function POST(request: NextRequest) {
       parseISO(startTime),
       type,
       notes,
-      isMaster ? 'MASTER_OVERRIDE' : (session.user.email || undefined)
+      isMaster ? 'MASTER_OVERRIDE' : (session.user.email || undefined),
+      customDuration // Passa durata personalizzata (es. 120min)
     );
     
     // Formatta data e ora per email

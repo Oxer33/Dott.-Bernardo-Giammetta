@@ -427,7 +427,7 @@ export function AppointmentsList() {
                             <button onClick={() => handleAction(apt.id, 'complete')} className="p-2 bg-green-100 text-green-600 rounded-lg" title="Completato">
                               <Check className="w-4 h-4" />
                             </button>
-                            <button onClick={() => handleAction(apt.id, 'cancel')} className="p-2 bg-orange-100 text-orange-600 rounded-lg" title="Cancella">
+                            <button onClick={() => handleAction(apt.id, 'cancel')} className="p-2 bg-orange-100 text-orange-600 rounded-lg" title="Annulla (tracciato)">
                               <X className="w-4 h-4" />
                             </button>
                           </>
@@ -545,7 +545,7 @@ export function AppointmentsList() {
                                   <CalendarClock className="w-4 h-4" />
                                 </button>
                                 <button onClick={() => handleAction(apt.id, 'complete')} className="p-1.5 bg-green-100 text-green-600 rounded hover:bg-green-200" title="Completato"><Check className="w-4 h-4" /></button>
-                                <button onClick={() => handleAction(apt.id, 'cancel')} className="p-1.5 bg-orange-100 text-orange-600 rounded hover:bg-orange-200" title="Cancella"><X className="w-4 h-4" /></button>
+                                <button onClick={() => handleAction(apt.id, 'cancel')} className="p-1.5 bg-orange-100 text-orange-600 rounded hover:bg-orange-200" title="Annulla (tracciato)"><X className="w-4 h-4" /></button>
                               </>
                             )}
                             {apt.status === 'CANCELLED' && (

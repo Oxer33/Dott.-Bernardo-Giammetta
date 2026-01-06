@@ -76,6 +76,9 @@ export async function GET(
 
 // =============================================================================
 // DELETE - Cancella appuntamento
+// Supporta due modalità:
+// - Annulla (tracciato): imposta status CANCELLED (default)
+// - Elimina (non tracciato): rimuove completamente dal DB (?hard=true)
 // =============================================================================
 
 export async function DELETE(
@@ -92,14 +95,40 @@ export async function DELETE(
       );
     }
     
-    const cancelled = await cancelAppointment(params.id, session.user.id);
+    // Verifica se è eliminazione hard (non tracciata) - solo admin
+    const { searchParams } = new URL(request.url);
+    const isHardDelete = searchParams.get('hard') === 'true';
+    
+    if (isHardDelete) {
+      // Eliminazione non tracciata - solo admin può farlo
+      if (session.user.role !== 'ADMIN') {
+        return NextResponse.json(
+          { success: false, error: 'Solo l\'admin può eliminare completamente un appuntamento' },
+          { status: 403 }
+        );
+      }
+      
+      // Elimina completamente dal database
+      await db.appointment.delete({
+        where: { id: params.id },
+      });
+      
+      return NextResponse.json({
+        success: true,
+        message: 'Appuntamento eliminato definitivamente',
+      });
+    }
+    
+    // Annullamento tracciato (default)
+    // Passa email invece di ID per compatibilità con Cognito
+    const cancelled = await cancelAppointment(params.id, session.user.id, session.user.email);
     
     // TODO: Invia email di conferma cancellazione al paziente e notifica al dottore
     
     return NextResponse.json({
       success: true,
       data: cancelled,
-      message: 'Appuntamento cancellato con successo',
+      message: 'Appuntamento annullato con successo',
     });
     
   } catch (error) {

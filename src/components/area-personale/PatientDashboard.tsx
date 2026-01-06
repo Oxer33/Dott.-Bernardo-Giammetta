@@ -181,7 +181,7 @@ export function PatientDashboard({ user }: PatientDashboardProps) {
               {cancelSuccess && (
                 <div className="mb-4 p-4 bg-green-50 border border-green-200 rounded-xl flex items-center gap-3">
                   <CheckCircle className="w-5 h-5 text-green-600" />
-                  <p className="text-green-700">Appuntamento cancellato con successo!</p>
+                  <p className="text-green-700">Appuntamento annullato con successo!</p>
                 </div>
               )}
 
@@ -225,13 +225,13 @@ export function PatientDashboard({ user }: PatientDashboardProps) {
                       <div className="mt-3 pt-3 border-t border-sage-200">
                         {confirmCancelId === appointment.id ? (
                           <div className="flex items-center gap-2 justify-end">
-                            <span className="text-sm text-red-600 mr-2">Confermi la cancellazione?</span>
+                            <span className="text-sm text-red-600 mr-2">Confermi l'annullamento?</span>
                             <button
                               onClick={() => handleCancelAppointment(appointment.id)}
                               disabled={cancellingId === appointment.id}
                               className="px-3 py-1.5 bg-red-500 text-white text-sm rounded-lg hover:bg-red-600 disabled:opacity-50"
                             >
-                              {cancellingId === appointment.id ? 'Cancellando...' : 'Sì, cancella'}
+                              {cancellingId === appointment.id ? 'Annullando...' : 'Sì, annulla'}
                             </button>
                             <button
                               onClick={() => setConfirmCancelId(null)}
@@ -246,7 +246,7 @@ export function PatientDashboard({ user }: PatientDashboardProps) {
                             className="flex items-center gap-1 text-sm text-red-500 hover:text-red-700 ml-auto"
                           >
                             <X className="w-4 h-4" />
-                            Cancella appuntamento
+                            Annulla (tracciato)
                           </button>
                         )}
                       </div>

@@ -98,22 +98,7 @@ export default async function AgendaPage() {
   // Utente autorizzato (whitelist) - mostra l'agenda normale con descrizione
   return (
     <div className="min-h-screen bg-cream-50">
-      {/* Bottone Area Personale per pazienti */}
-      <div className="bg-sage-50 border-b border-sage-100">
-        <div className="container-custom py-3">
-          <Link 
-            href="/area-personale"
-            className="inline-flex items-center gap-2 px-4 py-2 bg-white hover:bg-sage-100 text-sage-700 rounded-xl font-medium transition-colors shadow-sm border border-sage-200"
-          >
-            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-            </svg>
-            Area Personale
-          </Link>
-        </div>
-      </div>
-      
-      {/* Header */}
+      {/* Header con descrizione */}
       <section className="bg-gradient-to-br from-sage-400 to-sage-600 text-white py-16 lg:py-20">
         <div className="container-custom">
           <div className="max-w-3xl">
@@ -131,6 +116,21 @@ export default async function AgendaPage() {
           </div>
         </div>
       </section>
+
+      {/* Bottone Area Personale - posizionato tra descrizione e agenda */}
+      <div className="bg-cream-50 border-b border-sage-100">
+        <div className="container-custom py-4">
+          <Link 
+            href="/area-personale"
+            className="inline-flex items-center gap-2 px-4 py-2 bg-white hover:bg-sage-100 text-sage-700 rounded-xl font-medium transition-colors shadow-sm border border-sage-200"
+          >
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+            </svg>
+            Area Personale
+          </Link>
+        </div>
+      </div>
 
       {/* Calendar Section */}
       <section className="section">
