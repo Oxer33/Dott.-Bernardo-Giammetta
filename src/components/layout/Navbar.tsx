@@ -215,14 +215,6 @@ export function Navbar() {
                             <User className="w-4 h-4" />
                             Area Personale
                           </Link>
-                          <Link
-                            href="/agenda"
-                            className="flex items-center gap-2 px-3 py-2 text-sm text-sage-700 hover:bg-sage-50 rounded-lg transition-colors"
-                            onClick={() => setIsUserMenuOpen(false)}
-                          >
-                            <Calendar className="w-4 h-4" />
-                            I Miei Appuntamenti
-                          </Link>
                           <button
                             onClick={() => {
                               setIsUserMenuOpen(false);
@@ -357,14 +349,6 @@ export function Navbar() {
                       >
                         <User className="w-5 h-5" />
                         <span className="font-medium">Area Personale</span>
-                      </Link>
-                      
-                      <Link 
-                        href="/agenda" 
-                        className="flex items-center gap-3 px-4 py-3 bg-lavender-100 rounded-xl text-lavender-800 hover:bg-lavender-200 transition-colors"
-                      >
-                        <Calendar className="w-5 h-5" />
-                        <span className="font-medium">I Miei Appuntamenti</span>
                       </Link>
                       
                       {/* Logout */}

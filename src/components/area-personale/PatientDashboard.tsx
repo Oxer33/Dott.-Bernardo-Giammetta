@@ -147,7 +147,7 @@ export function PatientDashboard({ user }: PatientDashboardProps) {
             </div>
             <div>
               <h1 className="text-2xl font-display font-bold text-sage-900">
-                Benvenuto, {getDisplayName(user)}!
+                Benvenuto/a {getDisplayName(user)}
               </h1>
               <p className="text-sage-600">{user.email}</p>
             </div>
@@ -246,7 +246,7 @@ export function PatientDashboard({ user }: PatientDashboardProps) {
                             className="flex items-center gap-1 text-sm text-red-500 hover:text-red-700 ml-auto"
                           >
                             <X className="w-4 h-4" />
-                            Annulla (tracciato)
+                            Cancella appuntamento
                           </button>
                         )}
                       </div>

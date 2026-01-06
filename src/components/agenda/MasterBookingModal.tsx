@@ -362,7 +362,7 @@ export function MasterBookingModal({
                 {/* Se c'è un appuntamento esistente, mostra solo 2 opzioni */}
                 {appointmentId ? (
                   <div className="grid grid-cols-2 gap-3">
-                    {/* Annulla (tracciato) - mantiene record nel sistema */}
+                    {/* Annullato dal paziente - mantiene record nel sistema */}
                     <button
                       onClick={() => setActionType('delete_appointment')}
                       className={cn(
@@ -373,10 +373,10 @@ export function MasterBookingModal({
                       )}
                     >
                       <X className="w-6 h-6 mx-auto mb-2 text-orange-600" />
-                      <span className="text-sm font-medium text-orange-700">Annulla</span>
-                      <span className="block text-xs text-orange-500">(tracciato)</span>
+                      <span className="text-sm font-medium text-orange-700">Annullato</span>
+                      <span className="block text-xs text-orange-500">dal paziente</span>
                     </button>
-                    {/* Elimina (non tracciato) - rimuove completamente */}
+                    {/* Eliminato da me - rimuove completamente */}
                     <button
                       onClick={() => setActionType('hard_delete')}
                       className={cn(
@@ -387,8 +387,8 @@ export function MasterBookingModal({
                       )}
                     >
                       <Trash2 className="w-6 h-6 mx-auto mb-2 text-red-600" />
-                      <span className="text-sm font-medium text-red-700">Elimina</span>
-                      <span className="block text-xs text-red-500">(non tracciato)</span>
+                      <span className="text-sm font-medium text-red-700">Eliminato</span>
+                      <span className="block text-xs text-red-500">da me</span>
                     </button>
                   </div>
                 ) : (
@@ -613,45 +613,47 @@ export function MasterBookingModal({
                   </>
                 )}
 
-                {/* Orario inizio/fine */}
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-sage-700 mb-2">
-                      <Clock className="w-4 h-4 inline mr-1" />
-                      Ora Inizio
-                    </label>
-                    <select
-                      value={startTime}
-                      onChange={(e) => setStartTime(e.target.value)}
-                      className="w-full p-3 border border-sage-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-sage-400"
-                    >
-                      {TIME_SLOTS.map((time) => (
-                        <option key={time} value={time}>{time}</option>
-                      ))}
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-sage-700 mb-2">
-                      <Clock className="w-4 h-4 inline mr-1" />
-                      Ora Fine
-                    </label>
-                    {actionType === 'appointment' ? (
-                      <div className="p-3 bg-sage-50 border border-sage-200 rounded-xl text-sage-700">
-                        {endTime} (automatico)
-                      </div>
-                    ) : (
+                {/* Orario inizio/fine - NON mostrare se c'è appuntamento esistente */}
+                {!appointmentId && (
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-sage-700 mb-2">
+                        <Clock className="w-4 h-4 inline mr-1" />
+                        Ora Inizio
+                      </label>
                       <select
-                        value={endTime}
-                        onChange={(e) => setEndTime(e.target.value)}
+                        value={startTime}
+                        onChange={(e) => setStartTime(e.target.value)}
                         className="w-full p-3 border border-sage-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-sage-400"
                       >
-                        {TIME_SLOTS.filter(t => t > startTime).map((time) => (
+                        {TIME_SLOTS.map((time) => (
                           <option key={time} value={time}>{time}</option>
                         ))}
                       </select>
-                    )}
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-sage-700 mb-2">
+                        <Clock className="w-4 h-4 inline mr-1" />
+                        Ora Fine
+                      </label>
+                      {actionType === 'appointment' ? (
+                        <div className="p-3 bg-sage-50 border border-sage-200 rounded-xl text-sage-700">
+                          {endTime} (automatico)
+                        </div>
+                      ) : (
+                        <select
+                          value={endTime}
+                          onChange={(e) => setEndTime(e.target.value)}
+                          className="w-full p-3 border border-sage-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-sage-400"
+                        >
+                          {TIME_SLOTS.filter(t => t > startTime).map((time) => (
+                            <option key={time} value={time}>{time}</option>
+                          ))}
+                        </select>
+                      )}
+                    </div>
                   </div>
-                </div>
+                )}
 
                 {/* Giorno settimana per ricorrenti */}
                 {actionType === 'block_recurring' && (
@@ -700,26 +702,28 @@ export function MasterBookingModal({
                 )}
               </div>
 
-              {/* Footer */}
-              <div className="p-6 border-t border-sage-100 flex gap-3">
-                <Button
-                  variant="secondary"
-                  onClick={onClose}
-                  className="flex-1"
-                  disabled={loading}
-                >
-                  Annulla
-                </Button>
-                <Button
-                  variant="primary"
-                  onClick={handleConfirm}
-                  className="flex-1"
-                  isLoading={loading}
-                  loadingText="Salvataggio..."
-                >
-                  {actionType === 'appointment' ? 'Prenota' : 'Crea Blocco'}
-                </Button>
-              </div>
+              {/* Footer - NON mostrare bottone Crea Blocco se c'è appuntamento esistente */}
+              {!appointmentId && (
+                <div className="p-6 border-t border-sage-100 flex gap-3">
+                  <Button
+                    variant="secondary"
+                    onClick={onClose}
+                    className="flex-1"
+                    disabled={loading}
+                  >
+                    Annulla
+                  </Button>
+                  <Button
+                    variant="primary"
+                    onClick={handleConfirm}
+                    className="flex-1"
+                    isLoading={loading}
+                    loadingText="Salvataggio..."
+                  >
+                    {actionType === 'appointment' ? 'Prenota' : 'Crea Blocco'}
+                  </Button>
+                </div>
+              )}
             </>
           )}
         </motion.div>

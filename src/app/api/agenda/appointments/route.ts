@@ -21,7 +21,10 @@ import { isMasterAccount } from '@/lib/config';
 // =============================================================================
 
 const createAppointmentSchema = z.object({
-  startTime: z.string().datetime(),
+  // Accetta sia formato ISO con Z che senza (es. 2024-01-06T11:00:00 o 2024-01-06T11:00:00.000Z)
+  startTime: z.string().refine((val) => !isNaN(Date.parse(val)), {
+    message: 'Formato data/ora non valido',
+  }),
   type: z.enum(['FIRST_VISIT', 'FOLLOW_UP']).default('FOLLOW_UP'),
   notes: z.string().optional(),
   // Per admin: può prenotare per un altro utente
@@ -145,7 +148,7 @@ export async function POST(request: NextRequest) {
     const existingAppointmentSameTime = await db.appointment.findFirst({
       where: {
         userId: bookingUserId,
-        startTime: parseISO(startTime),
+        startTime: new Date(startTime),
         status: { not: 'CANCELLED' },
       },
     });
@@ -167,6 +170,34 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Anti-spam: Se NON è admin, verifica che il paziente non abbia prenotato+cancellato 3 volte in 30 giorni
+    // Il blocco avviene alla PRENOTAZIONE (non alla cancellazione - il paziente può sempre cancellare)
+    if (!isAdmin) {
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+      
+      // Conta cancellazioni negli ultimi 30 giorni
+      const recentCancellations = await db.appointment.count({
+        where: {
+          userId: bookingUserId,
+          status: 'CANCELLED',
+          cancelledAt: {
+            gte: thirtyDaysAgo,
+          },
+        },
+      });
+      
+      if (recentCancellations >= 3) {
+        return NextResponse.json(
+          { 
+            success: false, 
+            error: `Hai raggiunto il limite di 3 prenotazioni cancellate negli ultimi 30 giorni. Per prenotare nuovamente, contatta lo studio al numero 392 0979135.` 
+          },
+          { status: 400 }
+        );
+      }
+    }
+
     // Verifica possibilità di prenotare (slot libero, orario valido, ecc.)
     // Usa durata personalizzata se fornita (es. 120min), altrimenti default dal tipo
     const duration = customDuration || (type === 'FIRST_VISIT' 
@@ -177,7 +208,7 @@ export async function POST(request: NextRequest) {
     // IMPORTANTE: Se è master, passa un flag esplicito
     const canBook = await canUserBook(
       bookingUserId, 
-      parseISO(startTime), 
+      new Date(startTime), 
       duration,
       isMaster ? 'MASTER_OVERRIDE' : (session.user.email || undefined)
     );
@@ -198,7 +229,7 @@ export async function POST(request: NextRequest) {
     // CRITICO: Passa callerEmail per bypass master nel secondo check di canUserBook
     const appointment = await createAppointment(
       bookingUserId,
-      parseISO(startTime),
+      new Date(startTime),
       type,
       notes,
       isMaster ? 'MASTER_OVERRIDE' : (session.user.email || undefined),
@@ -206,8 +237,8 @@ export async function POST(request: NextRequest) {
     );
     
     // Formatta data e ora per email
-    const appointmentDate = format(parseISO(startTime), 'EEEE d MMMM yyyy', { locale: it });
-    const appointmentTime = format(parseISO(startTime), 'HH:mm');
+    const appointmentDate = format(new Date(startTime), 'EEEE d MMMM yyyy', { locale: it });
+    const appointmentTime = format(new Date(startTime), 'HH:mm');
     const appointmentType = type === 'FIRST_VISIT' ? 'Prima Visita (90 min)' : 'Visita di Controllo (60 min)';
 
     // Invia email di conferma al paziente

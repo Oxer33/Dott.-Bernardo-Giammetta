@@ -555,29 +555,8 @@ export async function cancelAppointment(
     throw new Error('Non hai i permessi per cancellare questo appuntamento');
   }
   
-  // Anti-spam: Se è un paziente (non admin), verifica limite cancellazioni
-  if (!isAdmin) {
-    const thirtyDaysAgo = new Date();
-    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - CANCELLATION_PERIOD_DAYS);
-    
-    // Conta cancellazioni negli ultimi 30 giorni
-    const recentCancellations = await db.appointment.count({
-      where: {
-        userId: appointment.userId,
-        status: 'CANCELLED',
-        cancelledAt: {
-          gte: thirtyDaysAgo,
-        },
-      },
-    });
-    
-    if (recentCancellations >= MAX_CANCELLATIONS_IN_PERIOD) {
-      throw new Error(
-        `Hai raggiunto il limite di ${MAX_CANCELLATIONS_IN_PERIOD} cancellazioni negli ultimi ${CANCELLATION_PERIOD_DAYS} giorni. ` +
-        `Per prenotare nuovamente, contatta lo studio al numero 392 0979135.`
-      );
-    }
-  }
+  // NOTA: Il limite anti-spam è stato spostato alla PRENOTAZIONE, non alla cancellazione
+  // I pazienti possono sempre cancellare i propri appuntamenti
   
   // Cancella l'appuntamento
   const cancelled = await db.appointment.update({

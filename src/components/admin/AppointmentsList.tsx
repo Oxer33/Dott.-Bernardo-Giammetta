@@ -427,7 +427,7 @@ export function AppointmentsList() {
                             <button onClick={() => handleAction(apt.id, 'complete')} className="p-2 bg-green-100 text-green-600 rounded-lg" title="Completato">
                               <Check className="w-4 h-4" />
                             </button>
-                            <button onClick={() => handleAction(apt.id, 'cancel')} className="p-2 bg-orange-100 text-orange-600 rounded-lg" title="Annulla (tracciato)">
+                            <button onClick={() => handleAction(apt.id, 'cancel')} className="p-2 bg-orange-100 text-orange-600 rounded-lg" title="Annullato dal paziente">
                               <X className="w-4 h-4" />
                             </button>
                           </>
@@ -437,7 +437,7 @@ export function AppointmentsList() {
                             <Check className="w-4 h-4" />
                           </button>
                         )}
-                        <button onClick={() => setDeleteConfirm(apt.id)} className="p-2 bg-red-100 text-red-600 rounded-lg ml-auto" title="Elimina">
+                        <button onClick={() => setDeleteConfirm(apt.id)} className="p-2 bg-red-100 text-red-600 rounded-lg ml-auto" title="Eliminato da me">
                           <Trash2 className="w-4 h-4" />
                         </button>
                       </>
@@ -545,13 +545,13 @@ export function AppointmentsList() {
                                   <CalendarClock className="w-4 h-4" />
                                 </button>
                                 <button onClick={() => handleAction(apt.id, 'complete')} className="p-1.5 bg-green-100 text-green-600 rounded hover:bg-green-200" title="Completato"><Check className="w-4 h-4" /></button>
-                                <button onClick={() => handleAction(apt.id, 'cancel')} className="p-1.5 bg-orange-100 text-orange-600 rounded hover:bg-orange-200" title="Annulla (tracciato)"><X className="w-4 h-4" /></button>
+                                <button onClick={() => handleAction(apt.id, 'cancel')} className="p-1.5 bg-orange-100 text-orange-600 rounded hover:bg-orange-200" title="Annullato dal paziente"><X className="w-4 h-4" /></button>
                               </>
                             )}
                             {apt.status === 'CANCELLED' && (
                               <button onClick={() => handleAction(apt.id, 'confirm')} className="p-1.5 bg-green-100 text-green-600 rounded hover:bg-green-200" title="Riconferma"><Check className="w-4 h-4" /></button>
                             )}
-                            <button onClick={() => setDeleteConfirm(apt.id)} className="p-1.5 bg-red-100 text-red-600 rounded hover:bg-red-200" title="Elimina"><Trash2 className="w-4 h-4" /></button>
+                            <button onClick={() => setDeleteConfirm(apt.id)} className="p-1.5 bg-red-100 text-red-600 rounded hover:bg-red-200" title="Eliminato da me"><Trash2 className="w-4 h-4" /></button>
                           </div>
                         )}
                       </td>
