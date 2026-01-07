@@ -300,6 +300,16 @@
    ```
 3. **Attendi approvazione SES**: produzione (caso #176743190600620)
 
+### 🔧 FIX Orari e Card Paziente - 07/01/2026 (Sessione 13) ✅ COMPLETATO
+- [x] **Fix orario +1h card agenda**: API ora usa `toLocalISOString()` per evitare conversione UTC
+- [x] **Fix errore cancellazione card**: URL corretto `/api/agenda/appointments/{id}` (non query param)
+- [x] **Refresh card dopo cancellazione**: `cache: 'no-store'` + `status=upcoming`
+- [x] **Fix orari area-personale**: usa `parseISO()` invece di `new Date()`
+- [x] **Orario visite cancellate**: aggiunto "ore HH:mm" accanto alla data
+- [x] **Fix orario storico visite**: stesso fix con `parseDate()` helper
+- [x] **File SERVIZIO MAIL**: documentazione completa sistema email + gitignore
+- [x] **Avviso anti-spam**: rimossa frase "contatta studio", aggiunto avviso in area-personale
+
 ### 🔧 FIX Account Paziente - 07/01/2026 (Sessione 12) ✅ COMPLETATO
 - [x] **Fix critico "Utente non trovato"**: JWT ora salva `dbId` (ID database) invece di `token.sub` (ID Cognito)
 - [x] **Auto-whitelist admin**: quando admin crea appuntamento per paziente in blacklist, lo riporta in whitelist
@@ -570,4 +580,4 @@ COGNITO_PATIENTS_ISSUER=https://cognito-idp.eu-north-1.amazonaws.com/eu-north-1_
 
 ---
 
-*Ultimo aggiornamento: 07 Gennaio 2026 - 16:15*
+*Ultimo aggiornamento: 07 Gennaio 2026 - 16:50*
