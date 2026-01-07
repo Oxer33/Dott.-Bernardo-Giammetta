@@ -448,6 +448,11 @@ export function AppointmentsList() {
                             <Check className="w-4 h-4" />
                           </button>
                         )}
+                        {apt.status === 'COMPLETED' && (
+                          <button onClick={() => handleAction(apt.id, 'unpaid')} className="p-2 bg-red-100 text-red-600 rounded-lg" title="Non pagato - Riporta a Confermato">
+                            <span className="text-sm font-bold">€</span>
+                          </button>
+                        )}
                         <button onClick={() => setDeleteConfirm(apt.id)} className="p-2 bg-red-100 text-red-600 rounded-lg ml-auto" title="Eliminato da me">
                           <Trash2 className="w-4 h-4" />
                         </button>
@@ -561,6 +566,9 @@ export function AppointmentsList() {
                             )}
                             {apt.status === 'CANCELLED' && (
                               <button onClick={() => handleAction(apt.id, 'confirm')} className="p-1.5 bg-green-100 text-green-600 rounded hover:bg-green-200" title="Riconferma"><Check className="w-4 h-4" /></button>
+                            )}
+                            {apt.status === 'COMPLETED' && (
+                              <button onClick={() => handleAction(apt.id, 'unpaid')} className="p-1.5 bg-red-100 text-red-600 rounded hover:bg-red-200" title="Non pagato - Riporta a Confermato"><span className="text-xs font-bold">€</span></button>
                             )}
                             <button onClick={() => setDeleteConfirm(apt.id)} className="p-1.5 bg-red-100 text-red-600 rounded hover:bg-red-200" title="Eliminato da me"><Trash2 className="w-4 h-4" /></button>
                           </div>

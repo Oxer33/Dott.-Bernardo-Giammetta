@@ -67,6 +67,8 @@ export interface TimeSlot {
   appointmentId?: string;
   // Note appuntamento (solo per admin)
   appointmentNotes?: string;
+  // Stato appuntamento (CONFIRMED, COMPLETED) per mostrare € se pagato
+  appointmentStatus?: string;
 }
 
 export interface DayAvailability {
@@ -162,6 +164,7 @@ export async function getDayAvailability(
   });
   
   // Recupera appuntamenti per questa data (con dati paziente per admin)
+  // Include CONFIRMED e COMPLETED per mostrare anche appuntamenti completati
   const appointments = await db.appointment.findMany({
     where: {
       startTime: {
@@ -169,7 +172,7 @@ export async function getDayAvailability(
         lte: endOfDay(date),
       },
       status: {
-        in: ['CONFIRMED'],
+        in: ['CONFIRMED', 'COMPLETED'],
       },
     },
     include: includeBlockNotes ? {
@@ -249,6 +252,8 @@ export async function getDayAvailability(
           if (appointment.notes) {
             slots[index].appointmentNotes = appointment.notes;
           }
+          // Stato appuntamento (CONFIRMED/COMPLETED) per mostrare € se pagato
+          slots[index].appointmentStatus = appointment.status;
         }
       }
     });

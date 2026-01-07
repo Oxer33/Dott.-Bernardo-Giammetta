@@ -45,6 +45,8 @@ interface TimeSlot {
   appointmentId?: string;
   // Note appuntamento per tooltip (solo admin)
   appointmentNotes?: string;
+  // Stato appuntamento (CONFIRMED/COMPLETED) per mostrare € se pagato
+  appointmentStatus?: string;
 }
 
 interface DayAvailability {
@@ -276,8 +278,8 @@ export function AgendaCalendar() {
           </div>
         </div>
         
-        {/* Week range display - GRANDE per il dottore :D */}
-        <p className="text-sage-600 text-2xl font-semibold mt-3">
+        {/* Week range display - GRANDE e CENTRATO per il dottore :D */}
+        <p className="text-sage-600 text-2xl font-semibold mt-3 text-center">
           {format(currentWeekStart, "d MMMM", { locale: it })} - {format(addDays(currentWeekStart, 6), "d MMMM yyyy", { locale: it })}
         </p>
       </div>
@@ -369,7 +371,9 @@ export function AgendaCalendar() {
                         {/* Mostra nome paziente per master se è un appuntamento */}
                         {isMaster && slot.blockType === 'appointment' && slot.patientName && (
                           <>
-                            <span className="text-[10px] truncate max-w-full leading-tight">{slot.patientName}</span>
+                            <span className="text-[10px] truncate max-w-full leading-tight">
+                              {slot.appointmentStatus === 'COMPLETED' ? '€ ' : ''}{slot.patientName}{slot.appointmentNotes ? ' *' : ''}
+                            </span>
                             {slot.patientSurname && (
                               <span className="text-[10px] truncate max-w-full leading-tight">{slot.patientSurname}</span>
                             )}

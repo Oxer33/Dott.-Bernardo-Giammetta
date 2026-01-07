@@ -92,6 +92,25 @@ export async function GET(request: NextRequest) {
       };
     }
     
+    // Auto-completa appuntamenti passati: se startTime + duration è nel passato e status è CONFIRMED, passa a COMPLETED
+    const pastAppointmentsToComplete = await db.appointment.findMany({
+      where: {
+        status: 'CONFIRMED',
+        startTime: { lt: now },
+      },
+    });
+    
+    // Aggiorna in batch gli appuntamenti passati
+    for (const apt of pastAppointmentsToComplete) {
+      const endTime = new Date(apt.startTime.getTime() + apt.duration * 60 * 1000);
+      if (endTime < now) {
+        await db.appointment.update({
+          where: { id: apt.id },
+          data: { status: 'COMPLETED' },
+        });
+      }
+    }
+    
     const appointments = await db.appointment.findMany({
       where: whereClause,
       include: {
@@ -296,6 +315,12 @@ export async function PUT(request: NextRequest) {
         message = 'Note aggiornate';
         break;
         
+      case 'unpaid':
+        // Riporta appuntamento da COMPLETED a CONFIRMED (paziente non ha pagato)
+        updateData = { status: 'CONFIRMED' };
+        message = 'Appuntamento riportato a confermato (non pagato)';
+        break;
+        
       case 'reschedule':
         if (!data?.startTime || !data?.duration) {
           return NextResponse.json({ success: false, error: 'Nuova data e durata richiesti' }, { status: 400 });
@@ -344,9 +369,14 @@ export async function PUT(request: NextRequest) {
           }, { status: 400 });
         }
         
+        // Determina tipo visita in base alla durata:
+        // 60min = FOLLOW_UP (Controllo), 90min = FIRST_VISIT (Prima Visita), 120min = FOLLOW_UP ma mostrato come "Visita Approfondita"
+        const newType = data.duration === 90 ? 'FIRST_VISIT' : 'FOLLOW_UP';
+        
         updateData = {
           startTime: newStart,
           duration: data.duration,
+          type: newType,
         };
         message = 'Appuntamento riprogrammato';
         break;
