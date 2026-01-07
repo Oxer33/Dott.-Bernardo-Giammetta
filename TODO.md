@@ -300,6 +300,14 @@
    ```
 3. **Attendi approvazione SES**: produzione (caso #176743190600620)
 
+### 🔧 Fix Blacklist UI + Orari - 07/01/2026 (Sessione 16) ✅ COMPLETATO
+- [x] **Menu duplicato rimosso**: BlacklistManager ora senza menu interno (usa quello di AdminDashboard)
+- [x] **Bottone Blacklist dinamico**: contatore + rosso solo se ci sono pazienti in blacklist
+- [x] **Fix orari definitivo**: serializzazione date senza Z nel server component
+- [x] **Testo corretto**: "Prossimo appuntamento" (singolare)
+- [x] **Cancella solo whitelist**: bottone nascosto per pazienti non in whitelist
+- [x] **Logica whitelist/blacklist**: confermata mutualmente esclusiva
+
 ### 🔧 UX Paziente + Blacklist Manager - 07/01/2026 (Sessione 15) ✅ COMPLETATO
 - [x] **Fix orari area-personale definitivo**: regex per rimuovere `.000Z` oltre a `Z`
 - [x] **Bottone "Elimina nota"**: in entrambi i modal (agenda + area-personale)
@@ -599,4 +607,4 @@ COGNITO_PATIENTS_ISSUER=https://cognito-idp.eu-north-1.amazonaws.com/eu-north-1_
 
 ---
 
-*Ultimo aggiornamento: 07 Gennaio 2026 - 19:10*
+*Ultimo aggiornamento: 07 Gennaio 2026 - 20:00*
