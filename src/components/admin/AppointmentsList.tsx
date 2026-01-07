@@ -222,9 +222,14 @@ export function AppointmentsList() {
   const openEditModal = (apt: Appointment) => {
     setEditingApt(apt);
     const date = new Date(apt.startTime);
-    // Separa data e ora
-    setNewDate(date.toISOString().slice(0, 10)); // YYYY-MM-DD
-    setNewTime(date.toTimeString().slice(0, 5)); // HH:MM
+    // Separa data e ora usando metodi locali (non UTC)
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const hours = String(date.getHours()).padStart(2, '0');
+    const minutes = String(date.getMinutes()).padStart(2, '0');
+    setNewDate(`${year}-${month}-${day}`); // YYYY-MM-DD locale
+    setNewTime(`${hours}:${minutes}`); // HH:MM locale
     setNewDuration(apt.duration);
   };
 
@@ -256,7 +261,10 @@ export function AppointmentsList() {
     return apt.user.name || apt.user.email.split('@')[0];
   };
 
-  const getVisitType = (type: string) => {
+  // Determina tipo visita basandosi su tipo E durata (120min = Visita Approfondita)
+  const getVisitType = (type: string, duration?: number) => {
+    // Se durata è 120 min, è sempre "Visita Approfondita" indipendentemente dal tipo
+    if (duration === 120) return 'Visita Approfondita';
     switch (type) {
       case 'FIRST_VISIT': return 'Prima Visita';
       case 'FOLLOW_UP': return 'Controllo';
@@ -299,7 +307,10 @@ export function AppointmentsList() {
           >
             <option value="all">Tutti</option>
             <option value="today">Oggi</option>
+            <option value="tomorrow">Domani</option>
             <option value="week">Questa settimana</option>
+            <option value="nextweek">Prossima settimana</option>
+            <option value="nextmonth">Prossimo mese</option>
             <option value="upcoming">Prossimi</option>
           </select>
           <select
@@ -372,9 +383,9 @@ export function AppointmentsList() {
                       {format(new Date(apt.startTime), 'HH:mm')} ({apt.duration}min)
                     </div>
                     <span className={`px-2 py-1 rounded text-xs font-medium ${
-                      apt.type === 'FIRST_VISIT' ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700'
+                      apt.duration === 120 ? 'bg-rose-100 text-rose-700' : apt.type === 'FIRST_VISIT' ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700'
                     }`}>
-                      {getVisitType(apt.type)}
+                      {getVisitType(apt.type, apt.duration)}
                     </span>
                   </div>
                   
@@ -498,9 +509,9 @@ export function AppointmentsList() {
                       </td>
                       <td className="px-4 py-3">
                         <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                          apt.type === 'FIRST_VISIT' ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700'
+                          apt.duration === 120 ? 'bg-rose-100 text-rose-700' : apt.type === 'FIRST_VISIT' ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700'
                         }`}>
-                          {getVisitType(apt.type)}
+                          {getVisitType(apt.type, apt.duration)}
                         </span>
                       </td>
                       <td className="px-4 py-3 text-sm">{getStatusBadge(apt.status)}</td>

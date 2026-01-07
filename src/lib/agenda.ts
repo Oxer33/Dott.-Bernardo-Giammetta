@@ -65,6 +65,8 @@ export interface TimeSlot {
   appointmentDuration?: number;
   // ID appuntamento per permettere eliminazione dall'agenda (solo admin)
   appointmentId?: string;
+  // Note appuntamento (solo per admin)
+  appointmentNotes?: string;
 }
 
 export interface DayAvailability {
@@ -243,6 +245,10 @@ export async function getDayAvailability(
           }
           // ID appuntamento per permettere eliminazione dall'agenda
           slots[index].appointmentId = appointment.id;
+          // Note appuntamento per tooltip
+          if (appointment.notes) {
+            slots[index].appointmentNotes = appointment.notes;
+          }
         }
       }
     });

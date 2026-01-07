@@ -11,6 +11,13 @@ import { isMasterAccount } from '@/lib/config';
 
 export const dynamic = 'force-dynamic';
 
+// Helper per formattare data senza conversione UTC
+// Restituisce formato ISO locale (senza Z finale)
+function toLocalISOString(date: Date): string {
+  const pad = (n: number) => n.toString().padStart(2, '0');
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
+}
+
 // =============================================================================
 // GET - Lista appuntamenti con filtri
 // =============================================================================
@@ -33,9 +40,22 @@ export async function GET(request: NextRequest) {
     const now = new Date();
     const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
     const endOfToday = new Date(startOfToday.getTime() + 24 * 60 * 60 * 1000);
+    
+    // Domani
+    const startOfTomorrow = new Date(startOfToday.getTime() + 24 * 60 * 60 * 1000);
+    const endOfTomorrow = new Date(startOfTomorrow.getTime() + 24 * 60 * 60 * 1000);
+    
+    // Questa settimana (da lunedì a domenica)
     const startOfWeek = new Date(startOfToday);
     startOfWeek.setDate(startOfWeek.getDate() - startOfWeek.getDay() + 1); // Lunedì
     const endOfWeek = new Date(startOfWeek.getTime() + 7 * 24 * 60 * 60 * 1000);
+    
+    // Prossima settimana
+    const startOfNextWeek = new Date(endOfWeek);
+    const endOfNextWeek = new Date(startOfNextWeek.getTime() + 7 * 24 * 60 * 60 * 1000);
+    
+    // Prossimo mese (da oggi a 30 giorni)
+    const endOfNextMonth = new Date(startOfToday.getTime() + 30 * 24 * 60 * 60 * 1000);
     
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let whereClause: Record<string, unknown> = {};
@@ -43,8 +63,14 @@ export async function GET(request: NextRequest) {
     // Filtro temporale
     if (filter === 'today') {
       whereClause.startTime = { gte: startOfToday, lt: endOfToday };
+    } else if (filter === 'tomorrow') {
+      whereClause.startTime = { gte: startOfTomorrow, lt: endOfTomorrow };
     } else if (filter === 'week') {
       whereClause.startTime = { gte: startOfWeek, lt: endOfWeek };
+    } else if (filter === 'nextweek') {
+      whereClause.startTime = { gte: startOfNextWeek, lt: endOfNextWeek };
+    } else if (filter === 'nextmonth') {
+      whereClause.startTime = { gte: startOfToday, lt: endOfNextMonth };
     } else if (filter === 'upcoming') {
       whereClause.startTime = { gte: now };
     }
@@ -124,7 +150,7 @@ export async function GET(request: NextRequest) {
       success: true,
       appointments: appointments.map(apt => ({
         ...apt,
-        startTime: apt.startTime.toISOString(),
+        startTime: toLocalISOString(apt.startTime),
         createdAt: apt.createdAt.toISOString(),
       })),
       stats: {

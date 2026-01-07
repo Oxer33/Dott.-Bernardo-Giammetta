@@ -43,6 +43,8 @@ interface TimeSlot {
   appointmentDuration?: number;
   // ID appuntamento per eliminazione dall'agenda (solo admin)
   appointmentId?: string;
+  // Note appuntamento per tooltip (solo admin)
+  appointmentNotes?: string;
 }
 
 interface DayAvailability {
@@ -274,8 +276,8 @@ export function AgendaCalendar() {
           </div>
         </div>
         
-        {/* Week range display */}
-        <p className="text-sage-500 text-sm mt-3">
+        {/* Week range display - GRANDE per il dottore :D */}
+        <p className="text-sage-600 text-2xl font-semibold mt-3">
           {format(currentWeekStart, "d MMMM", { locale: it })} - {format(addDays(currentWeekStart, 6), "d MMMM yyyy", { locale: it })}
         </p>
       </div>
@@ -355,7 +357,7 @@ export function AgendaCalendar() {
                         key={`${day.dateString}-${slot.time}`}
                         onClick={() => handleSlotClick(day.dateString, slot.time, slot.isAvailable, slot.appointmentId)}
                         disabled={!slot.isAvailable && !isMaster}
-                        title={isMaster && slot.blockNote ? slot.blockNote : undefined}
+                        title={isMaster ? (slot.appointmentNotes || slot.blockNote || undefined) : undefined}
                         className={cn(
                           'p-1 text-xs rounded-lg border transition-all duration-200 flex flex-col items-center justify-center min-h-[52px]',
                           'focus:outline-none focus:ring-2 focus:ring-sage-400 focus:ring-offset-1',
