@@ -22,7 +22,7 @@ import {
   X
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
-import { format, isPast, isFuture } from 'date-fns';
+import { format, isPast, isFuture, parseISO } from 'date-fns';
 import { it } from 'date-fns/locale';
 
 // =============================================================================
@@ -118,13 +118,22 @@ export function PatientDashboard({ user }: PatientDashboardProps) {
   };
 
   // Separa appuntamenti per stato e data
+  // Helper per parsare date senza conversione UTC
+  const parseDate = (dateInput: Date | string): Date => {
+    if (typeof dateInput === 'string') {
+      // Se è stringa ISO senza Z, parseISO la interpreta come locale
+      return parseISO(dateInput);
+    }
+    return dateInput;
+  };
+
   const upcomingAppointments = user.appointments.filter(a => 
-    isFuture(new Date(a.startTime)) && a.status === 'CONFIRMED'
+    isFuture(parseDate(a.startTime)) && a.status === 'CONFIRMED'
   );
   
   // Storico: visite passate (completate, confermate passate, no-show)
   const pastAppointments = user.appointments.filter(a => 
-    isPast(new Date(a.startTime)) && a.status !== 'CANCELLED'
+    isPast(parseDate(a.startTime)) && a.status !== 'CANCELLED'
   );
   
   // Visite cancellate (per trasparenza)
@@ -212,7 +221,7 @@ export function PatientDashboard({ user }: PatientDashboardProps) {
                             {appointment.type === 'FIRST_VISIT' ? 'Prima Visita' : 'Controllo'}
                           </p>
                           <p className="text-sm text-sage-600">
-                            {format(new Date(appointment.startTime), "EEEE d MMMM 'alle' HH:mm", { locale: it })}
+                            {format(parseDate(appointment.startTime), "EEEE d MMMM 'alle' HH:mm", { locale: it })}
                           </p>
                         </div>
                         <div className="flex items-center gap-2 text-sm text-sage-500">
@@ -224,21 +233,27 @@ export function PatientDashboard({ user }: PatientDashboardProps) {
                       {/* Bottone cancella / conferma */}
                       <div className="mt-3 pt-3 border-t border-sage-200">
                         {confirmCancelId === appointment.id ? (
-                          <div className="flex items-center gap-2 justify-end">
-                            <span className="text-sm text-red-600 mr-2">Confermi l'annullamento?</span>
-                            <button
-                              onClick={() => handleCancelAppointment(appointment.id)}
-                              disabled={cancellingId === appointment.id}
-                              className="px-3 py-1.5 bg-red-500 text-white text-sm rounded-lg hover:bg-red-600 disabled:opacity-50"
-                            >
-                              {cancellingId === appointment.id ? 'Annullando...' : 'Sì, annulla'}
-                            </button>
-                            <button
-                              onClick={() => setConfirmCancelId(null)}
-                              className="px-3 py-1.5 bg-gray-200 text-gray-700 text-sm rounded-lg hover:bg-gray-300"
-                            >
-                              No
-                            </button>
+                          <div className="space-y-2">
+                            <div className="flex items-center gap-2 justify-end">
+                              <span className="text-sm text-red-600 mr-2">Confermi l'annullamento?</span>
+                              <button
+                                onClick={() => handleCancelAppointment(appointment.id)}
+                                disabled={cancellingId === appointment.id}
+                                className="px-3 py-1.5 bg-red-500 text-white text-sm rounded-lg hover:bg-red-600 disabled:opacity-50"
+                              >
+                                {cancellingId === appointment.id ? 'Annullando...' : 'Sì, annulla'}
+                              </button>
+                              <button
+                                onClick={() => setConfirmCancelId(null)}
+                                className="px-3 py-1.5 bg-gray-200 text-gray-700 text-sm rounded-lg hover:bg-gray-300"
+                              >
+                                No
+                              </button>
+                            </div>
+                            {/* Avviso anti-spam */}
+                            <p className="text-xs text-sage-500 bg-sage-50 p-2 rounded-lg">
+                              ⚠️ Ti ricordiamo che cancellazioni frequenti potrebbero limitare temporaneamente la tua possibilità di prenotare.
+                            </p>
                           </div>
                         ) : (
                           <button
@@ -297,7 +312,7 @@ export function PatientDashboard({ user }: PatientDashboardProps) {
                           {appointment.status === 'NO_SHOW' && <span className="ml-2 text-xs text-red-500">(Non presentato)</span>}
                         </p>
                         <p className="text-xs text-sage-500">
-                          {format(new Date(appointment.startTime), "EEEE d MMMM yyyy 'alle' HH:mm", { locale: it })}
+                          {format(parseDate(appointment.startTime), "EEEE d MMMM yyyy 'alle' HH:mm", { locale: it })}
                         </p>
                       </div>
                       <div className="text-xs text-sage-400">
@@ -333,7 +348,7 @@ export function PatientDashboard({ user }: PatientDashboardProps) {
                           {appointment.type === 'FIRST_VISIT' ? 'Prima Visita' : 'Controllo'}
                         </span>
                         <span className="text-sage-400 ml-2">
-                          {format(new Date(appointment.startTime), "d MMM yyyy", { locale: it })}
+                          {format(parseDate(appointment.startTime), "d MMM yyyy 'ore' HH:mm", { locale: it })}
                         </span>
                       </div>
                     </div>

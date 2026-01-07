@@ -11,6 +11,13 @@ import { authOptions } from '@/lib/auth';
 import { db } from '@/lib/db';
 import { createAppointment, canUserBook, VISIT_DURATION } from '@/lib/agenda';
 import { parseISO, format } from 'date-fns';
+
+// Helper per formattare data senza conversione UTC
+// Restituisce formato ISO locale (senza Z finale)
+function toLocalISOString(date: Date): string {
+  const pad = (n: number) => n.toString().padStart(2, '0');
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
+}
 import { it } from 'date-fns/locale';
 import { z } from 'zod';
 import { sendBookingConfirmationToPatient, sendBookingNotificationToDoctor } from '@/lib/nodemailer';
@@ -363,9 +370,15 @@ export async function GET(request: NextRequest) {
       },
     });
     
+    // Converti le date nel formato locale (senza UTC)
+    const formattedAppointments = appointments.map(apt => ({
+      ...apt,
+      startTime: toLocalISOString(apt.startTime),
+    }));
+    
     return NextResponse.json({
       success: true,
-      data: appointments,
+      data: formattedAppointments,
     });
     
   } catch (error) {

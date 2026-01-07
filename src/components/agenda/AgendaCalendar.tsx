@@ -116,7 +116,10 @@ export function AgendaCalendar() {
     if (!session?.user || isMaster) return;
     
     try {
-      const response = await fetch('/api/agenda/appointments');
+      // No-cache per avere sempre dati freschi (evita problemi dopo cancellazione da altra pagina)
+      const response = await fetch('/api/agenda/appointments?status=upcoming', {
+        cache: 'no-store',
+      });
       const data = await response.json();
       
       if (data.success && data.data && data.data.length > 0) {
@@ -149,7 +152,8 @@ export function AgendaCalendar() {
     
     setCancelLoading(true);
     try {
-      const response = await fetch(`/api/agenda/appointments?id=${nextAppointment.id}`, {
+      // Usa il percorso corretto con ID nel path (non query param)
+      const response = await fetch(`/api/agenda/appointments/${nextAppointment.id}`, {
         method: 'DELETE',
       });
       const data = await response.json();
@@ -345,8 +349,7 @@ export function AgendaCalendar() {
           {/* Avviso anti-spam */}
           {cancelConfirm && (
             <p className="mt-3 text-xs text-sage-600 bg-sage-100/50 p-2 rounded-lg">
-              ⚠️ Ti ricordiamo che cancellazioni frequenti potrebbero limitare temporaneamente la tua possibilità di prenotare. 
-              Per modificare l&apos;appuntamento, ti consigliamo di contattare lo studio.
+              ⚠️ Ti ricordiamo che cancellazioni frequenti potrebbero limitare temporaneamente la tua possibilità di prenotare.
             </p>
           )}
         </div>
