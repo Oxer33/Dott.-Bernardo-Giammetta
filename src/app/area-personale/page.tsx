@@ -144,14 +144,39 @@ export default async function AreaPersonalePage() {
     }
   }
   
+  // Serializza le date degli appuntamenti SENZA suffisso Z per evitare conversione UTC
+  // Questo è critico: Prisma restituisce Date objects, Next.js li serializza come ISO con Z
+  // Il client poi interpreta Z come UTC e aggiunge +1h per il fuso orario italiano
+  const serializedUser = {
+    ...user,
+    appointments: user.appointments.map(apt => ({
+      ...apt,
+      // Converti Date in stringa locale senza Z (es: "2026-01-10T15:00:00")
+      startTime: apt.startTime instanceof Date 
+        ? apt.startTime.toISOString().replace('Z', '').split('.')[0]
+        : String(apt.startTime).replace('Z', '').split('.')[0],
+      createdAt: apt.createdAt instanceof Date
+        ? apt.createdAt.toISOString().replace('Z', '').split('.')[0]
+        : String(apt.createdAt).replace('Z', '').split('.')[0],
+      updatedAt: apt.updatedAt instanceof Date
+        ? apt.updatedAt.toISOString().replace('Z', '').split('.')[0]
+        : String(apt.updatedAt).replace('Z', '').split('.')[0],
+      cancelledAt: apt.cancelledAt 
+        ? (apt.cancelledAt instanceof Date 
+            ? apt.cancelledAt.toISOString().replace('Z', '').split('.')[0]
+            : String(apt.cancelledAt).replace('Z', '').split('.')[0])
+        : null,
+    })),
+  };
+  
   // Master -> dashboard completa
   if (isMaster) {
-    return <MasterDashboard user={user} />;
+    return <MasterDashboard user={serializedUser} />;
   }
   
   // Paziente in whitelist -> dashboard paziente
   if (user.isWhitelisted) {
-    return <PatientDashboard user={user} />;
+    return <PatientDashboard user={serializedUser} />;
   }
   
   // Non in whitelist -> vista guest con messaggio

@@ -5,7 +5,7 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { 
   Calendar, 
@@ -59,6 +59,23 @@ const tabs = [
 export function AdminDashboard({ user, initialTab }: AdminDashboardProps) {
   // Punto 5: usa initialTab se fornito, altrimenti default appointments
   const [activeTab, setActiveTab] = useState<TabType>(initialTab || 'appointments');
+  const [blacklistCount, setBlacklistCount] = useState(0);
+
+  // Fetch conteggio blacklist per badge dinamico
+  useEffect(() => {
+    const fetchBlacklistCount = async () => {
+      try {
+        const res = await fetch('/api/admin/blacklist');
+        const data = await res.json();
+        if (data.success) {
+          setBlacklistCount(data.blacklisted?.length || 0);
+        }
+      } catch (err) {
+        console.error('Errore fetch blacklist count:', err);
+      }
+    };
+    fetchBlacklistCount();
+  }, [activeTab]); // Ricarica quando cambia tab
   
   return (
     <div className="min-h-screen bg-cream-50">
@@ -99,20 +116,44 @@ export function AdminDashboard({ user, initialTab }: AdminDashboardProps) {
             <span className="hidden sm:inline">Agenda</span>
           </Link>
           
-          {tabs.map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={`flex items-center gap-2 px-3 sm:px-4 py-2 rounded-xl font-medium transition-all ${
-                activeTab === tab.id
-                  ? 'bg-sage-500 text-white shadow-md'
-                  : 'bg-white text-sage-600 hover:bg-sage-50 border border-sage-100'
-              }`}
-            >
-              <tab.icon className="w-4 h-4" />
-              <span className="hidden sm:inline">{tab.label}</span>
-            </button>
-          ))}
+          {tabs.map((tab) => {
+            // Stile speciale per Blacklist: rosso solo se ci sono pazienti
+            const isBlacklist = tab.id === 'blacklist';
+            const hasBlacklistedPatients = blacklistCount > 0;
+            
+            let buttonClass = '';
+            if (activeTab === tab.id) {
+              // Tab attivo
+              buttonClass = isBlacklist && hasBlacklistedPatients
+                ? 'bg-red-500 text-white shadow-md'
+                : 'bg-sage-500 text-white shadow-md';
+            } else {
+              // Tab non attivo
+              buttonClass = isBlacklist && hasBlacklistedPatients
+                ? 'bg-red-50 text-red-600 hover:bg-red-100 border border-red-200'
+                : 'bg-white text-sage-600 hover:bg-sage-50 border border-sage-100';
+            }
+            
+            return (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`flex items-center gap-2 px-3 sm:px-4 py-2 rounded-xl font-medium transition-all ${buttonClass}`}
+              >
+                <tab.icon className="w-4 h-4" />
+                <span className="hidden sm:inline">
+                  {tab.label}
+                  {isBlacklist && ` (${blacklistCount})`}
+                </span>
+                {/* Badge mobile per blacklist */}
+                {isBlacklist && hasBlacklistedPatients && (
+                  <span className="sm:hidden ml-1 px-1.5 py-0.5 text-xs bg-white/20 rounded-full">
+                    {blacklistCount}
+                  </span>
+                )}
+              </button>
+            );
+          })}
         </div>
         
         {/* Tab Content */}

@@ -39,7 +39,7 @@ import { it } from 'date-fns/locale';
 
 interface Appointment {
   id: string;
-  startTime: Date;
+  startTime: Date | string; // Può essere Date o stringa ISO serializzata
   duration: number;
   type: string;
   status: string;
@@ -113,6 +113,7 @@ export function MasterDashboard({ user }: MasterDashboardProps) {
     pendingWithVisits: 0, // Punto 3: pazienti in attesa con visite effettuate
   });
   const [loading, setLoading] = useState(true);
+  const [blacklistCount, setBlacklistCount] = useState(0);
 
   // Carica statistiche reali dal database
   useEffect(() => {
@@ -133,6 +134,13 @@ export function MasterDashboard({ user }: MasterDashboardProps) {
         // Punto 3: Carica anche pazienti in attesa con visite
         const resPendingWithVisits = await fetch('/api/admin/patients?filter=pending_with_visits');
         const dataPendingWithVisits = await resPendingWithVisits.json();
+        
+        // Carica conteggio blacklist
+        const resBlacklist = await fetch('/api/admin/blacklist');
+        const dataBlacklist = await resBlacklist.json();
+        if (dataBlacklist.success) {
+          setBlacklistCount(dataBlacklist.blacklisted?.length || 0);
+        }
         
         setStats({
           totalAppointments: user.appointments.length,
@@ -246,10 +254,19 @@ export function MasterDashboard({ user }: MasterDashboardProps) {
           </Link>
           <Link
             href="/admin?tab=blacklist"
-            className="flex items-center gap-2 px-3 sm:px-4 py-2 rounded-xl font-medium bg-red-50 text-red-600 hover:bg-red-100 border border-red-200"
+            className={`flex items-center gap-2 px-3 sm:px-4 py-2 rounded-xl font-medium ${
+              blacklistCount > 0 
+                ? 'bg-red-50 text-red-600 hover:bg-red-100 border border-red-200'
+                : 'bg-white text-sage-600 hover:bg-sage-50 border border-sage-100'
+            }`}
           >
             <UserMinus className="w-4 h-4" />
-            <span className="hidden sm:inline">Blacklist</span>
+            <span className="hidden sm:inline">Blacklist ({blacklistCount})</span>
+            {blacklistCount > 0 && (
+              <span className="sm:hidden ml-1 px-1.5 py-0.5 text-xs bg-red-200 rounded-full">
+                {blacklistCount}
+              </span>
+            )}
           </Link>
         </div>
 

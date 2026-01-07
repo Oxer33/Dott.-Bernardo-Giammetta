@@ -6,7 +6,6 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { 
   UserMinus, 
@@ -14,11 +13,7 @@ import {
   AlertTriangle, 
   RefreshCw,
   Calendar,
-  Home,
-  CalendarPlus,
   UserCheck,
-  Lock,
-  BarChart3,
   Users,
   Mail,
   Phone,
@@ -114,83 +109,8 @@ export function BlacklistManager() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-cream-50 to-lavender-50 py-8">
-      <div className="container-custom">
-        {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="mb-6"
-        >
-          <div className="flex items-center gap-4 mb-4">
-            <div className="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center">
-              <UserMinus className="w-6 h-6 text-red-600" />
-            </div>
-            <div>
-              <h1 className="text-2xl font-display font-bold text-sage-900">
-                Gestione Blacklist
-              </h1>
-              <p className="text-sage-600">
-                Pazienti bloccati per troppe cancellazioni
-              </p>
-            </div>
-          </div>
-        </motion.div>
-
-        {/* Menu navigazione */}
-        <div className="flex flex-wrap gap-2 mb-6">
-          <Link
-            href="/area-personale"
-            className="flex items-center gap-2 px-3 sm:px-4 py-2 rounded-xl font-medium bg-white text-sage-600 hover:bg-sage-50 border border-sage-100"
-          >
-            <Home className="w-4 h-4" />
-            <span className="hidden sm:inline">Dashboard</span>
-          </Link>
-          <Link
-            href="/agenda"
-            className="flex items-center gap-2 px-3 sm:px-4 py-2 rounded-xl font-medium bg-white text-sage-600 hover:bg-sage-50 border border-sage-100"
-          >
-            <Calendar className="w-4 h-4" />
-            <span className="hidden sm:inline">Agenda</span>
-          </Link>
-          <Link
-            href="/admin?tab=appointments"
-            className="flex items-center gap-2 px-3 sm:px-4 py-2 rounded-xl font-medium bg-white text-sage-600 hover:bg-sage-50 border border-sage-100"
-          >
-            <CalendarPlus className="w-4 h-4" />
-            <span className="hidden sm:inline">Appuntamenti</span>
-          </Link>
-          <Link
-            href="/admin?tab=whitelist"
-            className="flex items-center gap-2 px-3 sm:px-4 py-2 rounded-xl font-medium bg-white text-sage-600 hover:bg-sage-50 border border-sage-100"
-          >
-            <UserCheck className="w-4 h-4" />
-            <span className="hidden sm:inline">Whitelist</span>
-          </Link>
-          <Link
-            href="/admin?tab=timeblocks"
-            className="flex items-center gap-2 px-3 sm:px-4 py-2 rounded-xl font-medium bg-white text-sage-600 hover:bg-sage-50 border border-sage-100"
-          >
-            <Lock className="w-4 h-4" />
-            <span className="hidden sm:inline">Blocchi</span>
-          </Link>
-          <Link
-            href="/admin?tab=stats"
-            className="flex items-center gap-2 px-3 sm:px-4 py-2 rounded-xl font-medium bg-white text-sage-600 hover:bg-sage-50 border border-sage-100"
-          >
-            <BarChart3 className="w-4 h-4" />
-            <span className="hidden sm:inline">Statistiche</span>
-          </Link>
-          <Link
-            href="/admin?tab=blacklist"
-            className="flex items-center gap-2 px-3 sm:px-4 py-2 rounded-xl font-medium bg-red-500 text-white shadow-md"
-          >
-            <UserMinus className="w-4 h-4" />
-            <span className="hidden sm:inline">Blacklist</span>
-          </Link>
-        </div>
-
-        {/* Errore */}
+    <div className="space-y-6">
+      {/* Errore */}
         {error && (
           <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-xl text-red-700">
             {error}
@@ -391,7 +311,6 @@ export function BlacklistManager() {
             </div>
           </div>
         )}
-      </div>
     </div>
   );
 }

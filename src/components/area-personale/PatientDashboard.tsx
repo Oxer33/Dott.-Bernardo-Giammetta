@@ -32,12 +32,12 @@ import { it } from 'date-fns/locale';
 
 interface Appointment {
   id: string;
-  startTime: Date;
+  startTime: Date | string; // Può essere Date o stringa ISO serializzata
   duration: number;
   type: string;
   status: string; // CONFIRMED | CANCELLED | COMPLETED | NO_SHOW
   notes?: string | null;
-  cancelledAt?: Date | null;
+  cancelledAt?: Date | string | null;
 }
 
 interface PatientDashboardProps {
@@ -47,6 +47,7 @@ interface PatientDashboardProps {
     email: string | null;
     firstName?: string | null;
     lastName?: string | null;
+    isWhitelisted?: boolean; // Per controllo bottone cancella
     appointments: Appointment[];
   };
 }
@@ -265,7 +266,7 @@ export function PatientDashboard({ user }: PatientDashboardProps) {
               <div className="flex items-center justify-between mb-6">
                 <h2 className="text-xl font-semibold text-sage-800 flex items-center gap-2">
                   <Calendar className="w-5 h-5 text-lavender-500" />
-                  Prossimi Appuntamenti
+                  Prossimo appuntamento
                 </h2>
                 <Link href="/agenda">
                   <Button variant="secondary" size="sm">
@@ -319,13 +320,16 @@ export function PatientDashboard({ user }: PatientDashboardProps) {
                             <Clock className="w-4 h-4" />
                             {appointment.duration} min
                           </div>
-                          <button
-                            onClick={() => setConfirmCancelId(appointment.id)}
-                            className="flex items-center gap-1 text-sm text-red-500 hover:text-red-700 whitespace-nowrap"
-                          >
-                            <X className="w-4 h-4" />
-                            Cancella appuntamento
-                          </button>
+                          {/* Mostra bottone cancella SOLO se paziente è in whitelist */}
+                          {user.isWhitelisted && (
+                            <button
+                              onClick={() => setConfirmCancelId(appointment.id)}
+                              className="flex items-center gap-1 text-sm text-red-500 hover:text-red-700 whitespace-nowrap"
+                            >
+                              <X className="w-4 h-4" />
+                              Cancella appuntamento
+                            </button>
+                          )}
                         </div>
                       </div>
                       
