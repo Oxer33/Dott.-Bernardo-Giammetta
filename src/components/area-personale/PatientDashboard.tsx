@@ -19,7 +19,8 @@ import {
   ChevronRight,
   AlertCircle,
   CheckCircle,
-  X
+  X,
+  Plus
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { format, isPast, isFuture, parseISO } from 'date-fns';
@@ -89,6 +90,73 @@ export function PatientDashboard({ user }: PatientDashboardProps) {
   const [confirmCancelId, setConfirmCancelId] = useState<string | null>(null);
   const [cancelError, setCancelError] = useState<string | null>(null);
   const [cancelSuccess, setCancelSuccess] = useState(false);
+  
+  // Stati per modal modifica note
+  const [notesModalOpen, setNotesModalOpen] = useState(false);
+  const [editingAppointmentId, setEditingAppointmentId] = useState<string | null>(null);
+  const [patientNotes, setPatientNotes] = useState<string[]>(['']);
+  const [savingNotes, setSavingNotes] = useState(false);
+  const [notesError, setNotesError] = useState<string | null>(null);
+
+  // Apri modal modifica note
+  const openNotesModal = async (appointmentId: string, existingNotes?: string | null) => {
+    setEditingAppointmentId(appointmentId);
+    setNotesError(null);
+    
+    // Parse note esistenti (separate da newline)
+    if (existingNotes) {
+      const notesList = existingNotes.split('\n').filter(n => n.trim());
+      setPatientNotes(notesList.length > 0 ? notesList : ['']);
+    } else {
+      setPatientNotes(['']);
+    }
+    
+    setNotesModalOpen(true);
+  };
+
+  // Salva note
+  const saveNotes = async () => {
+    if (!editingAppointmentId) return;
+    
+    setSavingNotes(true);
+    setNotesError(null);
+    
+    try {
+      const notesText = patientNotes.filter(n => n.trim()).join('\n');
+      
+      const response = await fetch(`/api/agenda/appointments/${editingAppointmentId}/notes`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ notes: notesText }),
+      });
+      
+      const data = await response.json();
+      
+      if (data.success) {
+        setNotesModalOpen(false);
+        // Ricarica per vedere le note aggiornate
+        setTimeout(() => window.location.reload(), 500);
+      } else {
+        setNotesError(data.error || 'Errore nel salvataggio');
+      }
+    } catch (error) {
+      setNotesError('Errore di connessione');
+    } finally {
+      setSavingNotes(false);
+    }
+  };
+
+  // Aggiungi nota
+  const addNote = () => {
+    setPatientNotes([...patientNotes, '']);
+  };
+
+  // Aggiorna nota
+  const updateNote = (index: number, value: string) => {
+    const updated = [...patientNotes];
+    updated[index] = value;
+    setPatientNotes(updated);
+  };
 
   // Funzione per cancellare appuntamento
   const handleCancelAppointment = async (appointmentId: string) => {
@@ -118,12 +186,16 @@ export function PatientDashboard({ user }: PatientDashboardProps) {
   };
 
   // Separa appuntamenti per stato e data
-  // Helper per parsare date senza conversione UTC
+  // Helper per parsare date SENZA conversione UTC
+  // Le date arrivano da Prisma come stringhe ISO con "Z" (es: "2026-01-10T15:00:00.000Z")
+  // Rimuoviamo la Z per interpretarle come ora locale
   const parseDate = (dateInput: Date | string): Date => {
     if (typeof dateInput === 'string') {
-      // Se è stringa ISO senza Z, parseISO la interpreta come locale
-      return parseISO(dateInput);
+      // Rimuovi la Z finale per evitare conversione UTC
+      const localString = dateInput.replace('Z', '');
+      return parseISO(localString);
     }
+    // Se è già un Date object (raro nel client), usalo direttamente
     return dateInput;
   };
 
@@ -230,7 +302,15 @@ export function PatientDashboard({ user }: PatientDashboardProps) {
                         </div>
                       </div>
                       
-                      {/* Bottone cancella / conferma */}
+                      {/* Note appuntamento (se presenti) */}
+                      {appointment.notes && (
+                        <div className="mt-3 p-2 bg-lavender-50 rounded-lg">
+                          <p className="text-xs text-sage-500 mb-1">Le tue note:</p>
+                          <p className="text-sm text-sage-700 whitespace-pre-line">{appointment.notes}</p>
+                        </div>
+                      )}
+                      
+                      {/* Bottoni azioni */}
                       <div className="mt-3 pt-3 border-t border-sage-200">
                         {confirmCancelId === appointment.id ? (
                           <div className="space-y-2">
@@ -256,13 +336,22 @@ export function PatientDashboard({ user }: PatientDashboardProps) {
                             </p>
                           </div>
                         ) : (
-                          <button
-                            onClick={() => setConfirmCancelId(appointment.id)}
-                            className="flex items-center gap-1 text-sm text-red-500 hover:text-red-700 ml-auto"
-                          >
-                            <X className="w-4 h-4" />
-                            Cancella appuntamento
-                          </button>
+                          <div className="flex items-center justify-between">
+                            <button
+                              onClick={() => openNotesModal(appointment.id, appointment.notes)}
+                              className="flex items-center gap-1 text-sm text-sage-600 hover:text-sage-800"
+                            >
+                              <FileText className="w-4 h-4" />
+                              {appointment.notes ? 'Modifica note' : 'Aggiungi note'}
+                            </button>
+                            <button
+                              onClick={() => setConfirmCancelId(appointment.id)}
+                              className="flex items-center gap-1 text-sm text-red-500 hover:text-red-700"
+                            >
+                              <X className="w-4 h-4" />
+                              Cancella
+                            </button>
+                          </div>
                         )}
                       </div>
                     </div>
@@ -410,6 +499,82 @@ export function PatientDashboard({ user }: PatientDashboardProps) {
           </div>
         </div>
       </div>
+
+      {/* Modal Modifica Note */}
+      {notesModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-sage-900/30 backdrop-blur-sm">
+          <div className="bg-white rounded-3xl shadow-2xl max-w-md w-full p-6">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 rounded-full bg-sage-100 flex items-center justify-center">
+                <FileText className="w-5 h-5 text-sage-600" />
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold text-sage-900">
+                  Note per la visita
+                </h3>
+                <p className="text-sage-500 text-sm">
+                  Scrivi cosa vorresti discutere
+                </p>
+              </div>
+            </div>
+
+            {notesError && (
+              <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-xl text-red-700 text-sm">
+                {notesError}
+              </div>
+            )}
+
+            <div className="space-y-3 mb-6 max-h-60 overflow-y-auto">
+              {patientNotes.map((note, index) => (
+                <div key={index}>
+                  <label className="block text-sm font-medium text-sage-700 mb-1">
+                    Nota {index + 1}
+                  </label>
+                  <textarea
+                    value={note}
+                    onChange={(e) => updateNote(index, e.target.value)}
+                    placeholder="Es: Vorrei parlare della mia dieta..."
+                    className="w-full px-4 py-2 rounded-xl border border-sage-200 focus:ring-2 focus:ring-sage-400 focus:border-transparent resize-none"
+                    rows={2}
+                  />
+                </div>
+              ))}
+            </div>
+
+            <button
+              type="button"
+              onClick={addNote}
+              className="w-full mb-4 py-2 border-2 border-dashed border-sage-200 rounded-xl text-sage-500 hover:border-sage-400 hover:text-sage-700 transition-colors flex items-center justify-center gap-2"
+            >
+              <Plus className="w-4 h-4" />
+              Aggiungi nota
+            </button>
+
+            <div className="flex gap-3">
+              <Button
+                variant="secondary"
+                onClick={() => {
+                  setNotesModalOpen(false);
+                  setEditingAppointmentId(null);
+                  setPatientNotes(['']);
+                }}
+                className="flex-1"
+              >
+                Annulla
+              </Button>
+              <Button
+                variant="primary"
+                onClick={saveNotes}
+                className="flex-1"
+                isLoading={savingNotes}
+                loadingText="Salvando..."
+              >
+                Salva
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

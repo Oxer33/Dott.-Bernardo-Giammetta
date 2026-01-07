@@ -17,7 +17,9 @@ import {
   CheckCircle,
   AlertCircle,
   X,
-  Loader2
+  Loader2,
+  FileText,
+  Plus
 } from 'lucide-react';
 import { format, addDays, startOfWeek, isSameDay } from 'date-fns';
 import { it } from 'date-fns/locale';
@@ -81,6 +83,12 @@ export function AgendaCalendar() {
   } | null>(null);
   const [cancelLoading, setCancelLoading] = useState(false);
   const [cancelConfirm, setCancelConfirm] = useState(false);
+  
+  // Stati per finestra note dopo prenotazione
+  const [notesModal, setNotesModal] = useState(false);
+  const [newAppointmentId, setNewAppointmentId] = useState<string | null>(null);
+  const [patientNotes, setPatientNotes] = useState<string[]>(['']);
+  const [savingNotes, setSavingNotes] = useState(false);
   
   // Verifica se l'utente è master/admin
   const isMaster = session?.user?.role === 'ADMIN' || 
@@ -250,6 +258,18 @@ export function AgendaCalendar() {
       if (data.success) {
         setBookingSuccess(true);
         fetchAvailability(); // Ricarica disponibilità
+        fetchNextAppointment(); // Aggiorna card prossimo appuntamento
+        
+        // Per pazienti (non admin): apri finestra note dopo 1.5 secondi
+        if (!isMaster && data.appointment?.id) {
+          setNewAppointmentId(data.appointment.id);
+          setTimeout(() => {
+            setBookingModal(false);
+            setBookingSuccess(false);
+            setNotesModal(true);
+            setPatientNotes(['']); // Reset note
+          }, 1500);
+        }
       } else {
         setError(data.error || 'Errore nella prenotazione');
       }
@@ -258,6 +278,47 @@ export function AgendaCalendar() {
     } finally {
       setBookingLoading(false);
     }
+  };
+
+  // Salva note paziente per appuntamento
+  const savePatientNotes = async () => {
+    if (!newAppointmentId) return;
+    
+    setSavingNotes(true);
+    try {
+      // Filtra note vuote e unisci con newline
+      const notesText = patientNotes.filter(n => n.trim()).join('\n');
+      
+      const response = await fetch(`/api/agenda/appointments/${newAppointmentId}/notes`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ notes: notesText }),
+      });
+      
+      const data = await response.json();
+      if (!data.success) {
+        setError(data.error || 'Errore nel salvataggio note');
+      }
+    } catch (err) {
+      setError('Errore di connessione');
+    } finally {
+      setSavingNotes(false);
+      setNotesModal(false);
+      setNewAppointmentId(null);
+      setPatientNotes(['']);
+    }
+  };
+
+  // Aggiungi nuova nota
+  const addNote = () => {
+    setPatientNotes([...patientNotes, '']);
+  };
+
+  // Aggiorna nota specifica
+  const updateNote = (index: number, value: string) => {
+    const updated = [...patientNotes];
+    updated[index] = value;
+    setPatientNotes(updated);
   };
 
   // Chiudi modal
@@ -684,6 +745,89 @@ export function AgendaCalendar() {
           }}
         />
       )}
+
+      {/* Modal Note Paziente - dopo prenotazione */}
+      <AnimatePresence>
+        {notesModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-sage-900/30 backdrop-blur-sm"
+          >
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="bg-white rounded-3xl shadow-2xl max-w-md w-full p-6"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-10 h-10 rounded-full bg-sage-100 flex items-center justify-center">
+                  <FileText className="w-5 h-5 text-sage-600" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-display font-semibold text-sage-900">
+                    Note per la prossima visita
+                  </h3>
+                  <p className="text-sage-500 text-sm">
+                    Modificabile dalla tua Area Personale
+                  </p>
+                </div>
+              </div>
+
+              <div className="space-y-3 mb-6 max-h-60 overflow-y-auto">
+                {patientNotes.map((note, index) => (
+                  <div key={index}>
+                    <label className="block text-sm font-medium text-sage-700 mb-1">
+                      Nota {index + 1}
+                    </label>
+                    <textarea
+                      value={note}
+                      onChange={(e) => updateNote(index, e.target.value)}
+                      placeholder="Es: Vorrei parlare della mia dieta..."
+                      className="w-full px-4 py-2 rounded-xl border border-sage-200 focus:ring-2 focus:ring-sage-400 focus:border-transparent resize-none"
+                      rows={2}
+                    />
+                  </div>
+                ))}
+              </div>
+
+              <button
+                type="button"
+                onClick={addNote}
+                className="w-full mb-4 py-2 border-2 border-dashed border-sage-200 rounded-xl text-sage-500 hover:border-sage-400 hover:text-sage-700 transition-colors flex items-center justify-center gap-2"
+              >
+                <Plus className="w-4 h-4" />
+                Aggiungi nota
+              </button>
+
+              <div className="flex gap-3">
+                <Button
+                  variant="secondary"
+                  onClick={() => {
+                    setNotesModal(false);
+                    setNewAppointmentId(null);
+                    setPatientNotes(['']);
+                  }}
+                  className="flex-1"
+                >
+                  Salta
+                </Button>
+                <Button
+                  variant="primary"
+                  onClick={savePatientNotes}
+                  className="flex-1"
+                  isLoading={savingNotes}
+                  loadingText="Salvando..."
+                >
+                  Salva e chiudi
+                </Button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

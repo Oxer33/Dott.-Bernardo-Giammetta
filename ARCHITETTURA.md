@@ -209,6 +209,45 @@ Per sembrare scritte a mano, ogni tipo di email ha multiple varianti:
 
 ---
 
+## 🚫 Sistema Blacklist Anti-Spam
+
+### Logica di Funzionamento:
+Il sistema previene abusi nelle prenotazioni contando le cancellazioni di appuntamenti **futuri**.
+
+### Regole:
+1. **Conteggio**: Solo cancellazioni di appuntamenti che erano FUTURI al momento della cancellazione
+   - Verifica: `startTime > cancelledAt`
+   - NON conta cancellazioni di appuntamenti già passati
+
+2. **Finestra temporale**: Ultimi 30 giorni dalla data della cancellazione
+
+3. **Reset contatore**: Il contatore si AZZERA quando:
+   - Admin/Master crea un appuntamento per il paziente
+   - Viene aggiornato `whitelistedAt` con la data corrente
+   - Le cancellazioni precedenti a `whitelistedAt` vengono ignorate
+
+4. **Limite**: 3 cancellazioni di appuntamenti futuri in 30 giorni = BLOCCO
+   - Il paziente deve contattare lo studio per prenotare
+   - Messaggio: "Hai raggiunto il limite di 3 prenotazioni cancellate..."
+
+### Flusso:
+```
+[Paziente prenota] 
+    ↓
+[Sistema controlla cancellazioni recenti]
+    ↓
+[Query: cancellazioni dopo MAX(whitelistedAt, 30gg fa)]
+    ↓
+[Filtra: solo dove startTime > cancelledAt]
+    ↓
+[Se count >= 3 → BLOCCO]
+[Se count < 3 → OK prenotazione]
+```
+
+### Codice chiave: `src/app/api/agenda/appointments/route.ts`
+
+---
+
 ## 🎨 Design System
 
 ### Palette Colori:

@@ -96,6 +96,7 @@ export async function POST(request: NextRequest) {
         name: true,
         phone: true,
         isWhitelisted: true,
+        whitelistedAt: true, // Per sistema blacklist: azzera contatore cancellazioni
         emailVerified: true,
         maxActiveBookings: true,
       },
@@ -189,24 +190,57 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Anti-spam: Se NON è admin, verifica che il paziente non abbia prenotato+cancellato 3 volte in 30 giorni
-    // Il blocco avviene alla PRENOTAZIONE (non alla cancellazione - il paziente può sempre cancellare)
+    // ==========================================================================
+    // SISTEMA BLACKLIST ANTI-SPAM
+    // Regole:
+    // 1. Conta solo cancellazioni di appuntamenti FUTURI (startTime > cancelledAt)
+    // 2. Conta solo cancellazioni degli ultimi 30 giorni
+    // 3. Il contatore si AZZERA quando admin prenota per il paziente (whitelistedAt)
+    // 4. Limite: 3 cancellazioni = blocco prenotazione (deve contattare studio)
+    // ==========================================================================
     if (!isAdmin) {
       const thirtyDaysAgo = new Date();
       thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
       
-      // Conta cancellazioni negli ultimi 30 giorni
-      const recentCancellations = await db.appointment.count({
-        where: {
-          userId: bookingUserId,
-          status: 'CANCELLED',
-          cancelledAt: {
-            gte: thirtyDaysAgo,
-          },
+      // Costruisci la query base
+      const cancellationQuery: any = {
+        userId: bookingUserId,
+        status: 'CANCELLED',
+        cancelledAt: {
+          gte: thirtyDaysAgo,
+        },
+      };
+      
+      // Se il paziente è stato riportato in whitelist da admin,
+      // considera solo le cancellazioni DOPO quella data
+      if (bookingUser.whitelistedAt) {
+        const whitelistedDate = new Date(bookingUser.whitelistedAt);
+        // Se whitelistedAt è più recente di 30 giorni fa, usa quella come data di partenza
+        if (whitelistedDate > thirtyDaysAgo) {
+          cancellationQuery.cancelledAt = {
+            gte: whitelistedDate,
+          };
+        }
+      }
+      
+      // Recupera le cancellazioni per filtrarle manualmente
+      // (dobbiamo verificare che startTime > cancelledAt, cioè appuntamento ERA futuro)
+      const recentCancellations = await db.appointment.findMany({
+        where: cancellationQuery,
+        select: {
+          id: true,
+          startTime: true,
+          cancelledAt: true,
         },
       });
       
-      if (recentCancellations >= 3) {
+      // Filtra: conta solo cancellazioni di appuntamenti che erano FUTURI al momento della cancellazione
+      const futureCancellations = recentCancellations.filter(apt => {
+        if (!apt.cancelledAt) return false;
+        return apt.startTime > apt.cancelledAt; // L'appuntamento era futuro quando è stato cancellato
+      });
+      
+      if (futureCancellations.length >= 3) {
         return NextResponse.json(
           { 
             success: false, 
@@ -296,6 +330,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success: true,
       data: appointment,
+      appointment: { id: appointment.id }, // Per finestra note paziente
       message: 'Appuntamento prenotato con successo! Ti abbiamo inviato un\'email di conferma.',
     });
     
