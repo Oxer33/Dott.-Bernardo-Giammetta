@@ -300,6 +300,14 @@
    ```
 3. **Attendi approvazione SES**: produzione (caso #176743190600620)
 
+### 🔧 FIX Account Paziente - 07/01/2026 (Sessione 12) ✅ COMPLETATO
+- [x] **Fix critico "Utente non trovato"**: JWT ora salva `dbId` (ID database) invece di `token.sub` (ID Cognito)
+- [x] **Auto-whitelist admin**: quando admin crea appuntamento per paziente in blacklist, lo riporta in whitelist
+- [x] **Auto-complete availability**: aggiunto anche in `/api/agenda/availability` (non solo admin)
+- [x] **Regole paziente**: solo 60min, tipo forzato a FOLLOW_UP, 48h anticipo
+- [x] **Card "Il tuo prossimo appuntamento"**: data/ora + bottoni "Vai alla data" (verde) e "Annulla" (rosso)
+- [x] **Conferma cancellazione**: richiesta conferma con avviso anti-spam gentile
+
 ### 🔧 FIX Gestione Appuntamenti - 07/01/2026 (Sessione 11) ✅ COMPLETATO
 - [x] **Fix orario UTC**: `toLocalISOString()` per evitare conversione UTC nell'API
 - [x] **Fix tipo visita 120min**: mostrato come "Visita Approfondita" con badge rosa
@@ -562,4 +570,4 @@ COGNITO_PATIENTS_ISSUER=https://cognito-idp.eu-north-1.amazonaws.com/eu-north-1_
 
 ---
 
-*Ultimo aggiornamento: 07 Gennaio 2026 - 14:55*
+*Ultimo aggiornamento: 07 Gennaio 2026 - 16:15*
