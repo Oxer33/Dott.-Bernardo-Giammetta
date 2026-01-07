@@ -33,9 +33,30 @@ export async function GET(request: NextRequest) {
     const { getWeekAvailability, getDayAvailability } = await import('@/lib/agenda');
     const { getServerSession } = await import('next-auth');
     const { authOptions } = await import('@/lib/auth');
+    const { db } = await import('@/lib/db');
     
     const session = await getServerSession(authOptions);
     const isAdmin = session?.user?.role === 'ADMIN';
+    
+    // AUTO-COMPLETE: Aggiorna appuntamenti passati a COMPLETED
+    // Eseguito ad ogni caricamento agenda per garantire stato corretto
+    const now = new Date();
+    const pastAppointments = await db.appointment.findMany({
+      where: {
+        status: 'CONFIRMED',
+        startTime: { lt: now },
+      },
+    });
+    
+    for (const apt of pastAppointments) {
+      const endTime = new Date(apt.startTime.getTime() + apt.duration * 60 * 1000);
+      if (endTime < now) {
+        await db.appointment.update({
+          where: { id: apt.id },
+          data: { status: 'COMPLETED' },
+        });
+      }
+    }
     
     let availability;
     if (days === 1) {

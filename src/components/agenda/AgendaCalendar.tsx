@@ -73,6 +73,14 @@ export function AgendaCalendar() {
   const [bookingSuccess, setBookingSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [masterModal, setMasterModal] = useState(false);
+  const [nextAppointment, setNextAppointment] = useState<{
+    id: string;
+    date: string;
+    startTime: string;
+    endTime: string;
+  } | null>(null);
+  const [cancelLoading, setCancelLoading] = useState(false);
+  const [cancelConfirm, setCancelConfirm] = useState(false);
   
   // Verifica se l'utente è master/admin
   const isMaster = session?.user?.role === 'ADMIN' || 
@@ -102,6 +110,74 @@ export function AgendaCalendar() {
   useEffect(() => {
     fetchAvailability();
   }, [fetchAvailability]);
+  
+  // Fetch prossimo appuntamento del paziente (solo per non-admin)
+  const fetchNextAppointment = useCallback(async () => {
+    if (!session?.user || isMaster) return;
+    
+    try {
+      const response = await fetch('/api/agenda/appointments');
+      const data = await response.json();
+      
+      if (data.success && data.data && data.data.length > 0) {
+        // Prendi il primo appuntamento futuro confermato
+        const apt = data.data[0];
+        const startDate = new Date(apt.startTime);
+        const endDate = new Date(startDate.getTime() + apt.duration * 60 * 1000);
+        
+        setNextAppointment({
+          id: apt.id,
+          date: format(startDate, 'dd/MM/yyyy'),
+          startTime: format(startDate, 'HH:mm'),
+          endTime: format(endDate, 'HH:mm'),
+        });
+      } else {
+        setNextAppointment(null);
+      }
+    } catch (err) {
+      console.error('Errore fetch appuntamento:', err);
+    }
+  }, [session?.user, isMaster]);
+  
+  useEffect(() => {
+    fetchNextAppointment();
+  }, [fetchNextAppointment]);
+
+  // Cancella appuntamento paziente
+  const handleCancelAppointment = async () => {
+    if (!nextAppointment) return;
+    
+    setCancelLoading(true);
+    try {
+      const response = await fetch(`/api/agenda/appointments?id=${nextAppointment.id}`, {
+        method: 'DELETE',
+      });
+      const data = await response.json();
+      
+      if (data.success) {
+        setNextAppointment(null);
+        setCancelConfirm(false);
+        fetchAvailability(); // Refresh disponibilità
+      } else {
+        setError(data.error || 'Errore durante la cancellazione');
+      }
+    } catch (err) {
+      setError('Errore di connessione');
+    } finally {
+      setCancelLoading(false);
+    }
+  };
+  
+  // Vai alla data dell'appuntamento
+  const goToAppointmentDate = () => {
+    if (!nextAppointment) return;
+    
+    // Parse la data dd/MM/yyyy
+    const [day, month, year] = nextAppointment.date.split('/').map(Number);
+    const appointmentDate = new Date(year, month - 1, day);
+    const weekStart = startOfWeek(appointmentDate, { weekStartsOn: 1 });
+    setCurrentWeekStart(weekStart);
+  };
 
   // Navigazione settimane
   const goToPreviousWeek = () => {
@@ -215,6 +291,67 @@ export function AgendaCalendar() {
 
   return (
     <div className="bg-white rounded-3xl shadow-soft overflow-hidden">
+      {/* Card Prossimo Appuntamento - Solo per pazienti con appuntamento */}
+      {!isMaster && nextAppointment && (
+        <div className="p-4 bg-gradient-to-r from-sage-50 to-cream-50 border-b border-sage-100">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <div className="p-3 bg-sage-100 rounded-xl">
+                <Calendar className="w-6 h-6 text-sage-600" />
+              </div>
+              <div>
+                <p className="text-sm text-sage-600 font-medium">Il tuo prossimo appuntamento</p>
+                <p className="text-lg font-semibold text-sage-900">
+                  {nextAppointment.date} • {nextAppointment.startTime} - {nextAppointment.endTime}
+                </p>
+              </div>
+            </div>
+            
+            <div className="flex gap-2">
+              <button
+                onClick={goToAppointmentDate}
+                className="flex-1 sm:flex-none px-4 py-2 bg-sage-500 text-white rounded-lg hover:bg-sage-600 transition-colors text-sm font-medium"
+              >
+                Vai alla data
+              </button>
+              
+              {cancelConfirm ? (
+                <div className="flex gap-2">
+                  <button
+                    onClick={handleCancelAppointment}
+                    disabled={cancelLoading}
+                    className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors text-sm font-medium disabled:opacity-50"
+                  >
+                    {cancelLoading ? 'Annullo...' : 'Conferma'}
+                  </button>
+                  <button
+                    onClick={() => setCancelConfirm(false)}
+                    className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors text-sm font-medium"
+                  >
+                    No
+                  </button>
+                </div>
+              ) : (
+                <button
+                  onClick={() => setCancelConfirm(true)}
+                  className="flex-1 sm:flex-none px-4 py-2 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 transition-colors text-sm font-medium"
+                >
+                  Annulla appuntamento
+                </button>
+              )}
+            </div>
+          </div>
+          
+          {/* Avviso anti-spam */}
+          {cancelConfirm && (
+            <p className="mt-3 text-xs text-sage-600 bg-sage-100/50 p-2 rounded-lg">
+              ⚠️ Ti ricordiamo che cancellazioni frequenti potrebbero limitare temporaneamente la tua possibilità di prenotare. 
+              Per modificare l&apos;appuntamento, ti consigliamo di contattare lo studio.
+            </p>
+          )}
+        </div>
+      )}
+      
       {/* Header */}
       <div className="p-6 border-b border-sage-100">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">

@@ -186,24 +186,27 @@ export const authOptions: NextAuthOptions = {
         
         token.role = isMaster ? 'ADMIN' : 'PATIENT';
         
-        // FIX CRITICO: Per pazienti, leggi isWhitelisted dal database
-        // Questo permette ai pazienti di prenotare subito dopo essere stati messi in whitelist
-        if (isMaster) {
-          token.isWhitelisted = true;
-        } else {
-          // Leggi dal database per pazienti normali
-          try {
-            const dbUser = await db.user.findUnique({
-              where: { email: token.email as string },
-              select: { isWhitelisted: true, emailVerified: true },
-            });
-            token.isWhitelisted = dbUser?.isWhitelisted || false;
-            token.emailVerified = dbUser?.emailVerified ? true : false;
-          } catch (error) {
-            // In caso di errore DB, mantieni il valore precedente o false
-            console.error('[JWT] Errore lettura isWhitelisted:', error);
-            token.isWhitelisted = token.isWhitelisted || false;
+        // FIX CRITICO: Leggi SEMPRE l'ID e isWhitelisted dal database
+        // Questo garantisce che session.user.id sia l'ID del database (non Cognito sub)
+        try {
+          const dbUser = await db.user.findUnique({
+            where: { email: token.email as string },
+            select: { id: true, isWhitelisted: true, emailVerified: true },
+          });
+          
+          if (dbUser) {
+            // CRITICO: Salva l'ID del DATABASE nel token (non l'ID Cognito!)
+            token.dbId = dbUser.id;
+            token.isWhitelisted = isMaster ? true : dbUser.isWhitelisted;
+            token.emailVerified = dbUser.emailVerified ? true : false;
+          } else {
+            // Utente non ancora nel database - verrà creato al primo accesso
+            token.isWhitelisted = isMaster || false;
+            token.emailVerified = false;
           }
+        } catch (error) {
+          console.error('[JWT] Errore lettura dal database:', error);
+          token.isWhitelisted = isMaster || (token.isWhitelisted as boolean) || false;
         }
       }
       
@@ -213,7 +216,8 @@ export const authOptions: NextAuthOptions = {
     // Session callback - usa dati dal token JWT
     async session({ session, token }) {
       if (session.user && token) {
-        session.user.id = token.sub || token.id as string || 'jwt-user';
+        // CRITICO: Usa dbId (ID database) se disponibile, altrimenti fallback
+        session.user.id = (token.dbId as string) || token.sub || (token.id as string) || 'jwt-user';
         session.user.role = (token.role as 'ADMIN' | 'PATIENT') || 'PATIENT';
         session.user.isWhitelisted = (token.isWhitelisted as boolean) || false;
         

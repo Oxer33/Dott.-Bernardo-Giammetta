@@ -114,6 +114,18 @@ export async function POST(request: NextRequest) {
         { status: 403 }
       );
     }
+    
+    // REGOLA: Pazienti possono prenotare SOLO visite da 60 minuti (Controllo)
+    // Solo admin può prenotare 90min (Prima Visita) o 120min (Visita Approfondita)
+    if (!isAdmin && customDuration && customDuration !== 60) {
+      return NextResponse.json(
+        { success: false, error: 'Puoi prenotare solo visite di controllo da 60 minuti. Per altri tipi di visita, contatta lo studio.' },
+        { status: 403 }
+      );
+    }
+    
+    // Forza tipo FOLLOW_UP per pazienti (non possono scegliere FIRST_VISIT)
+    const finalType = isAdmin ? type : 'FOLLOW_UP';
 
     // Verifica email verificata (per utenti registrati con password)
     // Skip per utenti OAuth (non hanno password, usano Google)
@@ -227,19 +239,33 @@ export async function POST(request: NextRequest) {
     
     // Crea appuntamento
     // CRITICO: Passa callerEmail per bypass master nel secondo check di canUserBook
+    // Usa finalType per garantire che pazienti usino FOLLOW_UP
     const appointment = await createAppointment(
       bookingUserId,
       new Date(startTime),
-      type,
+      finalType,
       notes,
       isMaster ? 'MASTER_OVERRIDE' : (session.user.email || undefined),
       customDuration // Passa durata personalizzata (es. 120min)
     );
     
+    // AUTO-WHITELIST: Se admin crea appuntamento per utente non in whitelist,
+    // significa che il paziente ha contattato il medico -> riporta in whitelist
+    if (isMaster && !bookingUser.isWhitelisted) {
+      await db.user.update({
+        where: { id: bookingUserId },
+        data: { 
+          isWhitelisted: true, 
+          whitelistedAt: new Date(),
+        },
+      });
+      console.log(`[AUTO-WHITELIST] Paziente ${bookingUser.email} riportato in whitelist da admin`);
+    }
+    
     // Formatta data e ora per email
     const appointmentDate = format(new Date(startTime), 'EEEE d MMMM yyyy', { locale: it });
     const appointmentTime = format(new Date(startTime), 'HH:mm');
-    const appointmentType = type === 'FIRST_VISIT' ? 'Prima Visita (90 min)' : 'Visita di Controllo (60 min)';
+    const appointmentType = finalType === 'FIRST_VISIT' ? 'Prima Visita (90 min)' : 'Visita di Controllo (60 min)';
 
     // Invia email di conferma al paziente
     await sendBookingConfirmationToPatient({
