@@ -300,6 +300,16 @@
    ```
 3. **Attendi approvazione SES**: produzione (caso #176743190600620)
 
+### 🔧 UX Paziente + Blacklist Manager - 07/01/2026 (Sessione 15) ✅ COMPLETATO
+- [x] **Fix orari area-personale definitivo**: regex per rimuovere `.000Z` oltre a `Z`
+- [x] **Bottone "Elimina nota"**: in entrambi i modal (agenda + area-personale)
+- [x] **Placeholder note aggiornato**: "Scrivi qui ciò che vorresti modificare o aggiungere al piano"
+- [x] **Testo bottone note**: "Aggiungi note (modifiche al piano, richieste specifiche...)"
+- [x] **Card riorganizzata**: "Cancella appuntamento" in alto a destra con durata
+- [x] **Sezione Blacklist admin**: nuovo tab + componente BlacklistManager + API
+- [x] **Fix reset contatore blacklist**: SEMPRE aggiorna whitelistedAt quando admin prenota
+- [x] **Stato appuntamento**: "Cancellato dal paziente" invece di "Cancellato"
+
 ### 🔧 Sistema Note Paziente - 07/01/2026 (Sessione 14) ✅ COMPLETATO
 - [x] **Fix orari area-personale definitivo**: rimuovo "Z" da stringhe ISO per evitare conversione UTC
 - [x] **Blacklist migliorata**: conta solo cancellazioni di appuntamenti FUTURI + reset con whitelistedAt
@@ -589,4 +599,4 @@ COGNITO_PATIENTS_ISSUER=https://cognito-idp.eu-north-1.amazonaws.com/eu-north-1_
 
 ---
 
-*Ultimo aggiornamento: 07 Gennaio 2026 - 17:55*
+*Ultimo aggiornamento: 07 Gennaio 2026 - 19:10*
