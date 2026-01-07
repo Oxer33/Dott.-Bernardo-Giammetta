@@ -300,6 +300,15 @@
    ```
 3. **Attendi approvazione SES**: produzione (caso #176743190600620)
 
+### 🔧 Sistema Note Paziente - 07/01/2026 (Sessione 14) ✅ COMPLETATO
+- [x] **Fix orari area-personale definitivo**: rimuovo "Z" da stringhe ISO per evitare conversione UTC
+- [x] **Blacklist migliorata**: conta solo cancellazioni di appuntamenti FUTURI + reset con whitelistedAt
+- [x] **Documentazione blacklist**: sezione dettagliata in ARCHITETTURA.md
+- [x] **Finestra note dopo prenotazione**: modal con note multiple + bottone "Aggiungi nota"
+- [x] **API note**: `/api/agenda/appointments/[id]/notes` (PUT/GET)
+- [x] **Modifica note da area-personale**: bottone "Aggiungi/Modifica note" + visualizzazione note esistenti
+- [x] **Modal note area-personale**: stesso stile del modal agenda
+
 ### 🔧 FIX Orari e Card Paziente - 07/01/2026 (Sessione 13) ✅ COMPLETATO
 - [x] **Fix orario +1h card agenda**: API ora usa `toLocalISOString()` per evitare conversione UTC
 - [x] **Fix errore cancellazione card**: URL corretto `/api/agenda/appointments/{id}` (non query param)
@@ -580,4 +589,4 @@ COGNITO_PATIENTS_ISSUER=https://cognito-idp.eu-north-1.amazonaws.com/eu-north-1_
 
 ---
 
-*Ultimo aggiornamento: 07 Gennaio 2026 - 16:50*
+*Ultimo aggiornamento: 07 Gennaio 2026 - 17:55*
