@@ -158,6 +158,13 @@ export function PatientDashboard({ user }: PatientDashboardProps) {
     setPatientNotes(updated);
   };
 
+  // Elimina nota
+  const removeNote = (index: number) => {
+    const updated = patientNotes.filter((_, i) => i !== index);
+    // Se rimane vuoto, lascia almeno una nota vuota
+    setPatientNotes(updated.length > 0 ? updated : ['']);
+  };
+
   // Funzione per cancellare appuntamento
   const handleCancelAppointment = async (appointmentId: string) => {
     setCancellingId(appointmentId);
@@ -187,16 +194,26 @@ export function PatientDashboard({ user }: PatientDashboardProps) {
 
   // Separa appuntamenti per stato e data
   // Helper per parsare date SENZA conversione UTC
-  // Le date arrivano da Prisma come stringhe ISO con "Z" (es: "2026-01-10T15:00:00.000Z")
-  // Rimuoviamo la Z per interpretarle come ora locale
+  // Le date arrivano da Prisma serializzate come stringhe ISO con "Z" (es: "2026-01-10T15:00:00.000Z")
+  // Il problema: JavaScript interpreta la Z come UTC e poi converte al fuso orario locale (+1h in Italia)
+  // Soluzione: rimuoviamo la Z E i millisecondi per trattare la data come locale
   const parseDate = (dateInput: Date | string): Date => {
     if (typeof dateInput === 'string') {
-      // Rimuovi la Z finale per evitare conversione UTC
-      const localString = dateInput.replace('Z', '');
+      // Rimuovi la Z finale e millisecondi per evitare conversione UTC
+      // "2026-01-10T15:00:00.000Z" -> "2026-01-10T15:00:00"
+      const localString = dateInput.replace(/\.\d{3}Z$/, '').replace('Z', '');
       return parseISO(localString);
     }
-    // Se è già un Date object (raro nel client), usalo direttamente
-    return dateInput;
+    // Se è già un Date object, estrai i componenti locali e ricrea
+    // Questo evita problemi di timezone
+    return new Date(
+      dateInput.getFullYear(),
+      dateInput.getMonth(),
+      dateInput.getDate(),
+      dateInput.getHours(),
+      dateInput.getMinutes(),
+      dateInput.getSeconds()
+    );
   };
 
   const upcomingAppointments = user.appointments.filter(a => 
@@ -284,11 +301,12 @@ export function PatientDashboard({ user }: PatientDashboardProps) {
                       key={appointment.id}
                       className="p-4 bg-sage-50 rounded-xl border border-sage-100"
                     >
-                      <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 rounded-xl bg-sage-100 flex items-center justify-center">
+                      {/* Header con info e bottone cancella in alto a destra */}
+                      <div className="flex items-start gap-4">
+                        <div className="w-12 h-12 rounded-xl bg-sage-100 flex items-center justify-center flex-shrink-0">
                           <Calendar className="w-6 h-6 text-sage-600" />
                         </div>
-                        <div className="flex-1">
+                        <div className="flex-1 min-w-0">
                           <p className="font-medium text-sage-800">
                             {appointment.type === 'FIRST_VISIT' ? 'Prima Visita' : 'Controllo'}
                           </p>
@@ -296,11 +314,45 @@ export function PatientDashboard({ user }: PatientDashboardProps) {
                             {format(parseDate(appointment.startTime), "EEEE d MMMM 'alle' HH:mm", { locale: it })}
                           </p>
                         </div>
-                        <div className="flex items-center gap-2 text-sm text-sage-500">
-                          <Clock className="w-4 h-4" />
-                          {appointment.duration} min
+                        <div className="flex items-center gap-3 flex-shrink-0">
+                          <div className="flex items-center gap-1 text-sm text-sage-500">
+                            <Clock className="w-4 h-4" />
+                            {appointment.duration} min
+                          </div>
+                          <button
+                            onClick={() => setConfirmCancelId(appointment.id)}
+                            className="flex items-center gap-1 text-sm text-red-500 hover:text-red-700 whitespace-nowrap"
+                          >
+                            <X className="w-4 h-4" />
+                            Cancella appuntamento
+                          </button>
                         </div>
                       </div>
+                      
+                      {/* Conferma cancellazione */}
+                      {confirmCancelId === appointment.id && (
+                        <div className="mt-3 p-3 bg-red-50 rounded-lg border border-red-100 space-y-2">
+                          <div className="flex items-center gap-2 justify-end">
+                            <span className="text-sm text-red-600 mr-2">Confermi l&apos;annullamento?</span>
+                            <button
+                              onClick={() => handleCancelAppointment(appointment.id)}
+                              disabled={cancellingId === appointment.id}
+                              className="px-3 py-1.5 bg-red-500 text-white text-sm rounded-lg hover:bg-red-600 disabled:opacity-50"
+                            >
+                              {cancellingId === appointment.id ? 'Annullando...' : 'Sì, annulla'}
+                            </button>
+                            <button
+                              onClick={() => setConfirmCancelId(null)}
+                              className="px-3 py-1.5 bg-gray-200 text-gray-700 text-sm rounded-lg hover:bg-gray-300"
+                            >
+                              No
+                            </button>
+                          </div>
+                          <p className="text-xs text-red-600">
+                            ⚠️ Ti ricordiamo che cancellazioni frequenti potrebbero limitare temporaneamente la tua possibilità di prenotare.
+                          </p>
+                        </div>
+                      )}
                       
                       {/* Note appuntamento (se presenti) */}
                       {appointment.notes && (
@@ -310,49 +362,15 @@ export function PatientDashboard({ user }: PatientDashboardProps) {
                         </div>
                       )}
                       
-                      {/* Bottoni azioni */}
+                      {/* Bottone aggiungi/modifica note */}
                       <div className="mt-3 pt-3 border-t border-sage-200">
-                        {confirmCancelId === appointment.id ? (
-                          <div className="space-y-2">
-                            <div className="flex items-center gap-2 justify-end">
-                              <span className="text-sm text-red-600 mr-2">Confermi l'annullamento?</span>
-                              <button
-                                onClick={() => handleCancelAppointment(appointment.id)}
-                                disabled={cancellingId === appointment.id}
-                                className="px-3 py-1.5 bg-red-500 text-white text-sm rounded-lg hover:bg-red-600 disabled:opacity-50"
-                              >
-                                {cancellingId === appointment.id ? 'Annullando...' : 'Sì, annulla'}
-                              </button>
-                              <button
-                                onClick={() => setConfirmCancelId(null)}
-                                className="px-3 py-1.5 bg-gray-200 text-gray-700 text-sm rounded-lg hover:bg-gray-300"
-                              >
-                                No
-                              </button>
-                            </div>
-                            {/* Avviso anti-spam */}
-                            <p className="text-xs text-sage-500 bg-sage-50 p-2 rounded-lg">
-                              ⚠️ Ti ricordiamo che cancellazioni frequenti potrebbero limitare temporaneamente la tua possibilità di prenotare.
-                            </p>
-                          </div>
-                        ) : (
-                          <div className="flex items-center justify-between">
-                            <button
-                              onClick={() => openNotesModal(appointment.id, appointment.notes)}
-                              className="flex items-center gap-1 text-sm text-sage-600 hover:text-sage-800"
-                            >
-                              <FileText className="w-4 h-4" />
-                              {appointment.notes ? 'Modifica note' : 'Aggiungi note'}
-                            </button>
-                            <button
-                              onClick={() => setConfirmCancelId(appointment.id)}
-                              className="flex items-center gap-1 text-sm text-red-500 hover:text-red-700"
-                            >
-                              <X className="w-4 h-4" />
-                              Cancella
-                            </button>
-                          </div>
-                        )}
+                        <button
+                          onClick={() => openNotesModal(appointment.id, appointment.notes)}
+                          className="flex items-center gap-1 text-sm text-sage-600 hover:text-sage-800"
+                        >
+                          <FileText className="w-4 h-4" />
+                          {appointment.notes ? 'Modifica note' : 'Aggiungi note (modifiche al piano, richieste specifiche...)'}
+                        </button>
                       </div>
                     </div>
                   ))}
@@ -527,13 +545,25 @@ export function PatientDashboard({ user }: PatientDashboardProps) {
             <div className="space-y-3 mb-6 max-h-60 overflow-y-auto">
               {patientNotes.map((note, index) => (
                 <div key={index}>
-                  <label className="block text-sm font-medium text-sage-700 mb-1">
-                    Nota {index + 1}
-                  </label>
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="block text-sm font-medium text-sage-700">
+                      Nota {index + 1}
+                    </label>
+                    {patientNotes.length > 1 && (
+                      <button
+                        type="button"
+                        onClick={() => removeNote(index)}
+                        className="text-xs text-red-500 hover:text-red-700 flex items-center gap-1"
+                      >
+                        <X className="w-3 h-3" />
+                        Elimina
+                      </button>
+                    )}
+                  </div>
                   <textarea
                     value={note}
                     onChange={(e) => updateNote(index, e.target.value)}
-                    placeholder="Es: Vorrei parlare della mia dieta..."
+                    placeholder="Scrivi qui ciò che vorresti modificare o aggiungere al piano"
                     className="w-full px-4 py-2 rounded-xl border border-sage-200 focus:ring-2 focus:ring-sage-400 focus:border-transparent resize-none"
                     rows={2}
                   />

@@ -41,7 +41,7 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
   }
   
   // Leggi tab dalla query string (punto 5)
-  const initialTab = searchParams.tab as 'appointments' | 'whitelist' | 'timeblocks' | 'stats' | undefined;
+  const initialTab = searchParams.tab as 'appointments' | 'whitelist' | 'timeblocks' | 'stats' | 'blacklist' | undefined;
   
   return <AdminDashboard user={session.user} initialTab={initialTab} />;
 }

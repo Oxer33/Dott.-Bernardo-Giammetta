@@ -321,6 +321,12 @@ export function AgendaCalendar() {
     setPatientNotes(updated);
   };
 
+  // Elimina nota specifica
+  const removeNote = (index: number) => {
+    const updated = patientNotes.filter((_, i) => i !== index);
+    setPatientNotes(updated.length > 0 ? updated : ['']);
+  };
+
   // Chiudi modal
   const closeModal = () => {
     setBookingModal(false);
@@ -779,13 +785,25 @@ export function AgendaCalendar() {
               <div className="space-y-3 mb-6 max-h-60 overflow-y-auto">
                 {patientNotes.map((note, index) => (
                   <div key={index}>
-                    <label className="block text-sm font-medium text-sage-700 mb-1">
-                      Nota {index + 1}
-                    </label>
+                    <div className="flex items-center justify-between mb-1">
+                      <label className="block text-sm font-medium text-sage-700">
+                        Nota {index + 1}
+                      </label>
+                      {patientNotes.length > 1 && (
+                        <button
+                          type="button"
+                          onClick={() => removeNote(index)}
+                          className="text-xs text-red-500 hover:text-red-700 flex items-center gap-1"
+                        >
+                          <X className="w-3 h-3" />
+                          Elimina
+                        </button>
+                      )}
+                    </div>
                     <textarea
                       value={note}
                       onChange={(e) => updateNote(index, e.target.value)}
-                      placeholder="Es: Vorrei parlare della mia dieta..."
+                      placeholder="Scrivi qui ciò che vorresti modificare o aggiungere al piano"
                       className="w-full px-4 py-2 rounded-xl border border-sage-200 focus:ring-2 focus:ring-sage-400 focus:border-transparent resize-none"
                       rows={2}
                     />

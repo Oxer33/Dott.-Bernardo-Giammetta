@@ -14,19 +14,21 @@ import {
   BarChart3,
   UserCheck,
   Home,
-  CalendarDays
+  CalendarDays,
+  UserMinus
 } from 'lucide-react';
 import Link from 'next/link';
 import { AppointmentsList } from './AppointmentsList';
 import { WhitelistManager } from './WhitelistManager';
 import { TimeBlocksManager } from './TimeBlocksManager';
 import { AdminStats } from './AdminStats';
+import { BlacklistManager } from './BlacklistManager';
 
 // =============================================================================
 // TIPI
 // =============================================================================
 
-type TabType = 'appointments' | 'whitelist' | 'timeblocks' | 'stats';
+type TabType = 'appointments' | 'whitelist' | 'timeblocks' | 'stats' | 'blacklist';
 
 interface AdminDashboardProps {
   user: {
@@ -47,6 +49,7 @@ const tabs = [
   { id: 'whitelist' as TabType, label: 'Whitelist', icon: UserCheck },
   { id: 'timeblocks' as TabType, label: 'Blocchi Orari', icon: Lock },
   { id: 'stats' as TabType, label: 'Statistiche', icon: BarChart3 },
+  { id: 'blacklist' as TabType, label: 'Blacklist', icon: UserMinus },
 ];
 
 // =============================================================================
@@ -123,6 +126,7 @@ export function AdminDashboard({ user, initialTab }: AdminDashboardProps) {
           {activeTab === 'whitelist' && <WhitelistManager />}
           {activeTab === 'timeblocks' && <TimeBlocksManager />}
           {activeTab === 'stats' && <AdminStats />}
+          {activeTab === 'blacklist' && <BlacklistManager />}
         </motion.div>
       </div>
     </div>

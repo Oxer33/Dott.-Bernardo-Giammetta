@@ -277,7 +277,7 @@ export function AppointmentsList() {
       case 'CONFIRMED':
         return <span className="flex items-center gap-1 text-green-600"><CheckCircle className="w-4 h-4" /> Confermato</span>;
       case 'CANCELLED':
-        return <span className="flex items-center gap-1 text-red-600"><XCircle className="w-4 h-4" /> Cancellato</span>;
+        return <span className="flex items-center gap-1 text-red-600"><XCircle className="w-4 h-4" /> Cancellato dal paziente</span>;
       case 'COMPLETED':
         return <span className="flex items-center gap-1 text-blue-600"><CheckCircle className="w-4 h-4" /> Completato</span>;
       default:

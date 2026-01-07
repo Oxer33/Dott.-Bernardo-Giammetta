@@ -290,17 +290,18 @@ export async function POST(request: NextRequest) {
       customDuration // Passa durata personalizzata (es. 120min)
     );
     
-    // AUTO-WHITELIST: Se admin crea appuntamento per utente non in whitelist,
-    // significa che il paziente ha contattato il medico -> riporta in whitelist
-    if (isMaster && !bookingUser.isWhitelisted) {
+    // RESET CONTATORE BLACKLIST: Quando admin crea appuntamento per un paziente,
+    // aggiorna SEMPRE whitelistedAt per azzerare il contatore delle cancellazioni
+    // Questo garantisce che il paziente possa prenotare di nuovo dopo che admin lo ha aiutato
+    if (isMaster) {
       await db.user.update({
         where: { id: bookingUserId },
         data: { 
           isWhitelisted: true, 
-          whitelistedAt: new Date(),
+          whitelistedAt: new Date(), // CRITICO: Azzera contatore cancellazioni
         },
       });
-      console.log(`[AUTO-WHITELIST] Paziente ${bookingUser.email} riportato in whitelist da admin`);
+      console.log(`[RESET-BLACKLIST] Contatore cancellazioni azzerato per ${bookingUser.email} (admin ha prenotato)`);
     }
     
     // Formatta data e ora per email
