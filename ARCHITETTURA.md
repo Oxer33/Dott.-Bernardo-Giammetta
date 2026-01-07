@@ -246,6 +246,16 @@ Il sistema previene abusi nelle prenotazioni contando le cancellazioni di appunt
 
 ### Codice chiave: `src/app/api/agenda/appointments/route.ts`
 
+### Gestione Admin:
+- **Componente**: `src/components/admin/BlacklistManager.tsx`
+- **API**: `/api/admin/blacklist` (GET lista, POST sblocca)
+- **Tab Admin**: Accessibile da `/admin?tab=blacklist`
+- **Funzionalità**:
+  - Lista pazienti in blacklist con conteggio cancellazioni
+  - Bottone "Sblocca" per riportare in whitelist
+  - Sezione "Pazienti Recidivi" per tracking storico
+  - Info box esplicativo del funzionamento
+
 ---
 
 ## 🎨 Design System
