@@ -300,6 +300,28 @@
    ```
 3. **Attendi approvazione SES**: produzione (caso #176743190600620)
 
+### 🔧 FIX Gestione Appuntamenti - 07/01/2026 (Sessione 11) ✅ COMPLETATO
+- [x] **Fix orario UTC**: `toLocalISOString()` per evitare conversione UTC nell'API
+- [x] **Fix tipo visita 120min**: mostrato come "Visita Approfondita" con badge rosa
+- [x] **Fix orario modal modifica**: usa metodi locali invece di `toISOString()`
+- [x] **Nuovi filtri temporali**: Domani, Prossima settimana, Prossimo mese
+- [x] **Tooltip note in agenda**: note appuntamento visibili al passaggio mouse
+- [x] **Scritta date centrata**: "2 febbraio - 8 febbraio 2026" centrata e grande
+- [x] **Fix benvenuto paziente**: "Benvenuto/a NOME_PAZIENTE" in area personale
+- [x] **Bottone pazienti**: da "Annulla (tracciato)" a "Cancella appuntamento"
+- [x] **Rimosso menu**: "I miei appuntamenti" dal menu (ridondante)
+- [x] **Blacklist prenotazione**: blocco alla prenotazione, non alla cancellazione
+- [x] **Bottoni admin lista**: "Annullato dal paziente" e "Eliminato da me"
+- [x] **Bottoni modal agenda**: "Annullato dal paziente" e "Eliminato da me"
+- [x] **Fix admin inserimento**: validazione datetime più flessibile (senza Z)
+- [x] **Modal semplificato**: rimossi dropdown orari e "Crea Blocco" per appuntamenti esistenti
+- [x] **Tipo visita con durata**: 60min=Controllo, 90min=Prima Visita, 120min=Visita Approfondita
+- [x] **Modifica tipo automatico**: reschedule aggiorna anche il campo `type`
+- [x] **Auto-complete passati**: appuntamenti passati diventano COMPLETED automaticamente
+- [x] **Asterisco note**: `*` accanto al nome se c'è nota in agenda
+- [x] **COMPLETED visibili**: appuntamenti completati visibili in agenda con simbolo €
+- [x] **Bottone "Non pagato"**: € rosso per riportare da COMPLETED a CONFIRMED
+
 ### 🔄 Migrazione UI a Cognito - 03/01/2026 (Sessione 9 - Parte 2) ✅ COMPLETATO
 - [x] **Nuova pagina `/accedi`**:
   - Login unificato tramite Cognito hosted UI
@@ -540,4 +562,4 @@ COGNITO_PATIENTS_ISSUER=https://cognito-idp.eu-north-1.amazonaws.com/eu-north-1_
 
 ---
 
-*Ultimo aggiornamento: 03 Gennaio 2026 - 22:50*
+*Ultimo aggiornamento: 07 Gennaio 2026 - 14:55*
