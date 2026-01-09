@@ -300,6 +300,16 @@
    ```
 3. **Attendi approvazione SES**: produzione (caso #176743190600620)
 
+### 🔧 UX Miglioramenti + Navigazione - 09/01/2026 (Sessione 18) ✅ COMPLETATO
+- [x] **Recidivi DB**: nuovo campo `blacklistCount` per tracciare storico rientri blacklist
+- [x] **Questionario modificabile**: dati profilo editabili (nome, telefono, data nascita) tranne email
+- [x] **Whitelist → Elenco Pazienti**: rinominato tab admin
+- [x] **Bottone Apri paziente**: in elenco pazienti → apre /admin/paziente/[id]
+- [x] **Pagina admin paziente**: nuova pagina con dati, appuntamenti e questionari
+- [x] **Card questionari in /profilo**: rimossa card stato account, aggiunta card questionari
+- [x] **Navigazione paziente**: bottoni Agenda/Area personale/Profilo in tutte le pagine paziente
+- [x] **Rimosso bottone Prenota**: dalla card appuntamento in area-personale
+
 ### 🔧 Questionario Prima Visita - 09/01/2026 (Sessione 17) ✅ COMPLETATO
 - [x] **Schema DB Questionario**: nuovo modello `Questionnaire` con campi per risposte JSON
 - [x] **Configurazione domande**: file `questionnaire-config.ts` con tutte le 80+ domande
@@ -619,4 +629,4 @@ COGNITO_PATIENTS_ISSUER=https://cognito-idp.eu-north-1.amazonaws.com/eu-north-1_
 
 ---
 
-*Ultimo aggiornamento: 09 Gennaio 2026 - 09:30*
+*Ultimo aggiornamento: 09 Gennaio 2026 - 12:00*
