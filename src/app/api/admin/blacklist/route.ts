@@ -52,6 +52,7 @@ export async function GET(request: NextRequest) {
         isWhitelisted: true,
         whitelistedAt: true,
         createdAt: true,
+        blacklistCount: true, // Campo per tracciare storico recidivi
         appointments: {
           where: {
             status: 'CANCELLED',
@@ -93,20 +94,16 @@ export async function GET(request: NextRequest) {
         createdAt: patient.createdAt.toISOString(),
         recentCancellations: futureCancellations.length,
         lastCancellationDate: futureCancellations[0]?.cancelledAt?.toISOString() || null,
-        // Per ora blacklistCount è 1 se in blacklist (TODO: implementare storico)
-        blacklistCount: futureCancellations.length >= 3 ? 1 : 0,
+        // Usa il campo dal database per tracciare storico recidivi
+        blacklistCount: (patient as { blacklistCount?: number }).blacklistCount || 0,
       };
     });
 
     // Pazienti in blacklist: 3+ cancellazioni recenti
     const blacklisted = patientsWithStats.filter(p => p.recentCancellations >= 3);
     
-    // Pazienti recidivi: hanno avuto problemi in passato (per ora semplificato)
-    // TODO: Implementare campo `blacklistHistory` nel database per tracciare storicamente
-    // Per ora mostriamo chi ha molte cancellazioni anche se non in blacklist attualmente
-    const recidivists = patientsWithStats.filter(p => 
-      p.blacklistCount > 0 || (p.recentCancellations >= 2 && p.isWhitelisted)
-    );
+    // Pazienti recidivi: chi ha blacklistCount > 0 (è stato in blacklist in passato)
+    const recidivists = patientsWithStats.filter(p => p.blacklistCount > 0);
 
     return NextResponse.json({
       success: true,
@@ -159,11 +156,13 @@ export async function POST(request: NextRequest) {
 
     if (action === 'remove') {
       // Rimuovi dalla blacklist: aggiorna whitelistedAt per azzerare contatore
+      // E INCREMENTA blacklistCount per tracciare che è stato recidivo
       await db.user.update({
         where: { id: userId },
         data: {
           isWhitelisted: true,
           whitelistedAt: new Date(),
+          blacklistCount: { increment: 1 }, // Incrementa contatore recidivi
         },
       });
 

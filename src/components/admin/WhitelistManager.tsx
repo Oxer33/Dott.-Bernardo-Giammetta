@@ -7,6 +7,7 @@
 
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
+import Link from 'next/link';
 import { 
   Search, 
   UserPlus,
@@ -18,7 +19,8 @@ import {
   Trash2,
   RefreshCw,
   Loader2,
-  AlertCircle
+  AlertCircle,
+  ExternalLink
 } from 'lucide-react';
 
 // =============================================================================
@@ -343,6 +345,15 @@ export function WhitelistManager() {
                     </>
                   ) : (
                     <div className="flex flex-wrap gap-1 justify-end">
+                      {/* Bottone Apri Paziente */}
+                      <Link
+                        href={`/admin/paziente/${patient.id}`}
+                        className="px-2 sm:px-3 py-1 bg-lavender-100 text-lavender-700 text-xs sm:text-sm rounded-lg hover:bg-lavender-200 transition-colors whitespace-nowrap flex items-center gap-1"
+                      >
+                        <ExternalLink className="w-3 h-3" />
+                        <span className="hidden sm:inline">Apri</span>
+                      </Link>
+                      
                       {!patient.isWhitelisted ? (
                         <button
                           onClick={() => handleWhitelist(patient.id, 'whitelist')}

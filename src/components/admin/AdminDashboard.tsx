@@ -46,7 +46,7 @@ interface AdminDashboardProps {
 
 const tabs = [
   { id: 'appointments' as TabType, label: 'Appuntamenti', icon: Calendar },
-  { id: 'whitelist' as TabType, label: 'Whitelist', icon: UserCheck },
+  { id: 'whitelist' as TabType, label: 'Elenco Pazienti', icon: UserCheck },
   { id: 'timeblocks' as TabType, label: 'Blocchi Orari', icon: Lock },
   { id: 'stats' as TabType, label: 'Statistiche', icon: BarChart3 },
   { id: 'blacklist' as TabType, label: 'Blacklist', icon: UserMinus },

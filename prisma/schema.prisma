@@ -50,6 +50,9 @@ model User {
   isWhitelisted Boolean   @default(false)
   whitelistedAt DateTime?
   
+  // Contatore blacklist - quante volte è stato in blacklist (per recidivi)
+  blacklistCount Int      @default(0)
+  
   // Punto 5: Stato paziente: "ACTIVE" | "COMPLETED" (Ultimato = completato percorso)
   // I pazienti "COMPLETED" non vengono rimossi dalla whitelist dopo 12 mesi
   patientStatus String    @default("ACTIVE")

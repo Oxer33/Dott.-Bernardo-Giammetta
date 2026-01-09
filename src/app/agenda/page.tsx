@@ -9,6 +9,7 @@ import { redirect } from 'next/navigation';
 import { authOptions } from '@/lib/auth';
 import { AgendaCalendar } from '@/components/agenda/AgendaCalendar';
 import { AgendaMasterView } from '@/components/agenda/AgendaMasterView';
+import { PatientNavigation } from '@/components/shared/PatientNavigation';
 import Link from 'next/link';
 import { isMasterAccount } from '@/lib/config';
 
@@ -117,18 +118,10 @@ export default async function AgendaPage() {
         </div>
       </section>
 
-      {/* Bottone Area Personale - posizionato tra descrizione e agenda */}
+      {/* Navigazione paziente */}
       <div className="bg-cream-50 border-b border-sage-100">
         <div className="container-custom py-4">
-          <Link 
-            href="/area-personale"
-            className="inline-flex items-center gap-2 px-4 py-2 bg-white hover:bg-sage-100 text-sage-700 rounded-xl font-medium transition-colors shadow-sm border border-sage-200"
-          >
-            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-            </svg>
-            Area Personale
-          </Link>
+          <PatientNavigation />
         </div>
       </div>
 

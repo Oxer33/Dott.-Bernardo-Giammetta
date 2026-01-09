@@ -5,7 +5,7 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { 
   User, 
@@ -15,9 +15,14 @@ import {
   FileText,
   CheckCircle,
   AlertCircle,
-  ChevronRight
+  ChevronRight,
+  ClipboardList,
+  Plus
 } from 'lucide-react';
 import Link from 'next/link';
+import { format, parseISO } from 'date-fns';
+import { it } from 'date-fns/locale';
+import { PatientNavigation } from '@/components/shared/PatientNavigation';
 
 // =============================================================================
 // TIPI
@@ -39,6 +44,13 @@ interface ProfileContentProps {
 // COMPONENTE PRINCIPALE
 // =============================================================================
 
+// Tipo per questionario
+interface QuestionnaireInfo {
+  id: string;
+  dietType: string;
+  createdAt: string;
+}
+
 export function ProfileContent({ user }: ProfileContentProps) {
   // Form state
   const [firstName, setFirstName] = useState(user.name?.split(' ')[0] || '');
@@ -47,6 +59,28 @@ export function ProfileContent({ user }: ProfileContentProps) {
   const [isSaving, setIsSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [saveError, setSaveError] = useState('');
+  
+  // State per questionari
+  const [questionnaires, setQuestionnaires] = useState<QuestionnaireInfo[]>([]);
+  const [loadingQuestionnaires, setLoadingQuestionnaires] = useState(true);
+
+  // Fetch questionari all'avvio
+  useEffect(() => {
+    const fetchQuestionnaires = async () => {
+      try {
+        const res = await fetch('/api/user/questionnaire');
+        const data = await res.json();
+        if (data.success) {
+          setQuestionnaires(data.questionnaires || []);
+        }
+      } catch (err) {
+        console.error('Errore fetch questionari:', err);
+      } finally {
+        setLoadingQuestionnaires(false);
+      }
+    };
+    fetchQuestionnaires();
+  }, []);
 
   // Salva profilo
   const handleSaveProfile = async () => {
@@ -79,7 +113,11 @@ export function ProfileContent({ user }: ProfileContentProps) {
   };
 
   return (
-    <div className="grid lg:grid-cols-3 gap-8">
+    <div>
+      {/* Navigazione paziente */}
+      <PatientNavigation />
+      
+      <div className="grid lg:grid-cols-3 gap-8">
       {/* Colonna sinistra - Profilo */}
       <div className="lg:col-span-2 space-y-6">
         {/* Card Dati Personali */}
@@ -273,104 +311,89 @@ export function ProfileContent({ user }: ProfileContentProps) {
         </motion.div>
       </div>
 
-      {/* Colonna destra - Stato account */}
+      {/* Colonna destra - Questionari */}
       <div className="space-y-6">
-        {/* Card Stato */}
+        {/* Card Questionari - stessa card di area-personale */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
           className="bg-white rounded-2xl shadow-lg p-6"
         >
-          <h3 className="text-lg font-display font-bold text-sage-900 mb-4">
-            Stato Account
-          </h3>
-
-          <div className="space-y-4">
-            {/* Ruolo */}
-            <div className="flex items-center justify-between py-2 border-b border-sage-100">
-              <span className="text-sage-600">Ruolo</span>
-              <span className={`px-3 py-1 rounded-full text-sm font-medium ${
-                user.role === 'ADMIN' 
-                  ? 'bg-purple-100 text-purple-700'
-                  : 'bg-sage-100 text-sage-700'
-              }`}>
-                {user.role === 'ADMIN' ? 'Amministratore' : 'Paziente'}
-              </span>
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-10 h-10 rounded-full bg-sage-100 flex items-center justify-center">
+              <ClipboardList className="w-5 h-5 text-sage-600" />
             </div>
-
-            {/* Whitelist */}
-            <div className="flex items-center justify-between py-2 border-b border-sage-100">
-              <span className="text-sage-600">Prenotazioni</span>
-              <span className={`px-3 py-1 rounded-full text-sm font-medium flex items-center gap-1 ${
-                user.isWhitelisted 
-                  ? 'bg-green-100 text-green-700'
-                  : 'bg-orange-100 text-orange-700'
-              }`}>
-                {user.isWhitelisted ? (
-                  <>
-                    <CheckCircle className="w-4 h-4" />
-                    Abilitato
-                  </>
-                ) : (
-                  <>
-                    <AlertCircle className="w-4 h-4" />
-                    Non abilitato
-                  </>
-                )}
-              </span>
-            </div>
+            <h3 className="font-semibold text-sage-800">I tuoi Questionari</h3>
           </div>
-
-          {!user.isWhitelisted && (
-            <div className="mt-4 p-4 bg-orange-50 rounded-xl">
-              <p className="text-orange-800 text-sm">
-                Per prenotare visite, contatta lo studio al{' '}
-                <a href="tel:+393920979135" className="font-semibold underline">
-                  +39 392 0979135
-                </a>
+          
+          {loadingQuestionnaires ? (
+            <p className="text-sm text-sage-500">Caricamento...</p>
+          ) : questionnaires.length > 0 ? (
+            <div className="space-y-3">
+              {questionnaires.slice(0, 3).map((q, idx) => (
+                <div key={q.id} className="p-3 bg-sage-50 rounded-lg">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium text-sage-700">
+                        {q.dietType}
+                      </p>
+                      <p className="text-xs text-sage-500">
+                        {format(parseISO(q.createdAt), "d MMM yyyy", { locale: it })}
+                      </p>
+                    </div>
+                    {idx === 0 && (
+                      <span className="px-2 py-0.5 bg-green-100 text-green-700 text-xs rounded-full">
+                        Ultimo
+                      </span>
+                    )}
+                  </div>
+                </div>
+              ))}
+              
+              {/* Bottone nuovo questionario */}
+              <Link href={`/profilo/questionario${questionnaires[0] ? `?copyFrom=${questionnaires[0].id}` : ''}`}>
+                <button className="w-full mt-2 py-2 text-sm text-sage-600 hover:text-sage-800 border border-sage-200 rounded-lg hover:bg-sage-50 transition-colors flex items-center justify-center gap-2">
+                  <Plus className="w-4 h-4" />
+                  Compila nuovo questionario
+                </button>
+              </Link>
+            </div>
+          ) : (
+            <div className="text-center py-4">
+              <p className="text-sm text-sage-500 mb-3">
+                Nessun questionario compilato
               </p>
+              <Link href="/profilo/questionario">
+                <button className="px-4 py-2 bg-sage-500 text-white text-sm rounded-lg hover:bg-sage-600 transition-colors flex items-center gap-2 mx-auto">
+                  <ClipboardList className="w-4 h-4" />
+                  Compila questionario
+                </button>
+              </Link>
             </div>
           )}
         </motion.div>
 
-        {/* Link rapidi */}
+        {/* Info contatto studio */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
-          className="bg-white rounded-2xl shadow-lg p-6"
+          className="bg-lavender-50 rounded-2xl p-6 border border-lavender-100"
         >
-          <h3 className="text-lg font-display font-bold text-sage-900 mb-4">
-            Link Rapidi
-          </h3>
-
-          <div className="space-y-2">
-            {user.isWhitelisted && (
-              <Link
-                href="/agenda"
-                className="flex items-center justify-between p-3 hover:bg-sage-50 rounded-xl transition-colors"
-              >
-                <span className="text-sage-700">Prenota visita</span>
-                <ChevronRight className="w-5 h-5 text-sage-400" />
-              </Link>
-            )}
-            <Link
-              href="/servizi"
-              className="flex items-center justify-between p-3 hover:bg-sage-50 rounded-xl transition-colors"
-            >
-              <span className="text-sage-700">I nostri servizi</span>
-              <ChevronRight className="w-5 h-5 text-sage-400" />
-            </Link>
-            <Link
-              href="/contatti"
-              className="flex items-center justify-between p-3 hover:bg-sage-50 rounded-xl transition-colors"
-            >
-              <span className="text-sage-700">Contattaci</span>
-              <ChevronRight className="w-5 h-5 text-sage-400" />
-            </Link>
+          <h3 className="font-semibold text-lavender-800 mb-3">Contatta lo Studio</h3>
+          <div className="space-y-2 text-sm">
+            <a href="tel:+393920979135" className="flex items-center gap-2 text-lavender-700 hover:text-lavender-900">
+              <Phone className="w-4 h-4" />
+              +39 392 0979135
+            </a>
+            <a href="mailto:info@bernardogiammetta.com" className="flex items-center gap-2 text-lavender-700 hover:text-lavender-900">
+              <Mail className="w-4 h-4" />
+              info@bernardogiammetta.com
+            </a>
           </div>
         </motion.div>
+      </div>
       </div>
     </div>
   );

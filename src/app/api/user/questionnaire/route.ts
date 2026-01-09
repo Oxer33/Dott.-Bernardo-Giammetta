@@ -103,6 +103,7 @@ export async function POST(request: NextRequest) {
       dietAnswers,     // Risposte domande specifiche per dieta
       billingData,     // Dati fatturazione
       privacyConsent,  // Autorizzazione privacy
+      profileData,     // Dati profilo modificabili (nome, telefono, data nascita)
     } = body;
 
     // Validazione base
@@ -154,8 +155,15 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    // Aggiorna anche i dati di fatturazione nel profilo utente (se non presenti)
-    const updateData: Record<string, string> = {};
+    // Aggiorna dati profilo e fatturazione nel profilo utente
+    const updateData: Record<string, unknown> = {};
+    
+    // Dati profilo modificabili
+    if (profileData?.name) updateData.name = profileData.name;
+    if (profileData?.phone) updateData.phone = profileData.phone;
+    if (profileData?.birthDate) updateData.birthDate = new Date(profileData.birthDate);
+    
+    // Dati fatturazione
     if (billingData.birthPlace) updateData.birthPlace = billingData.birthPlace;
     if (billingData.address) updateData.address = billingData.address;
     if (billingData.addressNumber) updateData.addressNumber = billingData.addressNumber;

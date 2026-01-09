@@ -119,6 +119,11 @@ export function QuestionnaireFormNew({
   const [billingData, setBillingData] = useState<Record<string, string>>({});
   const [privacyConsent, setPrivacyConsent] = useState(false);
   
+  // State per dati profilo modificabili (NON email)
+  const [editableName, setEditableName] = useState(userName || '');
+  const [editablePhone, setEditablePhone] = useState(userPhone || '');
+  const [editableBirthDate, setEditableBirthDate] = useState(userBirthDate || '');
+  
   // State navigazione
   const [currentSection, setCurrentSection] = useState<Section>('profile');
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -234,6 +239,12 @@ export function QuestionnaireFormNew({
           dietAnswers,
           billingData,
           privacyConsent,
+          // Dati profilo modificabili
+          profileData: {
+            name: editableName,
+            phone: editablePhone,
+            birthDate: editableBirthDate,
+          },
         }),
       });
 
@@ -377,35 +388,66 @@ export function QuestionnaireFormNew({
         <div className="space-y-6">
           {currentSection === 'profile' && (
             <div className="space-y-4">
-              <div className="bg-green-50 border border-green-200 rounded-xl p-4 mb-6">
-                <div className="flex items-center gap-2 text-green-700">
-                  <CheckCircle className="w-5 h-5" />
-                  <span className="font-medium">Dati precompilati dal tuo profilo</span>
+              <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-6">
+                <div className="flex items-center gap-2 text-blue-700">
+                  <AlertCircle className="w-5 h-5" />
+                  <span className="font-medium">Verifica e modifica i tuoi dati se necessario</span>
                 </div>
+                <p className="text-sm text-blue-600 mt-1">
+                  L&apos;email non è modificabile. Gli altri dati verranno aggiornati anche nel tuo profilo.
+                </p>
               </div>
               
               <div className="grid md:grid-cols-2 gap-4">
-                <div className="p-4 bg-sage-50 rounded-xl">
-                  <p className="text-sm text-sage-500 mb-1">Nome</p>
-                  <p className="font-medium text-sage-800">{userName || 'Non specificato'}</p>
+                {/* Nome - MODIFICABILE */}
+                <div className="space-y-1">
+                  <label className="text-sm text-sage-600 font-medium">Nome e Cognome *</label>
+                  <input
+                    type="text"
+                    value={editableName}
+                    onChange={(e) => setEditableName(e.target.value)}
+                    placeholder="Mario Rossi"
+                    className="w-full px-4 py-3 rounded-xl border border-sage-200 
+                             focus:border-sage-400 focus:ring-2 focus:ring-sage-100
+                             outline-none text-sage-800"
+                  />
                 </div>
-                <div className="p-4 bg-sage-50 rounded-xl">
-                  <p className="text-sm text-sage-500 mb-1">Email</p>
-                  <p className="font-medium text-sage-800">{userEmail}</p>
+                
+                {/* Email - NON modificabile */}
+                <div className="space-y-1">
+                  <label className="text-sm text-sage-600 font-medium">Email</label>
+                  <div className="px-4 py-3 bg-sage-100 rounded-xl text-sage-600 cursor-not-allowed">
+                    {userEmail}
+                  </div>
                 </div>
-                <div className="p-4 bg-sage-50 rounded-xl">
-                  <p className="text-sm text-sage-500 mb-1">Telefono</p>
-                  <p className="font-medium text-sage-800">{userPhone || 'Non specificato'}</p>
+                
+                {/* Telefono - MODIFICABILE */}
+                <div className="space-y-1">
+                  <label className="text-sm text-sage-600 font-medium">Telefono *</label>
+                  <input
+                    type="tel"
+                    value={editablePhone}
+                    onChange={(e) => setEditablePhone(e.target.value)}
+                    placeholder="+39 333 1234567"
+                    className="w-full px-4 py-3 rounded-xl border border-sage-200 
+                             focus:border-sage-400 focus:ring-2 focus:ring-sage-100
+                             outline-none text-sage-800"
+                  />
                 </div>
-                <div className="p-4 bg-sage-50 rounded-xl">
-                  <p className="text-sm text-sage-500 mb-1">Data di Nascita</p>
-                  <p className="font-medium text-sage-800">{userBirthDate || 'Non specificata'}</p>
+                
+                {/* Data di Nascita - MODIFICABILE */}
+                <div className="space-y-1">
+                  <label className="text-sm text-sage-600 font-medium">Data di Nascita *</label>
+                  <input
+                    type="date"
+                    value={editableBirthDate}
+                    onChange={(e) => setEditableBirthDate(e.target.value)}
+                    className="w-full px-4 py-3 rounded-xl border border-sage-200 
+                             focus:border-sage-400 focus:ring-2 focus:ring-sage-100
+                             outline-none text-sage-800"
+                  />
                 </div>
               </div>
-              
-              <p className="text-sm text-sage-500 mt-4">
-                Se i dati non sono corretti, puoi modificarli dalla pagina <a href="/profilo" className="text-sage-700 underline">Profilo</a>.
-              </p>
             </div>
           )}
 

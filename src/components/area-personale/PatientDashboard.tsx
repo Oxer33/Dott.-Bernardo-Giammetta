@@ -25,6 +25,7 @@ import {
   ExternalLink
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
+import { PatientNavigation } from '@/components/shared/PatientNavigation';
 import { format, isPast, isFuture, parseISO } from 'date-fns';
 import { it } from 'date-fns/locale';
 
@@ -286,6 +287,9 @@ export function PatientDashboard({ user }: PatientDashboardProps) {
           </div>
         </motion.div>
 
+        {/* Navigazione paziente */}
+        <PatientNavigation />
+
         <div className="grid lg:grid-cols-3 gap-8">
           {/* Colonna principale */}
           <div className="lg:col-span-2 space-y-6">
@@ -333,12 +337,6 @@ export function PatientDashboard({ user }: PatientDashboardProps) {
                   <Calendar className="w-5 h-5 text-lavender-500" />
                   Prossimo appuntamento
                 </h2>
-                <Link href="/agenda">
-                  <Button variant="secondary" size="sm">
-                    <span>Prenota</span>
-                    <ChevronRight className="w-4 h-4" />
-                  </Button>
-                </Link>
               </div>
 
               {/* Messaggio successo cancellazione */}
