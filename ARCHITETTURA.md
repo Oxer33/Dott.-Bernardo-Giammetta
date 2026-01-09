@@ -258,6 +258,49 @@ Il sistema previene abusi nelle prenotazioni contando le cancellazioni di appunt
 
 ---
 
+## 📋 Sistema Questionario Prima Visita
+
+### Panoramica
+Il questionario è **obbligatorio** prima della prima visita. I questionari compilati **NON sono modificabili** - il paziente può solo crearne uno nuovo partendo dal precedente.
+
+### Database: `Questionnaire` model
+- `dietType`: ONNIVORO | VEGETARIANO | VEGANO
+- `commonAnswers`: JSON con risposte domande 5-17
+- `dietAnswers`: JSON con risposte specifiche per dieta
+- `billingData`: JSON con dati fatturazione
+- `privacyConsent`: autorizzazione obbligatoria
+
+### File Principali:
+- **Config domande**: `src/lib/questionnaire-config.ts` (80+ domande)
+- **API**: `src/app/api/user/questionnaire/route.ts`
+- **Pagina**: `src/app/profilo/questionario/page.tsx`
+- **Form**: `src/components/profile/QuestionnaireFormNew.tsx`
+
+### Logica Condizionale:
+```
+Domande 5-17: COMUNI A TUTTI
+    ↓
+Domanda 18: Stile alimentare (radio)
+    ↓
+┌─────────────┬─────────────┬─────────────┐
+│  ONNIVORO   │ VEGETARIANO │   VEGANO    │
+│  q19-q42    │   q45-q63   │   q66-q82   │
+└─────────────┴─────────────┴─────────────┘
+    ↓
+Dati Fatturazione + Privacy (TUTTI)
+```
+
+### Avviso in Area Personale:
+Se il paziente ha un appuntamento futuro ma NON ha questionario compilato, vede un banner arancione prominente con link al questionario.
+
+### Email Reminder:
+- **Timing**: 2 giorni prima della visita
+- **Condizione**: Solo se NON ha questionario compilato
+- **Logica**: Nel cron job `/api/cron/reminders`
+- **Template**: 3 varianti per sembrare scritte a mano
+
+---
+
 ## 🎨 Design System
 
 ### Palette Colori:

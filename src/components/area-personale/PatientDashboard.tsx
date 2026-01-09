@@ -5,7 +5,7 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { 
@@ -20,7 +20,9 @@ import {
   AlertCircle,
   CheckCircle,
   X,
-  Plus
+  Plus,
+  ClipboardList,
+  ExternalLink
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { format, isPast, isFuture, parseISO } from 'date-fns';
@@ -85,6 +87,13 @@ const getInitial = (user: PatientDashboardProps['user']): string => {
 // COMPONENTE
 // =============================================================================
 
+// Tipo per questionario
+interface QuestionnaireInfo {
+  id: string;
+  dietType: string;
+  createdAt: string;
+}
+
 export function PatientDashboard({ user }: PatientDashboardProps) {
   // Stati per gestione cancellazione
   const [cancellingId, setCancellingId] = useState<string | null>(null);
@@ -98,6 +107,30 @@ export function PatientDashboard({ user }: PatientDashboardProps) {
   const [patientNotes, setPatientNotes] = useState<string[]>(['']);
   const [savingNotes, setSavingNotes] = useState(false);
   const [notesError, setNotesError] = useState<string | null>(null);
+  
+  // Stati per questionari
+  const [questionnaires, setQuestionnaires] = useState<QuestionnaireInfo[]>([]);
+  const [hasQuestionnaire, setHasQuestionnaire] = useState(false);
+  const [loadingQuestionnaires, setLoadingQuestionnaires] = useState(true);
+
+  // Fetch questionari all'avvio
+  useEffect(() => {
+    const fetchQuestionnaires = async () => {
+      try {
+        const res = await fetch('/api/user/questionnaire');
+        const data = await res.json();
+        if (data.success) {
+          setQuestionnaires(data.questionnaires || []);
+          setHasQuestionnaire(data.hasQuestionnaire || false);
+        }
+      } catch (err) {
+        console.error('Errore fetch questionari:', err);
+      } finally {
+        setLoadingQuestionnaires(false);
+      }
+    };
+    fetchQuestionnaires();
+  }, []);
 
   // Apri modal modifica note
   const openNotesModal = async (appointmentId: string, existingNotes?: string | null) => {
@@ -256,6 +289,38 @@ export function PatientDashboard({ user }: PatientDashboardProps) {
         <div className="grid lg:grid-cols-3 gap-8">
           {/* Colonna principale */}
           <div className="lg:col-span-2 space-y-6">
+            
+            {/* AVVISO QUESTIONARIO - Mostra se ha appuntamento futuro ma NO questionario */}
+            {!loadingQuestionnaires && !hasQuestionnaire && upcomingAppointments.length > 0 && (
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="bg-gradient-to-r from-amber-500 to-orange-500 rounded-2xl p-6 shadow-lg text-white"
+              >
+                <div className="flex items-start gap-4">
+                  <div className="w-14 h-14 rounded-xl bg-white/20 flex items-center justify-center flex-shrink-0">
+                    <ClipboardList className="w-8 h-8" />
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="text-xl font-bold mb-2">
+                      ⚠️ Compila il Questionario Prima della Visita!
+                    </h3>
+                    <p className="text-amber-100 mb-4">
+                      Per permettermi di preparare al meglio la tua consulenza, è fondamentale 
+                      che tu compili il questionario alimentare <strong>prima</strong> di venire alla visita.
+                    </p>
+                    <Link href="/profilo/questionario">
+                      <button className="inline-flex items-center gap-2 px-6 py-3 bg-white text-amber-600 font-semibold rounded-xl hover:bg-amber-50 transition-colors">
+                        <ClipboardList className="w-5 h-5" />
+                        Compila Ora il Questionario
+                        <ExternalLink className="w-4 h-4" />
+                      </button>
+                    </Link>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+
             {/* Prossimi appuntamenti */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -517,6 +582,67 @@ export function PatientDashboard({ user }: PatientDashboardProps) {
                   </p>
                 </div>
               </div>
+            </motion.div>
+
+            {/* Card Questionari */}
+            <motion.div
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.5 }}
+              className="bg-white rounded-2xl p-6 shadow-soft border border-sage-100"
+            >
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-10 h-10 rounded-full bg-sage-100 flex items-center justify-center">
+                  <ClipboardList className="w-5 h-5 text-sage-600" />
+                </div>
+                <h3 className="font-semibold text-sage-800">I tuoi Questionari</h3>
+              </div>
+              
+              {loadingQuestionnaires ? (
+                <p className="text-sm text-sage-500">Caricamento...</p>
+              ) : questionnaires.length > 0 ? (
+                <div className="space-y-3">
+                  {questionnaires.slice(0, 3).map((q, idx) => (
+                    <div key={q.id} className="p-3 bg-sage-50 rounded-lg">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <p className="text-sm font-medium text-sage-700">
+                            {q.dietType}
+                          </p>
+                          <p className="text-xs text-sage-500">
+                            {format(parseISO(q.createdAt), "d MMM yyyy", { locale: it })}
+                          </p>
+                        </div>
+                        {idx === 0 && (
+                          <span className="px-2 py-0.5 bg-green-100 text-green-700 text-xs rounded-full">
+                            Ultimo
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                  
+                  {/* Bottone nuovo questionario */}
+                  <Link href={`/profilo/questionario${questionnaires[0] ? `?copyFrom=${questionnaires[0].id}` : ''}`}>
+                    <button className="w-full mt-2 py-2 text-sm text-sage-600 hover:text-sage-800 border border-sage-200 rounded-lg hover:bg-sage-50 transition-colors flex items-center justify-center gap-2">
+                      <Plus className="w-4 h-4" />
+                      Compila nuovo questionario
+                    </button>
+                  </Link>
+                </div>
+              ) : (
+                <div className="text-center py-4">
+                  <p className="text-sm text-sage-500 mb-3">
+                    Nessun questionario compilato
+                  </p>
+                  <Link href="/profilo/questionario">
+                    <button className="px-4 py-2 bg-sage-500 text-white text-sm rounded-lg hover:bg-sage-600 transition-colors flex items-center gap-2 mx-auto">
+                      <ClipboardList className="w-4 h-4" />
+                      Compila questionario
+                    </button>
+                  </Link>
+                </div>
+              )}
             </motion.div>
           </div>
         </div>

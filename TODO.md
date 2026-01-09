@@ -300,6 +300,19 @@
    ```
 3. **Attendi approvazione SES**: produzione (caso #176743190600620)
 
+### 🔧 Questionario Prima Visita - 09/01/2026 (Sessione 17) ✅ COMPLETATO
+- [x] **Schema DB Questionario**: nuovo modello `Questionnaire` con campi per risposte JSON
+- [x] **Configurazione domande**: file `questionnaire-config.ts` con tutte le 80+ domande
+- [x] **Logica condizionale**: domande diverse per ONNIVORO/VEGETARIANO/VEGANO
+- [x] **API questionario**: GET (lista questionari) + POST (crea nuovo, NON modificabile)
+- [x] **Form dinamico**: componente `QuestionnaireFormNew` con navigazione sezioni
+- [x] **Dati precompilati**: nome, email, telefono, data nascita dal profilo
+- [x] **Avviso massivo**: banner arancione in area-personale se ha visita ma NO questionario
+- [x] **Card questionari**: nella sidebar per vedere/creare nuovi questionari
+- [x] **Copia questionario**: possibilità di creare nuovo partendo dal precedente
+- [x] **Email reminder**: 2 giorni prima della visita se questionario non compilato
+- [x] **Privacy consent**: checkbox obbligatoria per autorizzazione trattamento dati
+
 ### 🔧 Fix Blacklist UI + Orari - 07/01/2026 (Sessione 16) ✅ COMPLETATO
 - [x] **Menu duplicato rimosso**: BlacklistManager ora senza menu interno (usa quello di AdminDashboard)
 - [x] **Bottone Blacklist dinamico**: contatore + rosso solo se ci sono pazienti in blacklist
@@ -537,7 +550,6 @@ COGNITO_PATIENTS_ISSUER=https://cognito-idp.eu-north-1.amazonaws.com/eu-north-1_
 ### Database AWS (IN RISOLUZIONE)
 - CloudShell non può raggiungere Aurora Serverless v2
 - Soluzione: usare EC2 temporaneo nella stessa VPC per eseguire `prisma db push`
-- Le tabelle non sono ancora create nel database
 
 ### NutriBot
 - Cambiato modello a `deepseek/deepseek-r1-0528:free` - da testare dopo redeploy
@@ -607,4 +619,4 @@ COGNITO_PATIENTS_ISSUER=https://cognito-idp.eu-north-1.amazonaws.com/eu-north-1_
 
 ---
 
-*Ultimo aggiornamento: 07 Gennaio 2026 - 20:00*
+*Ultimo aggiornamento: 09 Gennaio 2026 - 09:30*

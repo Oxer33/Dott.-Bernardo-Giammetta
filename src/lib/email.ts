@@ -676,3 +676,112 @@ export async function sendFollowupReminder(
     return false;
   }
 }
+
+// =============================================================================
+// INVIO REMINDER QUESTIONARIO (2 giorni prima della visita)
+// =============================================================================
+
+const QUESTIONNAIRE_REMINDER_TEMPLATES = [
+  {
+    subject: 'Ricordati di compilare il questionario! 📋',
+    body: `{greeting},
+
+ti scrivo per ricordarti che tra 2 giorni ci vediamo per la tua visita del {date} alle {time}!
+
+Per permettermi di preparare al meglio la tua consulenza, ti chiedo gentilmente di compilare il **questionario alimentare** prima di venire.
+
+👉 Compila il questionario qui: {questionnaireLink}
+
+Il questionario richiede circa 15-20 minuti e le tue risposte mi aiuteranno a personalizzare il piano alimentare sulle tue esigenze.
+
+Ti aspetto!
+
+{closing}`,
+  },
+  {
+    subject: '⚠️ Questionario da compilare prima della visita',
+    body: `{greeting},
+
+mancano solo 2 giorni alla tua visita del {date}!
+
+Prima di vederci, ti chiedo di dedicare qualche minuto alla compilazione del questionario alimentare. È fondamentale per preparare al meglio il tuo piano personalizzato.
+
+🔗 Link al questionario: {questionnaireLink}
+
+Grazie per la collaborazione, ci vediamo presto!
+
+{closing}`,
+  },
+  {
+    subject: 'Preparati alla visita - compila il questionario',
+    body: `{greeting},
+
+la tua visita si avvicina! Ci vediamo il {date} alle {time}.
+
+Per ottimizzare il tempo insieme e fornirti il miglior servizio possibile, ho bisogno che tu compili il questionario alimentare:
+
+{questionnaireLink}
+
+Le tue risposte mi permetteranno di arrivare preparato e di concentrarmi sulle tue esigenze specifiche.
+
+A presto!
+
+{closing}`,
+  },
+];
+
+export async function sendQuestionnaireReminder(
+  appointment: {
+    id: string;
+    startTime: Date;
+    duration?: number;
+    type?: string;
+    user: {
+      id: string;
+      name: string | null;
+      email: string | null;
+    };
+  }
+) {
+  if (!appointment.user.email) return false;
+  
+  const { template } = getRandomTemplate(QUESTIONNAIRE_REMINDER_TEMPLATES);
+  // Crea oggetto compatibile con formatAppointmentForDisplay
+  const appointmentForFormat = {
+    startTime: appointment.startTime,
+    duration: appointment.duration || 60,
+    type: appointment.type || 'FOLLOW_UP',
+  };
+  const formatted = formatAppointmentForDisplay(appointmentForFormat);
+  
+  const questionnaireLink = `https://bernardogiammetta.com/profilo/questionario`;
+  
+  const data = {
+    name: appointment.user.name || 'paziente',
+    date: formatted.date,
+    time: formatted.startTime, // Usa startTime invece di time
+    questionnaireLink,
+  };
+  
+  const subject = formatTemplate(template.subject, data);
+  const body = formatTemplate(template.body, data);
+  
+  try {
+    if (!resend) {
+      console.warn('Resend non configurato - email questionario non inviata');
+      return false;
+    }
+    
+    await resend.emails.send({
+      from: FROM_EMAIL,
+      to: appointment.user.email,
+      subject,
+      text: body,
+    });
+    
+    return true;
+  } catch (error) {
+    console.error('Errore invio reminder questionario:', error);
+    return false;
+  }
+}

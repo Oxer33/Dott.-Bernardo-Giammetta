@@ -58,9 +58,10 @@ model User {
   role          String    @default("PATIENT")
   
   // Relazioni
-  appointments  Appointment[]
-  emailLogs     EmailLog[]
-  invoices      Invoice[]   // Fatture emesse al paziente
+  appointments    Appointment[]
+  emailLogs       EmailLog[]
+  invoices        Invoice[]       // Fatture emesse al paziente
+  questionnaires  Questionnaire[] // Questionari prima visita
   
   // NextAuth fields
   emailVerified DateTime?
@@ -345,4 +346,49 @@ model Comune {
   
   @@index([nome])
   @@index([provincia])
+}
+
+// =============================================================================
+// MODELLO QUESTIONARIO PRIMA VISITA
+// Questionario obbligatorio da compilare prima della prima visita
+// I questionari NON sono modificabili, si può solo crearne uno nuovo
+// =============================================================================
+
+model Questionnaire {
+  id              String    @id @default(cuid())
+  
+  // Riferimento paziente
+  userId          String
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Stile alimentare: "ONNIVORO" | "VEGETARIANO" | "VEGANO"
+  // Determina quali domande vengono mostrate (19-44, 45-65, 66-84)
+  dietType        String
+  
+  // Risposte alle domande comuni (1-17) - JSON serializzato
+  // Struttura: { "q5": "risposta", "q6": "risposta", ... }
+  commonAnswers   String    @db.Text
+  
+  // Risposte alle domande specifiche per stile alimentare - JSON serializzato
+  // ONNIVORO: q19-q44, VEGETARIANO: q45-q65, VEGANO: q66-q84
+  dietAnswers     String    @db.Text
+  
+  // Dati fatturazione (domanda finale comune a tutti)
+  // Struttura: { birthPlace, address, addressNumber, cap, city, codiceFiscale }
+  billingData     String    @db.Text
+  
+  // Autorizzazione privacy (checkbox finale obbligatoria)
+  privacyConsent  Boolean   @default(false)
+  
+  // Flag per indicare se è stato inviato reminder email
+  reminderSent    Boolean   @default(false)
+  reminderSentAt  DateTime?
+  
+  // Timestamps
+  createdAt       DateTime  @default(now())
+  
+  // NON c'è updatedAt perché i questionari NON sono modificabili
+  
+  @@index([userId])
+  @@index([createdAt])
 }
