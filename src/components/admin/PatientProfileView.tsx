@@ -24,6 +24,8 @@ import {
   AlertCircle,
   Clock,
   Plus,
+  Filter,
+  XCircle,
 } from 'lucide-react';
 
 // =============================================================================
@@ -77,8 +79,20 @@ interface PatientProfileViewProps {
 // COMPONENTE
 // =============================================================================
 
+// Tipo filtro appuntamenti
+type AppointmentFilter = 'all' | 'confirmed' | 'cancelled';
+
 export function PatientProfileView({ patient }: PatientProfileViewProps) {
   const router = useRouter();
+  const [appointmentFilter, setAppointmentFilter] = useState<AppointmentFilter>('all');
+  
+  // Filtra appuntamenti in base al filtro selezionato
+  const filteredAppointments = patient.appointments.filter(apt => {
+    if (appointmentFilter === 'all') return true;
+    if (appointmentFilter === 'confirmed') return apt.status === 'CONFIRMED';
+    if (appointmentFilter === 'cancelled') return apt.status === 'CANCELLED';
+    return true;
+  });
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-cream-50 to-lavender-50 py-8">
@@ -186,16 +200,53 @@ export function PatientProfileView({ patient }: PatientProfileViewProps) {
               transition={{ delay: 0.1 }}
               className="bg-white rounded-2xl shadow-soft p-6"
             >
-              <h2 className="text-lg font-semibold text-sage-800 flex items-center gap-2 mb-4">
-                <Calendar className="w-5 h-5 text-lavender-500" />
-                Appuntamenti ({patient.appointments.length})
-              </h2>
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-lg font-semibold text-sage-800 flex items-center gap-2">
+                  <Calendar className="w-5 h-5 text-lavender-500" />
+                  Appuntamenti ({filteredAppointments.length}/{patient.appointments.length})
+                </h2>
+                {/* Filtri */}
+                <div className="flex gap-1">
+                  <button
+                    onClick={() => setAppointmentFilter('all')}
+                    className={`px-2 py-1 text-xs rounded-lg transition-colors ${
+                      appointmentFilter === 'all'
+                        ? 'bg-sage-500 text-white'
+                        : 'bg-sage-100 text-sage-600 hover:bg-sage-200'
+                    }`}
+                  >
+                    Tutti
+                  </button>
+                  <button
+                    onClick={() => setAppointmentFilter('confirmed')}
+                    className={`px-2 py-1 text-xs rounded-lg transition-colors ${
+                      appointmentFilter === 'confirmed'
+                        ? 'bg-green-500 text-white'
+                        : 'bg-green-100 text-green-600 hover:bg-green-200'
+                    }`}
+                  >
+                    Confermati
+                  </button>
+                  <button
+                    onClick={() => setAppointmentFilter('cancelled')}
+                    className={`px-2 py-1 text-xs rounded-lg transition-colors ${
+                      appointmentFilter === 'cancelled'
+                        ? 'bg-red-500 text-white'
+                        : 'bg-red-100 text-red-600 hover:bg-red-200'
+                    }`}
+                  >
+                    Cancellati
+                  </button>
+                </div>
+              </div>
               
-              {patient.appointments.length === 0 ? (
-                <p className="text-sage-500 text-center py-4">Nessun appuntamento</p>
+              {filteredAppointments.length === 0 ? (
+                <p className="text-sage-500 text-center py-4">
+                  {appointmentFilter === 'all' ? 'Nessun appuntamento' : `Nessun appuntamento ${appointmentFilter === 'confirmed' ? 'confermato' : 'cancellato'}`}
+                </p>
               ) : (
                 <div className="space-y-3 max-h-80 overflow-y-auto">
-                  {patient.appointments.map((apt) => (
+                  {filteredAppointments.map((apt) => (
                     <div
                       key={apt.id}
                       className={`p-3 rounded-xl border ${

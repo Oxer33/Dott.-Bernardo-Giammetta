@@ -14,7 +14,8 @@ import {
   UserCheck, 
   Lock, 
   BarChart3,
-  CalendarDays
+  CalendarDays,
+  UserMinus
 } from 'lucide-react';
 import { AgendaCalendar } from './AgendaCalendar';
 
@@ -63,7 +64,7 @@ export function AgendaMasterView() {
             className="flex items-center gap-2 px-3 sm:px-4 py-2 rounded-xl font-medium bg-white text-sage-600 hover:bg-sage-50 border border-sage-100"
           >
             <UserCheck className="w-4 h-4" />
-            <span className="hidden sm:inline">Whitelist</span>
+            <span className="hidden sm:inline">Elenco Pazienti</span>
           </Link>
           <Link
             href="/admin?tab=timeblocks"
@@ -78,6 +79,13 @@ export function AgendaMasterView() {
           >
             <BarChart3 className="w-4 h-4" />
             <span className="hidden sm:inline">Statistiche</span>
+          </Link>
+          <Link
+            href="/admin?tab=blacklist"
+            className="flex items-center gap-2 px-3 sm:px-4 py-2 rounded-xl font-medium bg-red-50 text-red-600 hover:bg-red-100 border border-red-200"
+          >
+            <UserMinus className="w-4 h-4" />
+            <span className="hidden sm:inline">Blacklist</span>
           </Link>
         </div>
 

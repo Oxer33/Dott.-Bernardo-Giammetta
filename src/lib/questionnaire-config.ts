@@ -7,11 +7,16 @@
 export interface Question {
   id: string;
   text: string;
-  type: 'text' | 'textarea' | 'radio' | 'checkbox';
+  type: 'text' | 'textarea' | 'radio' | 'checkbox' | 'textarea-with-radio';
   required: boolean;
   placeholder?: string;
   options?: string[];
   hint?: string; // Esempi o suggerimenti sotto la domanda
+  // Nuovi campi per domande con radio Si/No + textarea condizionale
+  radioOptions?: string[]; // Opzioni radio (es: ['Sì', 'No'])
+  conditionalOnRadio?: string; // Mostra textarea solo se radio = questo valore
+  // Per domande con elenco puntato da mostrare FUORI dalla textarea
+  bulletPoints?: string[]; // Punti da mostrare come lista sopra la textarea
 }
 
 // =============================================================================
@@ -23,16 +28,18 @@ export const COMMON_QUESTIONS: Question[] = [
   {
     id: 'q5',
     text: 'Hai mai affrontato un percorso alimentare con il supporto di un professionista? Se sì allora quante volte e con quale obiettivo?',
-    type: 'textarea',
+    type: 'textarea-with-radio',
     required: true,
-    placeholder: 'Descrivi la tua esperienza...',
+    radioOptions: ['Sì', 'No'],
+    conditionalOnRadio: 'Sì',
+    placeholder: 'Scrivi qui',
   },
   {
     id: 'q6',
     text: 'Svolgi una tipologia di lavoro sedentario oppure ti ritrovi a muoverti molto durante le ore lavorative settimanali?',
     type: 'textarea',
     required: true,
-    placeholder: 'Descrivi il tuo lavoro...',
+    placeholder: 'Scrivi qui',
   },
   {
     id: 'q7',
@@ -43,31 +50,53 @@ export const COMMON_QUESTIONS: Question[] = [
   },
   {
     id: 'q8',
-    text: 'Svolgi un\'attività fisica programmata quindi un allenamento settimanale?',
+    text: 'Svolgi un\'attività fisica programmata quindi un allenamento settimanale? Se la risposta è sì allora indicami:',
     type: 'textarea',
     required: true,
-    placeholder: 'Se sì indicami: 1) tipologia (sala pesi, crossfit, nuoto, pilates, yoga, atletica...), 2) quante sedute a settimana, 3) durata singola seduta, 4) fascia oraria, 5) se agonista: fase di carico, scarico o pre-competizione',
+    bulletPoints: [
+      'tipologia di attività svolta (per esempio sala pesi, crossfit, nuoto, pilates, yoga, atletica leggera, ecc...)',
+      'quante sedute svolgi a settimana',
+      'durata di ogni singola seduta',
+      'fascia oraria',
+      'solo nel caso in cui fossi agonista specificami anche se sei in fase di carico, scarico o pre-competizione'
+    ],
+    placeholder: 'Scrivi qui',
   },
   {
     id: 'q9',
     text: 'Hai l\'abitudine di fumare? Se sì indicami quante sigarette al giorno:',
-    type: 'textarea',
+    type: 'textarea-with-radio',
     required: true,
-    placeholder: 'Numero sigarette o "No, non fumo"',
+    radioOptions: ['Sì', 'No'],
+    conditionalOnRadio: 'Sì',
+    placeholder: 'Scrivi il numero di sigarette al giorno indicativo',
   },
   {
     id: 'q10',
     text: 'Riguardo al sonno, indicami:',
     type: 'textarea',
     required: true,
-    placeholder: '1) Quante ore dormi continuativamente (e causa risvegli notturni). 2) Ore totali. 3) Vorresti integrazione per migliorarlo? 4) Integratori già provati senza effetto?',
+    bulletPoints: [
+      'Quante ore dormi continuativamente (e causa risvegli notturni)',
+      'Ore totali',
+      'Vorresti integrazione per migliorarlo?',
+      'Integratori già provati senza effetto?'
+    ],
+    placeholder: 'Scrivi qui',
   },
   {
     id: 'q11',
-    text: 'Riguardo al Ciclo (se maschio scrivi "y"):',
+    text: 'Riguardo al Ciclo (se maschio scrivi "non applicabile"):',
     type: 'textarea',
     required: true,
-    placeholder: '1) Ciclo regolare/Menopausa? 2) Doloroso/sopportabile? 3) Tentazioni alimentari pre-ciclo? 4) Assumi farmaci/integratori per ciclo? 5) Vorresti integrazione naturale?',
+    bulletPoints: [
+      'Ciclo regolare/Menopausa?',
+      'Doloroso/sopportabile?',
+      'Tentazioni alimentari pre-ciclo?',
+      'Assumi farmaci/integratori per ciclo?',
+      'Vorresti integrazione naturale?'
+    ],
+    placeholder: 'Scrivi qui',
   },
   {
     id: 'q12',
@@ -95,21 +124,35 @@ export const COMMON_QUESTIONS: Question[] = [
     text: 'In merito ad allergie:',
     type: 'textarea',
     required: true,
-    placeholder: '1) Allergie ad alimenti o stagionali diagnosticate? 2) Specificale anche se non diagnosticate ma percepisci fastidi',
+    bulletPoints: [
+      'Allergie ad alimenti o stagionali diagnosticate?',
+      'Specificale anche se non diagnosticate ma percepisci fastidi'
+    ],
+    placeholder: 'Scrivi qui',
   },
   {
     id: 'q16',
     text: 'Riguardo alla regolarità intestinale:',
     type: 'textarea',
     required: true,
-    placeholder: '1) Quante volte al giorno/settimana? 2) Assumi integratori per regolarità? 3) Integratori già provati senza effetto?',
+    bulletPoints: [
+      'Quante volte al giorno/settimana?',
+      'Assumi integratori per regolarità?',
+      'Integratori già provati senza effetto?'
+    ],
+    placeholder: 'Scrivi qui',
   },
   {
     id: 'q17',
     text: 'Qual è il tuo obiettivo personale per cui vuoi iniziare questo percorso?',
     type: 'textarea',
     required: true,
-    placeholder: '1) Ridurre grasso/peso? 2) Aumentare peso/massa muscolare? 3) Mantenere peso migliorando alimentazione/forma fisica?',
+    bulletPoints: [
+      'Ridurre grasso/peso?',
+      'Aumentare peso/massa muscolare?',
+      'Mantenere peso migliorando alimentazione/forma fisica?'
+    ],
+    placeholder: 'Scrivi qui',
   },
 ];
 

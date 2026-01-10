@@ -123,6 +123,15 @@ export function QuestionnaireFormNew({
   const [editableName, setEditableName] = useState(userName || '');
   const [editablePhone, setEditablePhone] = useState(userPhone || '');
   const [editableBirthDate, setEditableBirthDate] = useState(userBirthDate || '');
+  // Email di contatto separata (può essere diversa da quella di registrazione)
+  const [contactEmail, setContactEmail] = useState(userEmail || '');
+  
+  // Funzione per validare e filtrare solo numeri nel telefono
+  const handlePhoneChange = (value: string) => {
+    // Rimuovi tutto tranne numeri e +
+    const cleaned = value.replace(/[^0-9+]/g, '');
+    setEditablePhone(cleaned);
+  };
   
   // State navigazione
   const [currentSection, setCurrentSection] = useState<Section>('profile');
@@ -192,7 +201,7 @@ export function QuestionnaireFormNew({
   const isSectionComplete = (section: Section): boolean => {
     switch (section) {
       case 'profile':
-        return true; // Sempre completa (precompilata)
+        return !!editablePhone?.trim() && !!contactEmail?.trim(); // Richiesti telefono ed email contatto
       case 'common':
         return COMMON_QUESTIONS.filter(q => q.required).every(q => commonAnswers[q.id]?.trim());
       case 'dietType':
@@ -211,6 +220,7 @@ export function QuestionnaireFormNew({
   // Verifica se tutto il questionario è completo
   const isQuestionnaireComplete = (): boolean => {
     return (
+      isSectionComplete('profile') &&
       isSectionComplete('common') &&
       isSectionComplete('dietType') &&
       isSectionComplete('dietSpecific') &&
@@ -244,6 +254,7 @@ export function QuestionnaireFormNew({
             name: editableName,
             phone: editablePhone,
             birthDate: editableBirthDate,
+            contactEmail: contactEmail, // Email per comunicazioni (può essere diversa)
           },
         }),
       });
@@ -296,69 +307,141 @@ export function QuestionnaireFormNew({
   };
 
   // Render domanda singola
-  const renderQuestion = (question: Question, value: string, onChange: (val: string) => void) => (
-    <div key={question.id} className="mb-6">
-      <label className="block text-sage-800 font-medium mb-2">
-        {question.text}
-        {question.required && <span className="text-red-500 ml-1">*</span>}
-      </label>
-      
-      {question.hint && (
-        <p className="text-sm text-sage-500 mb-3 bg-sage-50 p-3 rounded-lg">
-          💡 {question.hint}
-        </p>
-      )}
+  const renderQuestion = (question: Question, value: string, onChange: (val: string) => void) => {
+    // Per textarea-with-radio, separa la risposta radio dal testo
+    const radioValue = question.type === 'textarea-with-radio' 
+      ? (value.startsWith('Sì:') ? 'Sì' : value.startsWith('No') ? 'No' : '')
+      : '';
+    const textValue = question.type === 'textarea-with-radio'
+      ? (value.startsWith('Sì:') ? value.substring(3).trim() : '')
+      : value;
+    
+    const handleRadioWithTextChange = (radio: string, text?: string) => {
+      if (radio === 'No') {
+        onChange('No');
+      } else {
+        onChange(`Sì: ${text || ''}`);
+      }
+    };
 
-      {question.type === 'text' && (
-        <input
-          type="text"
-          value={value || ''}
-          onChange={(e) => onChange(e.target.value)}
-          placeholder={question.placeholder}
-          className="w-full px-4 py-3 rounded-xl border border-sage-200 
-                   focus:border-sage-400 focus:ring-2 focus:ring-sage-100
-                   outline-none text-sage-800 placeholder:text-sage-400"
-        />
-      )}
+    return (
+      <div key={question.id} className="mb-6">
+        <label className="block text-sage-800 font-medium mb-2">
+          {question.text}
+          {question.required && <span className="text-red-500 ml-1">*</span>}
+        </label>
+        
+        {question.hint && (
+          <p className="text-sm text-sage-500 mb-3 bg-sage-50 p-3 rounded-lg">
+            💡 {question.hint}
+          </p>
+        )}
 
-      {question.type === 'textarea' && (
-        <textarea
-          value={value || ''}
-          onChange={(e) => onChange(e.target.value)}
-          placeholder={question.placeholder}
-          rows={4}
-          className="w-full px-4 py-3 rounded-xl border border-sage-200 
-                   focus:border-sage-400 focus:ring-2 focus:ring-sage-100
-                   outline-none text-sage-800 placeholder:text-sage-400 resize-none"
-        />
-      )}
+        {/* Bullet points fuori dalla textarea */}
+        {question.bulletPoints && question.bulletPoints.length > 0 && (
+          <ol className="list-decimal list-inside text-sm text-sage-600 mb-3 bg-sage-50 p-3 rounded-lg space-y-1">
+            {question.bulletPoints.map((point, idx) => (
+              <li key={idx}>{point}</li>
+            ))}
+          </ol>
+        )}
 
-      {question.type === 'radio' && question.options && (
-        <div className="space-y-3">
-          {question.options.map((option, idx) => (
-            <label
-              key={idx}
-              className={`flex items-start gap-3 p-4 rounded-xl border cursor-pointer transition-all ${
-                value === option
-                  ? 'border-sage-500 bg-sage-50'
-                  : 'border-sage-200 hover:border-sage-300'
-              }`}
-            >
-              <input
-                type="radio"
-                name={`question-${question.id}`}
-                value={option}
-                checked={value === option}
-                onChange={(e) => onChange(e.target.value)}
-                className="mt-1 w-4 h-4 text-sage-600 focus:ring-sage-500"
+        {question.type === 'text' && (
+          <input
+            type="text"
+            value={value || ''}
+            onChange={(e) => onChange(e.target.value)}
+            placeholder={question.placeholder}
+            className="w-full px-4 py-3 rounded-xl border border-sage-200 
+                     focus:border-sage-400 focus:ring-2 focus:ring-sage-100
+                     outline-none text-sage-800 placeholder:text-sage-400"
+          />
+        )}
+
+        {question.type === 'textarea' && (
+          <textarea
+            value={value || ''}
+            onChange={(e) => onChange(e.target.value)}
+            placeholder={question.placeholder}
+            rows={4}
+            className="w-full px-4 py-3 rounded-xl border border-sage-200 
+                     focus:border-sage-400 focus:ring-2 focus:ring-sage-100
+                     outline-none text-sage-800 placeholder:text-sage-400 resize-none"
+          />
+        )}
+
+        {/* Nuovo tipo: textarea con radio Sì/No */}
+        {question.type === 'textarea-with-radio' && question.radioOptions && (
+          <div className="space-y-3">
+            <div className="flex gap-4">
+              {question.radioOptions.map((option, idx) => (
+                <label
+                  key={idx}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-xl border cursor-pointer transition-all ${
+                    radioValue === option
+                      ? 'border-sage-500 bg-sage-50'
+                      : 'border-sage-200 hover:border-sage-300'
+                  }`}
+                >
+                  <input
+                    type="radio"
+                    name={`question-${question.id}`}
+                    value={option}
+                    checked={radioValue === option}
+                    onChange={() => handleRadioWithTextChange(option, textValue)}
+                    className="w-4 h-4 text-sage-600 focus:ring-sage-500"
+                  />
+                  <span className="text-sage-700">{option}</span>
+                </label>
+              ))}
+            </div>
+            {/* Textarea condizionale */}
+            {radioValue === question.conditionalOnRadio && (
+              <textarea
+                value={textValue || ''}
+                onChange={(e) => handleRadioWithTextChange('Sì', e.target.value)}
+                placeholder={question.placeholder}
+                rows={3}
+                className="w-full px-4 py-3 rounded-xl border border-sage-200 
+                         focus:border-sage-400 focus:ring-2 focus:ring-sage-100
+                         outline-none text-sage-800 placeholder:text-sage-400 resize-none"
               />
-              <span className="text-sage-700">{option}</span>
-            </label>
-          ))}
-        </div>
-      )}
-    </div>
-  );
+            )}
+            {radioValue === 'No' && (
+              <div className="px-4 py-3 bg-sage-100 rounded-xl text-sage-500 text-sm">
+                Nessuna risposta aggiuntiva richiesta
+              </div>
+            )}
+          </div>
+        )}
+
+        {question.type === 'radio' && question.options && (
+          <div className="space-y-3">
+            {question.options.map((option, idx) => (
+              <label
+                key={idx}
+                className={`flex items-start gap-3 p-4 rounded-xl border cursor-pointer transition-all ${
+                  value === option
+                    ? 'border-sage-500 bg-sage-50'
+                    : 'border-sage-200 hover:border-sage-300'
+                }`}
+              >
+                <input
+                  type="radio"
+                  name={`question-${question.id}`}
+                  value={option}
+                  checked={value === option}
+                  onChange={(e) => onChange(e.target.value)}
+                  className="mt-1 w-4 h-4 text-sage-600 focus:ring-sage-500"
+                />
+                <span className="text-sage-700">{option}</span>
+              </label>
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  };
 
   // Render sezione
   const renderSection = () => {
@@ -391,61 +474,46 @@ export function QuestionnaireFormNew({
               <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-6">
                 <div className="flex items-center gap-2 text-blue-700">
                   <AlertCircle className="w-5 h-5" />
-                  <span className="font-medium">Verifica e modifica i tuoi dati se necessario</span>
+                  <span className="font-medium">Inserisci i tuoi dati di contatto</span>
                 </div>
                 <p className="text-sm text-blue-600 mt-1">
-                  L&apos;email non è modificabile. Gli altri dati verranno aggiornati anche nel tuo profilo.
+                  Questi dati verranno utilizzati per comunicazioni e materiali utili al percorso.
                 </p>
               </div>
               
-              <div className="grid md:grid-cols-2 gap-4">
-                {/* Nome - MODIFICABILE */}
+              <div className="space-y-4">
+                {/* Numero di telefono - SOLO NUMERI */}
                 <div className="space-y-1">
-                  <label className="text-sm text-sage-600 font-medium">Nome e Cognome *</label>
-                  <input
-                    type="text"
-                    value={editableName}
-                    onChange={(e) => setEditableName(e.target.value)}
-                    placeholder="Mario Rossi"
-                    className="w-full px-4 py-3 rounded-xl border border-sage-200 
-                             focus:border-sage-400 focus:ring-2 focus:ring-sage-100
-                             outline-none text-sage-800"
-                  />
-                </div>
-                
-                {/* Email - NON modificabile */}
-                <div className="space-y-1">
-                  <label className="text-sm text-sage-600 font-medium">Email</label>
-                  <div className="px-4 py-3 bg-sage-100 rounded-xl text-sage-600 cursor-not-allowed">
-                    {userEmail}
-                  </div>
-                </div>
-                
-                {/* Telefono - MODIFICABILE */}
-                <div className="space-y-1">
-                  <label className="text-sm text-sage-600 font-medium">Telefono *</label>
+                  <label className="text-sm text-sage-600 font-medium">Numero di telefono *</label>
                   <input
                     type="tel"
                     value={editablePhone}
-                    onChange={(e) => setEditablePhone(e.target.value)}
-                    placeholder="+39 333 1234567"
+                    onChange={(e) => handlePhoneChange(e.target.value)}
+                    placeholder="3331234567"
+                    inputMode="numeric"
+                    pattern="[0-9+]*"
                     className="w-full px-4 py-3 rounded-xl border border-sage-200 
                              focus:border-sage-400 focus:ring-2 focus:ring-sage-100
                              outline-none text-sage-800"
                   />
+                  <p className="text-xs text-sage-500">Solo numeri (es: 3331234567)</p>
                 </div>
                 
-                {/* Data di Nascita - MODIFICABILE */}
+                {/* Email per contatto - può essere diversa da quella di registrazione */}
                 <div className="space-y-1">
-                  <label className="text-sm text-sage-600 font-medium">Data di Nascita *</label>
+                  <label className="text-sm text-sage-600 font-medium">Email per contatto *</label>
                   <input
-                    type="date"
-                    value={editableBirthDate}
-                    onChange={(e) => setEditableBirthDate(e.target.value)}
+                    type="email"
+                    value={contactEmail}
+                    onChange={(e) => setContactEmail(e.target.value)}
+                    placeholder="nome@esempio.com"
                     className="w-full px-4 py-3 rounded-xl border border-sage-200 
                              focus:border-sage-400 focus:ring-2 focus:ring-sage-100
                              outline-none text-sage-800"
                   />
+                  <p className="text-xs text-sage-500">
+                    Inserisci email dove comunicare informazioni e materiali utili al percorso
+                  </p>
                 </div>
               </div>
             </div>
