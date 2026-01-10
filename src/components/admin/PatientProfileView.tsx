@@ -540,9 +540,26 @@ export function PatientProfileView({ patient }: PatientProfileViewProps) {
                 </button>
               </div>
 
+              {/* Menu navigazione categorie */}
+              <div className="px-6 py-3 bg-sage-50 border-b border-sage-100 flex flex-wrap gap-2">
+                <a href="#sezione-stile-vita" className="px-3 py-1.5 bg-white text-sage-700 rounded-lg text-sm font-medium hover:bg-sage-100 transition-colors flex items-center gap-1.5 border border-sage-200">
+                  <Heart className="w-4 h-4 text-lavender-500" />
+                  <span className="hidden sm:inline">Stile di Vita</span>
+                </a>
+                <a href="#sezione-preferenze" className="px-3 py-1.5 bg-white text-sage-700 rounded-lg text-sm font-medium hover:bg-sage-100 transition-colors flex items-center gap-1.5 border border-sage-200">
+                  <Utensils className="w-4 h-4 text-lavender-500" />
+                  <span className="hidden sm:inline">Preferenze Alimentari</span>
+                </a>
+                <a href="#sezione-fatturazione" className="px-3 py-1.5 bg-white text-sage-700 rounded-lg text-sm font-medium hover:bg-sage-100 transition-colors flex items-center gap-1.5 border border-sage-200">
+                  <MapPin className="w-4 h-4 text-lavender-500" />
+                  <span className="hidden sm:inline">Dati Fatturazione</span>
+                </a>
+              </div>
+
               {/* Contenuto Modal - Scrollabile */}
               <div className="flex-1 overflow-y-auto p-6 space-y-6">
                 {/* Sezione 1: Stile di Vita e Salute (Domande Comuni) */}
+                <div id="sezione-stile-vita">
                 <div>
                   <h3 className="font-semibold text-sage-800 mb-4 flex items-center gap-2 text-lg">
                     <Heart className="w-5 h-5 text-lavender-500" />
@@ -575,9 +592,10 @@ export function PatientProfileView({ patient }: PatientProfileViewProps) {
                     })}
                   </div>
                 </div>
+                </div>
 
                 {/* Sezione 2: Preferenze Alimentari (Solo quelle dello stile alimentare selezionato) */}
-                <div>
+                <div id="sezione-preferenze">
                   <h3 className="font-semibold text-sage-800 mb-4 flex items-center gap-2 text-lg">
                     <Utensils className="w-5 h-5 text-lavender-500" />
                     Preferenze Alimentari - {selectedQuestionnaire.dietType}
@@ -611,7 +629,7 @@ export function PatientProfileView({ patient }: PatientProfileViewProps) {
                 </div>
 
                 {/* Sezione 3: Dati Fatturazione */}
-                <div>
+                <div id="sezione-fatturazione">
                   <h3 className="font-semibold text-sage-800 mb-4 flex items-center gap-2 text-lg">
                     <MapPin className="w-5 h-5 text-lavender-500" />
                     Dati Fatturazione
