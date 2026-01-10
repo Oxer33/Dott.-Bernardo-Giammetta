@@ -131,9 +131,11 @@ public/                    # Asset statici (TODO)
 ### Modelli Principali
 
 1. **User** - Utenti (pazienti e admin)
-   - Autenticazione Google OAuth
+   - Autenticazione Google OAuth + Cognito
    - Flag whitelist per prenotazioni
    - Ruolo (ADMIN/PATIENT)
+   - `contactEmail`: email per comunicazioni (può differire da email login)
+   - `blacklistCount`: contatore recidivi blacklist
 
 2. **Appointment** - Appuntamenti
    - Collegato a User
