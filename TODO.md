@@ -311,7 +311,7 @@
 - [x] **Menu navigazione admin uniforme**: aggiunto in /admin/paziente/[id] per uniformità
 - [x] **Componente ComuneAutocomplete**: autocomplete per ricerca comuni italiani
 - [x] **Sistema calcolo CF**: lib/codice-fiscale.ts + lib/comuni-italiani.ts + componente UI
-- [ ] **TODO: Integrare ComuneAutocomplete** nel questionario e profilo per calcolo automatico
+- [x] **Integrato ComuneAutocomplete nel questionario**: luogo nascita e città con autocomplete + calcolo provincia automatico
 
 ### 🔧 Profilo Paziente + Questionari + Agenda - 10/01/2026 (Sessione 22) ✅ COMPLETATO
 - [x] **Fix grassetto opzioni radio q17**: le opzioni ora mostrano grassetto invece di asterischi
