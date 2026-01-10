@@ -66,7 +66,27 @@ interface DayAvailability {
 
 export function AgendaCalendar() {
   const { data: session, status } = useSession();
-  const [currentWeekStart, setCurrentWeekStart] = useState(() => startOfWeek(new Date(), { weekStartsOn: 1 }));
+  
+  // Verifica se l'utente è master/admin (definito prima per usarlo nell'inizializzazione)
+  const isMaster = session?.user?.role === 'ADMIN' || 
+    (session?.user?.email && isMasterAccount(session.user.email));
+  
+  // Per i pazienti: calcola la data minima prenotabile (48h nel futuro)
+  // Per gli admin: mostra da oggi
+  const getMinBookableDate = useCallback(() => {
+    if (isMaster) {
+      return new Date();
+    }
+    // Pazienti: 48 ore nel futuro
+    return addDays(new Date(), 2);
+  }, [isMaster]);
+  
+  // Inizializza la settimana partendo dalla data minima prenotabile
+  const [currentWeekStart, setCurrentWeekStart] = useState(() => {
+    const minDate = isMaster ? new Date() : addDays(new Date(), 2);
+    return startOfWeek(minDate, { weekStartsOn: 1 });
+  });
+  
   const [availability, setAvailability] = useState<DayAvailability[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedSlot, setSelectedSlot] = useState<{ date: string; time: string; appointmentId?: string } | null>(null);
@@ -89,10 +109,6 @@ export function AgendaCalendar() {
   const [newAppointmentId, setNewAppointmentId] = useState<string | null>(null);
   const [patientNotes, setPatientNotes] = useState<string[]>(['']);
   const [savingNotes, setSavingNotes] = useState(false);
-  
-  // Verifica se l'utente è master/admin
-  const isMaster = session?.user?.role === 'ADMIN' || 
-    (session?.user?.email && isMasterAccount(session.user.email));
 
   // Fetch disponibilità
   const fetchAvailability = useCallback(async () => {
@@ -192,7 +208,13 @@ export function AgendaCalendar() {
   };
 
   // Navigazione settimane
+  // Per pazienti: non permettere di tornare prima della settimana con 48h minime
+  const minWeekStart = startOfWeek(getMinBookableDate(), { weekStartsOn: 1 });
+  
+  const canGoPreviousWeek = isMaster || currentWeekStart > minWeekStart;
+  
   const goToPreviousWeek = () => {
+    if (!canGoPreviousWeek) return;
     setCurrentWeekStart(prev => addDays(prev, -7));
   };
 
@@ -201,7 +223,9 @@ export function AgendaCalendar() {
   };
 
   const goToCurrentWeek = () => {
-    setCurrentWeekStart(startOfWeek(new Date(), { weekStartsOn: 1 }));
+    // Per pazienti: vai alla settimana minima prenotabile (48h)
+    // Per admin: vai alla settimana corrente
+    setCurrentWeekStart(minWeekStart);
   };
 
   // Gestione selezione slot
@@ -441,10 +465,15 @@ export function AgendaCalendar() {
           <div className="flex items-center gap-2 flex-wrap">
             <button
               onClick={goToPreviousWeek}
-              className="p-2 rounded-lg hover:bg-sage-50 transition-colors"
+              disabled={!canGoPreviousWeek}
+              className={`p-2 rounded-lg transition-colors ${
+                canGoPreviousWeek 
+                  ? 'hover:bg-sage-50 text-sage-600' 
+                  : 'opacity-30 cursor-not-allowed text-sage-400'
+              }`}
               aria-label="Settimana precedente"
             >
-              <ChevronLeft className="w-5 h-5 text-sage-600" />
+              <ChevronLeft className="w-5 h-5" />
             </button>
             
             <button

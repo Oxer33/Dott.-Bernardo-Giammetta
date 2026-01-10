@@ -19,6 +19,7 @@ interface ProfileUpdateData {
   // Dati base
   name?: string;
   phone?: string;
+  contactEmail?: string;
   // Dati anagrafici
   firstName?: string;
   lastName?: string;
@@ -116,6 +117,7 @@ export async function PUT(request: NextRequest) {
           ...(data.city !== undefined && { city: data.city?.trim() || null }),
           ...(data.province !== undefined && { province: data.province?.toUpperCase()?.trim() || null }),
           ...(data.cap !== undefined && { cap: data.cap?.trim() || null }),
+          ...(data.contactEmail !== undefined && { contactEmail: data.contactEmail?.trim() || null }),
           // Timestamp
           updatedAt: new Date(),
         },
@@ -182,6 +184,7 @@ export async function GET() {
           city: true,
           province: true,
           cap: true,
+          contactEmail: true,
           // Stato
           isWhitelisted: true,
           role: true,

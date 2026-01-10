@@ -17,12 +17,28 @@ import {
   AlertCircle,
   ChevronRight,
   ClipboardList,
-  Plus
+  Plus,
+  MapPin,
+  Eye,
+  X,
+  Heart,
+  Utensils,
 } from 'lucide-react';
 import Link from 'next/link';
 import { format, parseISO } from 'date-fns';
 import { it } from 'date-fns/locale';
 import { PatientNavigation } from '@/components/shared/PatientNavigation';
+
+// Import configurazione domande per visualizzazione questionari
+import {
+  COMMON_QUESTIONS,
+  OMNIVORE_QUESTIONS,
+  VEGETARIAN_QUESTIONS,
+  VEGAN_QUESTIONS,
+  BILLING_QUESTIONS,
+  formatBoldText,
+  Question,
+} from '@/lib/questionnaire-config';
 
 // =============================================================================
 // TIPI
@@ -44,25 +60,91 @@ interface ProfileContentProps {
 // COMPONENTE PRINCIPALE
 // =============================================================================
 
-// Tipo per questionario
+// Tipo per questionario (completo per visualizzazione)
 interface QuestionnaireInfo {
   id: string;
   dietType: string;
   createdAt: string;
+  commonAnswers: string;
+  dietAnswers: string;
+  billingData: string;
+  privacyConsent: boolean;
+}
+
+// Tipo per profilo utente completo
+interface UserProfile {
+  id: string;
+  name: string | null;
+  email: string | null;
+  phone: string | null;
+  firstName: string | null;
+  lastName: string | null;
+  birthDate: string | null;
+  birthPlace: string | null;
+  codiceFiscale: string | null;
+  address: string | null;
+  addressNumber: string | null;
+  city: string | null;
+  cap: string | null;
+  contactEmail: string | null;
 }
 
 export function ProfileContent({ user }: ProfileContentProps) {
-  // Form state
-  const [firstName, setFirstName] = useState(user.name?.split(' ')[0] || '');
-  const [lastName, setLastName] = useState(user.name?.split(' ').slice(1).join(' ') || '');
-  const [phone, setPhone] = useState(user.phone || '');
+  // Form state - dati base
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [phone, setPhone] = useState('');
+  // Form state - dati anagrafici
+  const [birthPlace, setBirthPlace] = useState('');
+  const [codiceFiscale, setCodiceFiscale] = useState('');
+  const [address, setAddress] = useState('');
+  const [addressNumber, setAddressNumber] = useState('');
+  const [city, setCity] = useState('');
+  const [cap, setCap] = useState('');
+  const [contactEmail, setContactEmail] = useState('');
+  
+  // UI state
   const [isSaving, setIsSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [saveError, setSaveError] = useState('');
+  const [loadingProfile, setLoadingProfile] = useState(true);
   
   // State per questionari
   const [questionnaires, setQuestionnaires] = useState<QuestionnaireInfo[]>([]);
   const [loadingQuestionnaires, setLoadingQuestionnaires] = useState(true);
+  const [selectedQuestionnaire, setSelectedQuestionnaire] = useState<QuestionnaireInfo | null>(null);
+
+  // Fetch profilo completo all'avvio
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const res = await fetch('/api/user/profile');
+        const data = await res.json();
+        if (data.success && data.user) {
+          const u = data.user;
+          setFirstName(u.firstName || u.name?.split(' ')[0] || '');
+          setLastName(u.lastName || u.name?.split(' ').slice(1).join(' ') || '');
+          setPhone(u.phone || '');
+          setBirthPlace(u.birthPlace || '');
+          setCodiceFiscale(u.codiceFiscale || '');
+          setAddress(u.address || '');
+          setAddressNumber(u.addressNumber || '');
+          setCity(u.city || '');
+          setCap(u.cap || '');
+          setContactEmail(u.contactEmail || '');
+        }
+      } catch (err) {
+        console.error('Errore fetch profilo:', err);
+        // Fallback ai dati della sessione
+        setFirstName(user.name?.split(' ')[0] || '');
+        setLastName(user.name?.split(' ').slice(1).join(' ') || '');
+        setPhone(user.phone || '');
+      } finally {
+        setLoadingProfile(false);
+      }
+    };
+    fetchProfile();
+  }, [user]);
 
   // Fetch questionari all'avvio
   useEffect(() => {
@@ -82,6 +164,12 @@ export function ProfileContent({ user }: ProfileContentProps) {
     fetchQuestionnaires();
   }, []);
 
+  // Handler telefono - solo numeri
+  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value.replace(/[^0-9]/g, '');
+    setPhone(value);
+  };
+
   // Salva profilo
   const handleSaveProfile = async () => {
     setIsSaving(true);
@@ -93,16 +181,24 @@ export function ProfileContent({ user }: ProfileContentProps) {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          name: `${firstName} ${lastName}`.trim(),
-          phone,
+          firstName: firstName.trim(),
+          lastName: lastName.trim(),
+          phone: phone.trim(),
+          birthPlace: birthPlace.trim(),
+          codiceFiscale: codiceFiscale.trim().toUpperCase(),
+          address: address.trim(),
+          addressNumber: addressNumber.trim(),
+          city: city.trim(),
+          cap: cap.trim(),
+          contactEmail: contactEmail.trim(),
         }),
       });
 
-      if (response.ok) {
+      const data = await response.json();
+      if (data.success) {
         setSaveSuccess(true);
         setTimeout(() => setSaveSuccess(false), 3000);
       } else {
-        const data = await response.json();
         setSaveError(data.error || 'Errore nel salvataggio');
       }
     } catch (error) {
@@ -209,9 +305,130 @@ export function ProfileContent({ user }: ProfileContentProps) {
                 <input
                   type="tel"
                   value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                  placeholder="+39 123 456 7890"
+                  onChange={handlePhoneChange}
+                  placeholder="3921234567"
                   className="w-full pl-12 pr-4 py-3 rounded-xl border border-sage-200 
+                           focus:border-lavender-400 focus:ring-2 focus:ring-lavender-100
+                           outline-none text-sage-800 placeholder:text-sage-400"
+                />
+              </div>
+            </div>
+
+            {/* Sezione Dati Anagrafici per Fatturazione */}
+            <div className="border-t border-sage-200 pt-6 mt-6">
+              <h3 className="text-lg font-semibold text-sage-800 mb-4 flex items-center gap-2">
+                <MapPin className="w-5 h-5 text-lavender-500" />
+                Dati per Fatturazione
+              </h3>
+              <p className="text-sm text-sage-500 mb-4">
+                Questi dati verranno utilizzati per la fatturazione delle visite.
+              </p>
+              
+              <div className="grid md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-sage-700 mb-2">
+                    Luogo di nascita
+                  </label>
+                  <input
+                    type="text"
+                    value={birthPlace}
+                    onChange={(e) => setBirthPlace(e.target.value)}
+                    placeholder="Es: Roma"
+                    className="w-full px-4 py-3 rounded-xl border border-sage-200 
+                             focus:border-lavender-400 focus:ring-2 focus:ring-lavender-100
+                             outline-none text-sage-800 placeholder:text-sage-400"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-sage-700 mb-2">
+                    Codice Fiscale
+                  </label>
+                  <input
+                    type="text"
+                    value={codiceFiscale}
+                    onChange={(e) => setCodiceFiscale(e.target.value.toUpperCase())}
+                    placeholder="RSSMRA85M01H501Z"
+                    maxLength={16}
+                    className="w-full px-4 py-3 rounded-xl border border-sage-200 
+                             focus:border-lavender-400 focus:ring-2 focus:ring-lavender-100
+                             outline-none text-sage-800 placeholder:text-sage-400 uppercase"
+                  />
+                </div>
+              </div>
+
+              <div className="grid md:grid-cols-3 gap-4 mt-4">
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-medium text-sage-700 mb-2">
+                    Indirizzo
+                  </label>
+                  <input
+                    type="text"
+                    value={address}
+                    onChange={(e) => setAddress(e.target.value)}
+                    placeholder="Via Roma"
+                    className="w-full px-4 py-3 rounded-xl border border-sage-200 
+                             focus:border-lavender-400 focus:ring-2 focus:ring-lavender-100
+                             outline-none text-sage-800 placeholder:text-sage-400"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-sage-700 mb-2">
+                    N. Civico
+                  </label>
+                  <input
+                    type="text"
+                    value={addressNumber}
+                    onChange={(e) => setAddressNumber(e.target.value)}
+                    placeholder="123"
+                    className="w-full px-4 py-3 rounded-xl border border-sage-200 
+                             focus:border-lavender-400 focus:ring-2 focus:ring-lavender-100
+                             outline-none text-sage-800 placeholder:text-sage-400"
+                  />
+                </div>
+              </div>
+
+              <div className="grid md:grid-cols-2 gap-4 mt-4">
+                <div>
+                  <label className="block text-sm font-medium text-sage-700 mb-2">
+                    Città
+                  </label>
+                  <input
+                    type="text"
+                    value={city}
+                    onChange={(e) => setCity(e.target.value)}
+                    placeholder="Roma"
+                    className="w-full px-4 py-3 rounded-xl border border-sage-200 
+                             focus:border-lavender-400 focus:ring-2 focus:ring-lavender-100
+                             outline-none text-sage-800 placeholder:text-sage-400"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-sage-700 mb-2">
+                    CAP
+                  </label>
+                  <input
+                    type="text"
+                    value={cap}
+                    onChange={(e) => setCap(e.target.value.replace(/[^0-9]/g, '').slice(0, 5))}
+                    placeholder="00100"
+                    maxLength={5}
+                    className="w-full px-4 py-3 rounded-xl border border-sage-200 
+                             focus:border-lavender-400 focus:ring-2 focus:ring-lavender-100
+                             outline-none text-sage-800 placeholder:text-sage-400"
+                  />
+                </div>
+              </div>
+
+              <div className="mt-4">
+                <label className="block text-sm font-medium text-sage-700 mb-2">
+                  Email per comunicazioni (se diversa da login)
+                </label>
+                <input
+                  type="email"
+                  value={contactEmail}
+                  onChange={(e) => setContactEmail(e.target.value)}
+                  placeholder="altra.email@esempio.com"
+                  className="w-full px-4 py-3 rounded-xl border border-sage-200 
                            focus:border-lavender-400 focus:ring-2 focus:ring-lavender-100
                            outline-none text-sage-800 placeholder:text-sage-400"
                 />
@@ -331,7 +548,7 @@ export function ProfileContent({ user }: ProfileContentProps) {
             <p className="text-sm text-sage-500">Caricamento...</p>
           ) : questionnaires.length > 0 ? (
             <div className="space-y-3">
-              {questionnaires.slice(0, 3).map((q, idx) => (
+              {questionnaires.slice(0, 5).map((q, idx) => (
                 <div key={q.id} className="p-3 bg-sage-50 rounded-lg">
                   <div className="flex items-center justify-between">
                     <div>
@@ -342,11 +559,20 @@ export function ProfileContent({ user }: ProfileContentProps) {
                         {format(parseISO(q.createdAt), "d MMM yyyy", { locale: it })}
                       </p>
                     </div>
-                    {idx === 0 && (
-                      <span className="px-2 py-0.5 bg-green-100 text-green-700 text-xs rounded-full">
-                        Ultimo
-                      </span>
-                    )}
+                    <div className="flex items-center gap-2">
+                      {idx === 0 && (
+                        <span className="px-2 py-0.5 bg-green-100 text-green-700 text-xs rounded-full">
+                          Ultimo
+                        </span>
+                      )}
+                      <button
+                        onClick={() => setSelectedQuestionnaire(q)}
+                        className="p-1.5 bg-lavender-100 text-lavender-700 rounded-lg hover:bg-lavender-200 transition-colors"
+                        title="Visualizza questionario"
+                      >
+                        <Eye className="w-4 h-4" />
+                      </button>
+                    </div>
                   </div>
                 </div>
               ))}
@@ -395,6 +621,147 @@ export function ProfileContent({ user }: ProfileContentProps) {
         </motion.div>
       </div>
       </div>
+
+      {/* Modal Visualizza Questionario (readonly) */}
+      {selectedQuestionnaire && (() => {
+        // Seleziona le domande specifiche per lo stile alimentare del questionario
+        const getDietQuestions = (): Question[] => {
+          switch (selectedQuestionnaire.dietType) {
+            case 'ONNIVORO': return OMNIVORE_QUESTIONS;
+            case 'VEGETARIANO': return VEGETARIAN_QUESTIONS;
+            case 'VEGANO': return VEGAN_QUESTIONS;
+            default: return [];
+          }
+        };
+
+        const commonAnswers = JSON.parse(selectedQuestionnaire.commonAnswers || '{}');
+        const dietAnswers = JSON.parse(selectedQuestionnaire.dietAnswers || '{}');
+        const billingData = JSON.parse(selectedQuestionnaire.billingData || '{}');
+        const dietQuestions = getDietQuestions();
+
+        return (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col"
+          >
+            {/* Header Modal */}
+            <div className="flex items-center justify-between p-6 border-b border-sage-100">
+              <div>
+                <h2 className="text-xl font-semibold text-sage-900">
+                  Questionario - {selectedQuestionnaire.dietType}
+                </h2>
+                <p className="text-sm text-sage-500">
+                  Compilato il {format(parseISO(selectedQuestionnaire.createdAt), "d MMMM yyyy 'alle' HH:mm", { locale: it })}
+                </p>
+              </div>
+              <button
+                onClick={() => setSelectedQuestionnaire(null)}
+                className="p-2 hover:bg-sage-100 rounded-lg transition-colors"
+              >
+                <X className="w-5 h-5 text-sage-600" />
+              </button>
+            </div>
+
+            {/* Contenuto Modal - Scrollabile */}
+            <div className="flex-1 overflow-y-auto p-6 space-y-6">
+              {/* Sezione 1: Stile di Vita e Salute (Domande Comuni) */}
+              <div>
+                <h3 className="font-semibold text-sage-800 mb-4 flex items-center gap-2 text-lg">
+                  <Heart className="w-5 h-5 text-lavender-500" />
+                  Stile di Vita e Salute
+                </h3>
+                <div className="space-y-4">
+                  {COMMON_QUESTIONS.map((question) => {
+                    const answer = commonAnswers[question.id];
+                    if (answer === undefined) return null;
+                    return (
+                      <div key={question.id} className="bg-sage-50 p-4 rounded-xl">
+                        <p 
+                          className="text-sm font-medium text-sage-600 mb-2"
+                          dangerouslySetInnerHTML={{ __html: formatBoldText(question.text) }}
+                        />
+                        <p className="text-sage-800 whitespace-pre-wrap bg-white p-3 rounded-lg border border-sage-100">
+                          {String(answer) || '-'}
+                        </p>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Sezione 2: Preferenze Alimentari */}
+              <div>
+                <h3 className="font-semibold text-sage-800 mb-4 flex items-center gap-2 text-lg">
+                  <Utensils className="w-5 h-5 text-lavender-500" />
+                  Preferenze Alimentari - {selectedQuestionnaire.dietType}
+                </h3>
+                <div className="space-y-4">
+                  {dietQuestions.map((question) => {
+                    const answer = dietAnswers[question.id];
+                    if (answer === undefined) return null;
+                    return (
+                      <div key={question.id} className="bg-sage-50 p-4 rounded-xl">
+                        <p 
+                          className="text-sm font-medium text-sage-600 mb-2"
+                          dangerouslySetInnerHTML={{ __html: formatBoldText(question.text) }}
+                        />
+                        <p className="text-sage-800 whitespace-pre-wrap bg-white p-3 rounded-lg border border-sage-100">
+                          {String(answer) || '-'}
+                        </p>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Sezione 3: Dati Fatturazione */}
+              <div>
+                <h3 className="font-semibold text-sage-800 mb-4 flex items-center gap-2 text-lg">
+                  <MapPin className="w-5 h-5 text-lavender-500" />
+                  Dati Fatturazione
+                </h3>
+                <div className="grid md:grid-cols-2 gap-4">
+                  {BILLING_QUESTIONS.map((question) => {
+                    const answer = billingData[question.id];
+                    if (answer === undefined) return null;
+                    return (
+                      <div key={question.id} className="bg-sage-50 p-4 rounded-xl">
+                        <p className="text-sm font-medium text-sage-600 mb-2">{question.text}</p>
+                        <p className="text-sage-800 bg-white p-3 rounded-lg border border-sage-100">
+                          {String(answer) || '-'}
+                        </p>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Privacy */}
+              <div className="bg-green-50 p-4 rounded-xl border border-green-200">
+                <div className="flex items-center gap-2">
+                  <CheckCircle className="w-5 h-5 text-green-600" />
+                  <span className="text-green-800 font-medium">
+                    Consenso privacy: {selectedQuestionnaire.privacyConsent ? 'Autorizzato' : 'Non autorizzato'}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Footer Modal */}
+            <div className="p-4 border-t border-sage-100 bg-sage-50">
+              <button
+                onClick={() => setSelectedQuestionnaire(null)}
+                className="w-full py-2 bg-sage-500 text-white rounded-xl hover:bg-sage-600 transition-colors"
+              >
+                Chiudi
+              </button>
+            </div>
+          </motion.div>
+        </div>
+        );
+      })()}
     </div>
   );
 }

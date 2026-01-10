@@ -400,7 +400,7 @@ export function QuestionnaireFormNew({
                     onChange={() => handleRadioWithTextChange(option, textValue)}
                     className="w-4 h-4 text-sage-600 focus:ring-sage-500"
                   />
-                  <span className="text-sage-700">{option}</span>
+                  <span className="text-sage-700" dangerouslySetInnerHTML={{ __html: formatBoldText(option) }} />
                 </label>
               ))}
             </div>
@@ -436,7 +436,7 @@ export function QuestionnaireFormNew({
                   onChange={(e) => onChange(e.target.value)}
                   className="mt-1 w-4 h-4 text-sage-600 focus:ring-sage-500 flex-shrink-0"
                 />
-                <span className="text-sage-700">{option}</span>
+                <span className="text-sage-700" dangerouslySetInnerHTML={{ __html: formatBoldText(option) }} />
               </label>
             ))}
           </div>
@@ -469,7 +469,7 @@ export function QuestionnaireFormNew({
                     }}
                     className="mt-1 w-4 h-4 text-sage-600 focus:ring-sage-500 flex-shrink-0"
                   />
-                  <span className="text-sage-700">{option}</span>
+                  <span className="text-sage-700" dangerouslySetInnerHTML={{ __html: formatBoldText(option) }} />
                 </label>
               );
             })}

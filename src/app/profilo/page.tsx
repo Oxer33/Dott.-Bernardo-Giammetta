@@ -51,8 +51,8 @@ export default async function ProfiloPage() {
         </div>
       </section>
 
-      {/* Content */}
-      <section className="section">
+      {/* Content - Ridotto padding top per avvicinare al menu */}
+      <section className="py-6 lg:py-8">
         <div className="container-custom">
           <ProfileContent user={session.user} />
         </div>

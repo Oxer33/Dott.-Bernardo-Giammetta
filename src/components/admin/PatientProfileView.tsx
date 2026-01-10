@@ -28,7 +28,20 @@ import {
   XCircle,
   Eye,
   X,
+  Utensils,
+  Heart,
 } from 'lucide-react';
+
+// Import configurazione domande per visualizzare testo completo
+import {
+  COMMON_QUESTIONS,
+  OMNIVORE_QUESTIONS,
+  VEGETARIAN_QUESTIONS,
+  VEGAN_QUESTIONS,
+  BILLING_QUESTIONS,
+  formatBoldText,
+  Question,
+} from '@/lib/questionnaire-config';
 
 // =============================================================================
 // TIPI
@@ -413,7 +426,36 @@ export function PatientProfileView({ patient }: PatientProfileViewProps) {
         </div>
 
         {/* Modal Visualizza Questionario */}
-        {selectedQuestionnaire && (
+        {selectedQuestionnaire && (() => {
+          // Helper per trovare il testo della domanda
+          const getQuestionText = (questionId: string): string => {
+            const allQuestions = [
+              ...COMMON_QUESTIONS,
+              ...OMNIVORE_QUESTIONS,
+              ...VEGETARIAN_QUESTIONS,
+              ...VEGAN_QUESTIONS,
+              ...BILLING_QUESTIONS,
+            ];
+            const question = allQuestions.find(q => q.id === questionId);
+            return question?.text || `Domanda ${questionId.replace('q', '')}`;
+          };
+
+          // Seleziona le domande specifiche per lo stile alimentare del questionario
+          const getDietQuestions = (): Question[] => {
+            switch (selectedQuestionnaire.dietType) {
+              case 'ONNIVORO': return OMNIVORE_QUESTIONS;
+              case 'VEGETARIANO': return VEGETARIAN_QUESTIONS;
+              case 'VEGANO': return VEGAN_QUESTIONS;
+              default: return [];
+            }
+          };
+
+          const commonAnswers = JSON.parse(selectedQuestionnaire.commonAnswers || '{}');
+          const dietAnswers = JSON.parse(selectedQuestionnaire.dietAnswers || '{}');
+          const billingData = JSON.parse(selectedQuestionnaire.billingData || '{}');
+          const dietQuestions = getDietQuestions();
+
+          return (
           <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
@@ -440,58 +482,72 @@ export function PatientProfileView({ patient }: PatientProfileViewProps) {
 
               {/* Contenuto Modal - Scrollabile */}
               <div className="flex-1 overflow-y-auto p-6 space-y-6">
-                {/* Risposte Comuni */}
+                {/* Sezione 1: Stile di Vita e Salute (Domande Comuni) */}
                 <div>
-                  <h3 className="font-semibold text-sage-800 mb-3 flex items-center gap-2">
-                    <ClipboardList className="w-5 h-5 text-lavender-500" />
+                  <h3 className="font-semibold text-sage-800 mb-4 flex items-center gap-2 text-lg">
+                    <Heart className="w-5 h-5 text-lavender-500" />
                     Stile di Vita e Salute
                   </h3>
-                  <div className="space-y-3">
-                    {Object.entries(JSON.parse(selectedQuestionnaire.commonAnswers || '{}')).map(([key, value]) => (
-                      <div key={key} className="bg-sage-50 p-3 rounded-lg">
-                        <p className="text-xs font-medium text-sage-500 mb-1">Domanda {key.replace('q', '')}</p>
-                        <p className="text-sage-800 whitespace-pre-wrap">{String(value) || '-'}</p>
-                      </div>
-                    ))}
+                  <div className="space-y-4">
+                    {COMMON_QUESTIONS.map((question) => {
+                      const answer = commonAnswers[question.id];
+                      if (answer === undefined) return null;
+                      return (
+                        <div key={question.id} className="bg-sage-50 p-4 rounded-xl">
+                          <p 
+                            className="text-sm font-medium text-sage-600 mb-2"
+                            dangerouslySetInnerHTML={{ __html: formatBoldText(question.text) }}
+                          />
+                          <p className="text-sage-800 whitespace-pre-wrap bg-white p-3 rounded-lg border border-sage-100">
+                            {String(answer) || '-'}
+                          </p>
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
 
-                {/* Risposte Specifiche Dieta */}
+                {/* Sezione 2: Preferenze Alimentari (Solo quelle dello stile alimentare selezionato) */}
                 <div>
-                  <h3 className="font-semibold text-sage-800 mb-3 flex items-center gap-2">
-                    <FileText className="w-5 h-5 text-lavender-500" />
-                    Preferenze Alimentari ({selectedQuestionnaire.dietType})
+                  <h3 className="font-semibold text-sage-800 mb-4 flex items-center gap-2 text-lg">
+                    <Utensils className="w-5 h-5 text-lavender-500" />
+                    Preferenze Alimentari - {selectedQuestionnaire.dietType}
                   </h3>
-                  <div className="space-y-3">
-                    {Object.entries(JSON.parse(selectedQuestionnaire.dietAnswers || '{}')).map(([key, value]) => (
-                      <div key={key} className="bg-sage-50 p-3 rounded-lg">
-                        <p className="text-xs font-medium text-sage-500 mb-1">Domanda {key.replace('q', '')}</p>
-                        <p className="text-sage-800 whitespace-pre-wrap">{String(value) || '-'}</p>
-                      </div>
-                    ))}
+                  <div className="space-y-4">
+                    {dietQuestions.map((question) => {
+                      const answer = dietAnswers[question.id];
+                      if (answer === undefined) return null;
+                      return (
+                        <div key={question.id} className="bg-sage-50 p-4 rounded-xl">
+                          <p 
+                            className="text-sm font-medium text-sage-600 mb-2"
+                            dangerouslySetInnerHTML={{ __html: formatBoldText(question.text) }}
+                          />
+                          <p className="text-sage-800 whitespace-pre-wrap bg-white p-3 rounded-lg border border-sage-100">
+                            {String(answer) || '-'}
+                          </p>
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
 
-                {/* Dati Fatturazione */}
+                {/* Sezione 3: Dati Fatturazione */}
                 <div>
-                  <h3 className="font-semibold text-sage-800 mb-3 flex items-center gap-2">
+                  <h3 className="font-semibold text-sage-800 mb-4 flex items-center gap-2 text-lg">
                     <MapPin className="w-5 h-5 text-lavender-500" />
                     Dati Fatturazione
                   </h3>
-                  <div className="grid md:grid-cols-2 gap-3">
-                    {Object.entries(JSON.parse(selectedQuestionnaire.billingData || '{}')).map(([key, value]) => {
-                      const labels: Record<string, string> = {
-                        billingBirthPlace: 'Luogo di nascita',
-                        billingAddress: 'Indirizzo',
-                        billingAddressNumber: 'Numero civico',
-                        billingCap: 'CAP',
-                        billingCity: 'Città',
-                        billingCodiceFiscale: 'Codice Fiscale',
-                      };
+                  <div className="grid md:grid-cols-2 gap-4">
+                    {BILLING_QUESTIONS.map((question) => {
+                      const answer = billingData[question.id];
+                      if (answer === undefined) return null;
                       return (
-                        <div key={key} className="bg-sage-50 p-3 rounded-lg">
-                          <p className="text-xs font-medium text-sage-500 mb-1">{labels[key] || key}</p>
-                          <p className="text-sage-800">{String(value) || '-'}</p>
+                        <div key={question.id} className="bg-sage-50 p-4 rounded-xl">
+                          <p className="text-sm font-medium text-sage-600 mb-2">{question.text}</p>
+                          <p className="text-sage-800 bg-white p-3 rounded-lg border border-sage-100">
+                            {String(answer) || '-'}
+                          </p>
                         </div>
                       );
                     })}
@@ -520,7 +576,8 @@ export function PatientProfileView({ patient }: PatientProfileViewProps) {
               </div>
             </motion.div>
           </div>
-        )}
+          );
+        })()}
       </div>
     </div>
   );

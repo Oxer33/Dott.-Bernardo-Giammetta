@@ -56,19 +56,18 @@ export async function GET() {
       },
     });
 
-    // Parsa i JSON per ogni questionario
-    const parsed = questionnaires.map(q => ({
+    // Serializza le date per JSON
+    const serialized = questionnaires.map(q => ({
       ...q,
-      commonAnswers: JSON.parse(q.commonAnswers),
-      dietAnswers: JSON.parse(q.dietAnswers),
-      billingData: JSON.parse(q.billingData),
+      createdAt: q.createdAt.toISOString(),
+      // Mantieni i JSON come stringhe per il frontend
     }));
 
     return NextResponse.json({
       success: true,
-      questionnaires: parsed,
-      hasQuestionnaire: parsed.length > 0,
-      latestQuestionnaire: parsed[0] || null,
+      questionnaires: serialized,
+      hasQuestionnaire: serialized.length > 0,
+      latestQuestionnaire: serialized[0] || null,
     });
 
   } catch (error) {
