@@ -300,6 +300,17 @@
    ```
 3. **Attendi approvazione SES**: produzione (caso #176743190600620)
 
+### 🔧 Profilo Paziente + Questionari + Agenda - 10/01/2026 (Sessione 22) ✅ COMPLETATO
+- [x] **Fix grassetto opzioni radio q17**: le opzioni ora mostrano grassetto invece di asterischi
+- [x] **Modal admin questionari migliorato**: testo completo domande, categorie, filtro stile alimentare
+- [x] **Fix salvataggio profilo paziente**: ora funziona correttamente con tutti i campi
+- [x] **Dati anagrafici in /profilo**: luogo nascita, codice fiscale, indirizzo, città, CAP, email contatto
+- [x] **Input telefono solo numeri**: rimosso +39 dal placeholder, accetta solo cifre
+- [x] **Ridotto spazio fascia viola/menu**: py-6 invece di section class
+- [x] **Questionari visibili in /profilo paziente**: lista con bottone "occhio" per visualizzare
+- [x] **Modal readonly questionari paziente**: stesso formato admin, divide per categorie, mostra testo completo
+- [x] **Time shift 48h agenda paziente**: l'agenda dei pazienti parte dalla settimana con 48h minime, bottone indietro disabilitato
+
 ### 🔧 Questionario Testi Originali + Admin - 10/01/2026 (Sessione 21) ✅ COMPLETATO
 - [x] **Fix bug radio q17**: confronto esatto invece di solo prima parola (tutte iniziavano con "Vuoi")
 - [x] **Admin visualizza questionari**: modal con dettagli completi (commonAnswers, dietAnswers, billingData)
