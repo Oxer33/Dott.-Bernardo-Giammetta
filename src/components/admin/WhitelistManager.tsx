@@ -62,7 +62,15 @@ export function WhitelistManager() {
   const [error, setError] = useState<string | null>(null);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
+  const [removeConfirm, setRemoveConfirm] = useState<string | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
+  
+  // Modal di conferma centrale
+  const [showConfirmModal, setShowConfirmModal] = useState<{
+    type: 'remove' | 'delete';
+    patientId: string;
+    patientName: string;
+  } | null>(null);
 
   // Carica pazienti dal database
   const loadPatients = async () => {
@@ -288,7 +296,16 @@ export function WhitelistManager() {
               transition={{ delay: index * 0.03 }}
               className="p-4 flex items-center justify-between hover:bg-sage-50 transition-colors"
             >
-              <div className="flex items-center gap-4">
+              {/* Bottone Apri a sinistra */}
+              <Link
+                href={`/admin/paziente/${patient.id}`}
+                className="px-3 py-1.5 bg-lavender-100 text-lavender-700 text-sm rounded-lg hover:bg-lavender-200 transition-colors whitespace-nowrap flex items-center gap-1 mr-4"
+              >
+                <ExternalLink className="w-3 h-3" />
+                <span>Apri</span>
+              </Link>
+              
+              <div className="flex items-center gap-4 flex-1">
                 <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
                   patient.isWhitelisted ? 'bg-green-100' : 'bg-yellow-100'
                 }`}>
@@ -345,15 +362,6 @@ export function WhitelistManager() {
                     </>
                   ) : (
                     <div className="flex flex-wrap gap-1 justify-end">
-                      {/* Bottone Apri Paziente */}
-                      <Link
-                        href={`/admin/paziente/${patient.id}`}
-                        className="px-2 sm:px-3 py-1 bg-lavender-100 text-lavender-700 text-xs sm:text-sm rounded-lg hover:bg-lavender-200 transition-colors whitespace-nowrap flex items-center gap-1"
-                      >
-                        <ExternalLink className="w-3 h-3" />
-                        <span className="hidden sm:inline">Apri</span>
-                      </Link>
-                      
                       {!patient.isWhitelisted ? (
                         <button
                           onClick={() => handleWhitelist(patient.id, 'whitelist')}
@@ -363,14 +371,26 @@ export function WhitelistManager() {
                         </button>
                       ) : (
                         <button
-                          onClick={() => handleWhitelist(patient.id, 'unwhitelist')}
+                          onClick={() => setShowConfirmModal({
+                            type: 'remove',
+                            patientId: patient.id,
+                            patientName: patient.firstName && patient.lastName 
+                              ? `${patient.firstName} ${patient.lastName}`
+                              : patient.name || patient.email
+                          })}
                           className="px-2 sm:px-3 py-1 bg-orange-100 text-orange-600 text-xs sm:text-sm rounded-lg hover:bg-orange-200 transition-colors whitespace-nowrap"
                         >
                           Rimuovi
                         </button>
                       )}
                       <button
-                        onClick={() => setDeleteConfirm(patient.id)}
+                        onClick={() => setShowConfirmModal({
+                          type: 'delete',
+                          patientId: patient.id,
+                          patientName: patient.firstName && patient.lastName 
+                            ? `${patient.firstName} ${patient.lastName}`
+                            : patient.name || patient.email
+                        })}
                         className="p-1.5 hover:bg-red-100 rounded transition-colors"
                         title="Elimina paziente"
                       >
@@ -384,6 +404,78 @@ export function WhitelistManager() {
           ))
         )}
       </div>
+      
+      {/* Modal di conferma centrale */}
+      {showConfirmModal && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6"
+          >
+            <div className="text-center">
+              {showConfirmModal.type === 'remove' ? (
+                <>
+                  <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-orange-100 flex items-center justify-center">
+                    <UserX className="w-8 h-8 text-orange-600" />
+                  </div>
+                  <h3 className="text-xl font-semibold text-sage-900 mb-2">
+                    Rimuovere {showConfirmModal.patientName}?
+                  </h3>
+                  <p className="text-sage-600 mb-6">
+                    Questa azione <strong>toglierà al paziente la possibilità di prenotare visite</strong>. 
+                    Il paziente dovrà essere nuovamente approvato per poter accedere all&apos;agenda.
+                    I suoi dati e lo storico appuntamenti verranno mantenuti.
+                  </p>
+                </>
+              ) : (
+                <>
+                  <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-red-100 flex items-center justify-center">
+                    <Trash2 className="w-8 h-8 text-red-600" />
+                  </div>
+                  <h3 className="text-xl font-semibold text-sage-900 mb-2">
+                    Eliminare {showConfirmModal.patientName}?
+                  </h3>
+                  <p className="text-sage-600 mb-2">
+                    <strong className="text-red-600">⚠️ ATTENZIONE: Azione irreversibile!</strong>
+                  </p>
+                  <p className="text-sage-600 mb-6">
+                    Questa azione <strong>eliminerà definitivamente tutti i dati del paziente</strong>, 
+                    inclusi questionari, appuntamenti e storico visite. 
+                    Non sarà possibile recuperare questi dati.
+                  </p>
+                </>
+              )}
+              
+              <div className="flex gap-3 justify-center">
+                <button
+                  onClick={() => setShowConfirmModal(null)}
+                  className="px-6 py-2.5 bg-gray-100 text-gray-700 rounded-xl font-medium hover:bg-gray-200 transition-colors"
+                >
+                  Annulla
+                </button>
+                <button
+                  onClick={async () => {
+                    if (showConfirmModal.type === 'remove') {
+                      await handleWhitelist(showConfirmModal.patientId, 'unwhitelist');
+                    } else {
+                      await handleDelete(showConfirmModal.patientId);
+                    }
+                    setShowConfirmModal(null);
+                  }}
+                  className={`px-6 py-2.5 text-white rounded-xl font-medium transition-colors ${
+                    showConfirmModal.type === 'remove' 
+                      ? 'bg-orange-500 hover:bg-orange-600' 
+                      : 'bg-red-500 hover:bg-red-600'
+                  }`}
+                >
+                  {showConfirmModal.type === 'remove' ? 'Rimuovi' : 'Elimina definitivamente'}
+                </button>
+              </div>
+            </div>
+          </motion.div>
+        </div>
+      )}
     </div>
   );
 }

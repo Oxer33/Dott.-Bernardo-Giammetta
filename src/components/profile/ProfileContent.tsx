@@ -611,7 +611,7 @@ export function ProfileContent({ user }: ProfileContentProps) {
           <div className="space-y-2 text-sm">
             <a href="tel:+393920979135" className="flex items-center gap-2 text-lavender-700 hover:text-lavender-900">
               <Phone className="w-4 h-4" />
-              +39 392 0979135
+              +39 392 0979135 (Whatsapp o SMS)
             </a>
             <a href="mailto:info@bernardogiammetta.com" className="flex items-center gap-2 text-lavender-700 hover:text-lavender-900">
               <Mail className="w-4 h-4" />

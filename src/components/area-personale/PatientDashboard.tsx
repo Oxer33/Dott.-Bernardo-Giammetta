@@ -550,7 +550,7 @@ export function PatientDashboard({ user }: PatientDashboardProps) {
                   <div className="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center">
                     <Phone className="w-5 h-5 text-orange-500" />
                   </div>
-                  <span className="text-sm">+39 392 0979135</span>
+                  <span className="text-sm">+39 392 0979135 (Whatsapp o SMS)</span>
                 </a>
                 <a
                   href="mailto:info@bernardogiammetta.com"

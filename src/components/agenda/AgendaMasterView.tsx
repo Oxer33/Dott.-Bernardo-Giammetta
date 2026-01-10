@@ -44,17 +44,8 @@ export function AgendaMasterView() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-cream-50">
-      {/* Header compatto per master */}
-      <header className="bg-white border-b border-sage-100 sticky top-0 z-40">
-        <div className="container-custom py-4">
-          <h1 className="text-2xl font-display font-bold text-sage-900">
-            Agenda Appuntamenti
-          </h1>
-        </div>
-      </header>
-
-      <div className="container-custom py-6">
+    <div className="min-h-screen bg-cream-50 py-8">
+      <div className="container-custom">
         {/* Bottoni navigazione master (6 bottoni come in altre sezioni) */}
         <div className="flex flex-wrap gap-2 mb-6">
           <Link
