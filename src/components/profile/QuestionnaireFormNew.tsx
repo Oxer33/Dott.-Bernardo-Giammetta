@@ -21,8 +21,10 @@ import {
   ClipboardList,
   Receipt,
   Shield,
-  Loader2
+  Loader2,
+  MapPin
 } from 'lucide-react';
+import { ComuneAutocomplete } from '@/components/ui/ComuneAutocomplete';
 import {
   COMMON_QUESTIONS,
   DIET_TYPE_QUESTION,
@@ -650,7 +652,49 @@ export function QuestionnaireFormNew({
                 </p>
               </div>
               
-              {BILLING_QUESTIONS.map((q) => 
+              {/* Luogo di nascita con autocomplete */}
+              <div className="bg-white rounded-xl p-4 border border-sage-200">
+                <ComuneAutocomplete
+                  value={billingData.billingBirthPlace || ''}
+                  onChange={(val) => setBillingData(prev => ({ ...prev, billingBirthPlace: val }))}
+                  onComuneSelect={(comune) => {
+                    // Salva anche il codice catastale per il calcolo CF
+                    setBillingData(prev => ({ 
+                      ...prev, 
+                      billingBirthPlace: comune.nome,
+                      billingBirthProvince: comune.provincia,
+                      billingBirthCodice: comune.codiceCatastale
+                    }));
+                  }}
+                  label="Luogo di nascita"
+                  placeholder="Inizia a digitare il nome del comune..."
+                  required
+                />
+              </div>
+
+              {/* Città di residenza con autocomplete */}
+              <div className="bg-white rounded-xl p-4 border border-sage-200">
+                <ComuneAutocomplete
+                  value={billingData.billingCity || ''}
+                  onChange={(val) => setBillingData(prev => ({ ...prev, billingCity: val }))}
+                  onComuneSelect={(comune) => {
+                    // Compila automaticamente provincia e suggerisci CAP
+                    setBillingData(prev => ({ 
+                      ...prev, 
+                      billingCity: comune.nome,
+                      billingProvince: comune.provincia
+                    }));
+                  }}
+                  label="Città di residenza"
+                  placeholder="Inizia a digitare il nome del comune..."
+                  required
+                />
+              </div>
+              
+              {/* Altri campi billing (via, numero, CAP, CF) */}
+              {BILLING_QUESTIONS.filter(q => 
+                !['billingBirthPlace', 'billingCity'].includes(q.id)
+              ).map((q) => 
                 renderQuestion(q, billingData[q.id] || '', (val) => 
                   setBillingData(prev => ({ ...prev, [q.id]: val }))
                 )
