@@ -300,6 +300,20 @@
    ```
 3. **Attendi approvazione SES**: produzione (caso #176743190600620)
 
+### 🔧 Questionario + Admin UX - 10/01/2026 (Sessione 19) ✅ COMPLETATO
+- [x] **Bottone Blacklist menu admin**: aggiunto in dashboard e agenda (rosso con badge)
+- [x] **Filtri visite paziente admin**: tutti/confermati/cancellati in PatientProfileView
+- [x] **Questionario sez.1 semplificata**: solo numero telefono + email contatto
+- [x] **Validazione telefono**: solo numeri (no lettere/simboli)
+- [x] **Email contatto**: campo separato con dicitura "Inserisci email dove comunicare informazioni e materiali utili al percorso"
+- [x] **Domanda q5 (percorso alimentare)**: radio Sì/No + textarea condizionale "Scrivi qui"
+- [x] **Domanda q6 (lavoro)**: placeholder semplificato "Scrivi qui"
+- [x] **Domanda q8 (attività fisica)**: elenco puntato FUORI dalla textarea, placeholder "Scrivi qui"
+- [x] **Domanda q9 (fumo)**: radio Sì/No + textarea condizionale disabilitata se No
+- [x] **Domande q10, q11, q15, q16, q17**: elenchi puntati spostati fuori dal placeholder
+- [x] **Nuovo tipo Question**: `textarea-with-radio` con `radioOptions`, `conditionalOnRadio`, `bulletPoints`
+- ⚠️ **Data nascita/sesso registrazione**: richiede configurazione attributi custom su AWS Cognito Console
+
 ### 🔧 UX Miglioramenti + Navigazione - 09/01/2026 (Sessione 18) ✅ COMPLETATO
 - [x] **Recidivi DB**: nuovo campo `blacklistCount` per tracciare storico rientri blacklist
 - [x] **Questionario modificabile**: dati profilo editabili (nome, telefono, data nascita) tranne email
@@ -629,4 +643,4 @@ COGNITO_PATIENTS_ISSUER=https://cognito-idp.eu-north-1.amazonaws.com/eu-north-1_
 
 ---
 
-*Ultimo aggiornamento: 09 Gennaio 2026 - 12:00*
+*Ultimo aggiornamento: 10 Gennaio 2026 - 11:00*
