@@ -7,7 +7,7 @@
 export interface Question {
   id: string;
   text: string;
-  type: 'text' | 'textarea' | 'radio' | 'checkbox' | 'textarea-with-radio';
+  type: 'text' | 'textarea' | 'radio' | 'checkbox' | 'textarea-with-radio' | 'radio-with-textarea';
   required: boolean;
   placeholder?: string;
   options?: string[];
@@ -86,7 +86,7 @@ export const COMMON_QUESTIONS: Question[] = [
   },
   {
     id: 'q11',
-    text: 'Riguardo al Ciclo (se maschio scrivi "non applicabile"):',
+    text: 'Riguardo al Ciclo (se maschio scrivi "M"):',
     type: 'textarea',
     required: true,
     bulletPoints: [
@@ -96,7 +96,7 @@ export const COMMON_QUESTIONS: Question[] = [
       'Assumi farmaci/integratori per ciclo?',
       'Vorresti integrazione naturale?'
     ],
-    placeholder: 'Scrivi qui',
+    placeholder: 'Scrivi qui oppure "M" se maschio',
   },
   {
     id: 'q12',
@@ -144,15 +144,15 @@ export const COMMON_QUESTIONS: Question[] = [
   },
   {
     id: 'q17',
-    text: 'Qual è il tuo obiettivo personale per cui vuoi iniziare questo percorso?',
-    type: 'textarea',
+    text: 'Qual è il tuo obiettivo personale per cui vuoi iniziare questo percorso? Indicami se:',
+    type: 'radio-with-textarea',
     required: true,
-    bulletPoints: [
-      'Ridurre grasso/peso?',
-      'Aumentare peso/massa muscolare?',
-      'Mantenere peso migliorando alimentazione/forma fisica?'
+    options: [
+      'Vuoi RIDURRE il grasso corporeo, quindi il peso, migliorando l\'alimentazione',
+      'Vuoi AUMENTARE il peso e anche la massa muscolare (valido solo se ci alleniamo) migliorando l\'alimentazione',
+      'Vuoi MANTENERE il peso migliorando solamente l\'alimentazione e anche lo stato di forma fisica (valido solo se ci alleniamo)'
     ],
-    placeholder: 'Scrivi qui',
+    placeholder: 'Note aggiuntive (opzionale)',
   },
 ];
 
@@ -269,21 +269,34 @@ export const OMNIVORE_QUESTIONS: Question[] = [
     text: 'Quali pasti principali (colazione, pranzo, cena) consumi a casa e quali fuori durante la settimana?',
     type: 'textarea',
     required: true,
-    placeholder: '1) Quante volte a settimana fuori? 2) Dove (Mensa, Bar, Gastronomia, Ristorante, porti da casa)? 3) Considereresti portarli da casa o preferisci orientamenti per gestione fuori?',
+    bulletPoints: [
+      'Quante volte a settimana fuori?',
+      'Dove (Mensa, Bar, Gastronomia, Ristorante, porti da casa)?',
+      'Considereresti portarli da casa o preferisci orientamenti per gestione fuori?'
+    ],
+    placeholder: 'Scrivi qui',
   },
   {
     id: 'q31',
     text: 'Quanti pasti fai abitualmente ogni giorno?',
     type: 'textarea',
     required: true,
-    placeholder: '1) Quali esattamente (colazione, pranzo, cena, spuntini...)? 2) Se non fai 5 pasti (colazione, pranzo, cena + 2 spuntini), saresti disposto/a a farne almeno 5?',
+    bulletPoints: [
+      'Quali esattamente (colazione, pranzo, cena, spuntini...)?',
+      'Se non fai 5 pasti (colazione, pranzo, cena + 2 spuntini), saresti disposto/a a farne almeno 5?'
+    ],
+    placeholder: 'Scrivi qui',
   },
   {
     id: 'q32',
     text: 'Riguardo alla tipologia di colazione:',
     type: 'textarea',
     required: true,
-    placeholder: '1) Preferisci dolce, salata o entrambe? 2) Necessità particolari (alimento che non può mancare, abbinamento indispensabile...)?',
+    bulletPoints: [
+      'Preferisci dolce, salata o entrambe?',
+      'Necessità particolari (alimento che non può mancare, abbinamento indispensabile...)?'
+    ],
+    placeholder: 'Scrivi qui',
   },
   {
     id: 'q33',
@@ -297,21 +310,35 @@ export const OMNIVORE_QUESTIONS: Question[] = [
     text: 'In merito al caffè (se non lo consumi scrivi "NO"):',
     type: 'textarea',
     required: true,
-    placeholder: '1) Quanti caffè al giorno? 2) Amari o dolcificati (zucchero/Stevia/Eritritolo)? 3) Considereresti dolcificanti acalorici naturali?',
+    bulletPoints: [
+      'Quanti caffè al giorno?',
+      'Amari o dolcificati (zucchero/Stevia/Eritritolo)?',
+      'Considereresti dolcificanti acalorici naturali?'
+    ],
+    placeholder: 'Scrivi qui',
   },
   {
     id: 'q35',
     text: 'Se consumi spuntini durante il giorno (se non li consumi scrivi "NO"):',
     type: 'textarea',
     required: true,
-    placeholder: '1) Cosa consumi abitualmente? 2) Necessità particolari (alimento indispensabile, spuntini pratici fuori casa...)?',
+    bulletPoints: [
+      'Cosa consumi abitualmente?',
+      'Necessità particolari (alimento indispensabile, spuntini pratici fuori casa...)?'
+    ],
+    placeholder: 'Scrivi qui',
   },
   {
     id: 'q36',
     text: 'Riguardo al pranzo:',
     type: 'textarea',
     required: true,
-    placeholder: '1) Consumi primo (pasta/riso) o secondo (pietanza) o entrambi? 2) È importante chiudere con frutta fresca? 3) Necessità particolari?',
+    bulletPoints: [
+      'Consumi primo (pasta/riso) o secondo (pietanza) o entrambi?',
+      'È importante chiudere con frutta fresca?',
+      'Necessità particolari?'
+    ],
+    placeholder: 'Scrivi qui',
   },
   {
     id: 'q37',
@@ -350,7 +377,13 @@ export const OMNIVORE_QUESTIONS: Question[] = [
     text: 'Riguardo agli alcolici:',
     type: 'textarea',
     required: true,
-    placeholder: '1) Bevi alcolici? 2) Quotidianamente o solo weekend? 3) Quantità (bicchieri vino, birre piccole/grandi, drink)? 4) Potresti farne a meno o ridurli?',
+    bulletPoints: [
+      'Bevi alcolici?',
+      'Quotidianamente o solo weekend?',
+      'Quantità (bicchieri vino, birre piccole/grandi, drink)?',
+      'Potresti farne a meno o ridurli?'
+    ],
+    placeholder: 'Scrivi qui',
   },
   {
     id: 'q42',
@@ -419,21 +452,34 @@ export const VEGETARIAN_QUESTIONS: Question[] = [
     text: 'Quali pasti principali (colazione, pranzo, cena) consumi a casa e quali fuori durante la settimana?',
     type: 'textarea',
     required: true,
-    placeholder: '1) Quante volte a settimana fuori? 2) Dove (Mensa, Bar, Gastronomia, Ristorante, porti da casa)? 3) Considereresti portarli da casa o preferisci orientamenti per gestione fuori?',
+    bulletPoints: [
+      'Quante volte a settimana fuori?',
+      'Dove (Mensa, Bar, Gastronomia, Ristorante, porti da casa)?',
+      'Considereresti portarli da casa o preferisci orientamenti per gestione fuori?'
+    ],
+    placeholder: 'Scrivi qui',
   },
   {
     id: 'q52',
     text: 'Quanti pasti fai abitualmente ogni giorno?',
     type: 'textarea',
     required: true,
-    placeholder: '1) Quali esattamente (colazione, pranzo, cena, spuntini...)? 2) Se non fai 5 pasti, saresti disposto/a a farne almeno 5?',
+    bulletPoints: [
+      'Quali esattamente (colazione, pranzo, cena, spuntini...)?',
+      'Se non fai 5 pasti, saresti disposto/a a farne almeno 5?'
+    ],
+    placeholder: 'Scrivi qui',
   },
   {
     id: 'q53',
     text: 'Riguardo alla tipologia di colazione:',
     type: 'textarea',
     required: true,
-    placeholder: '1) Preferisci dolce, salata o entrambe? 2) Necessità particolari?',
+    bulletPoints: [
+      'Preferisci dolce, salata o entrambe?',
+      'Necessità particolari?'
+    ],
+    placeholder: 'Scrivi qui',
   },
   {
     id: 'q54',
@@ -447,21 +493,35 @@ export const VEGETARIAN_QUESTIONS: Question[] = [
     text: 'In merito al caffè (se non lo consumi scrivi "NO"):',
     type: 'textarea',
     required: true,
-    placeholder: '1) Quanti caffè al giorno? 2) Amari o dolcificati? 3) Considereresti dolcificanti acalorici naturali?',
+    bulletPoints: [
+      'Quanti caffè al giorno?',
+      'Amari o dolcificati?',
+      'Considereresti dolcificanti acalorici naturali?'
+    ],
+    placeholder: 'Scrivi qui',
   },
   {
     id: 'q56',
     text: 'Se consumi spuntini durante il giorno (se non li consumi scrivi "NO"):',
     type: 'textarea',
     required: true,
-    placeholder: '1) Cosa consumi abitualmente? 2) Necessità particolari?',
+    bulletPoints: [
+      'Cosa consumi abitualmente?',
+      'Necessità particolari?'
+    ],
+    placeholder: 'Scrivi qui',
   },
   {
     id: 'q57',
     text: 'Riguardo al pranzo:',
     type: 'textarea',
     required: true,
-    placeholder: '1) Consumi primo o secondo o entrambi? 2) È importante chiudere con frutta fresca? 3) Necessità particolari?',
+    bulletPoints: [
+      'Consumi primo o secondo o entrambi?',
+      'È importante chiudere con frutta fresca?',
+      'Necessità particolari?'
+    ],
+    placeholder: 'Scrivi qui',
   },
   {
     id: 'q58',
@@ -500,7 +560,13 @@ export const VEGETARIAN_QUESTIONS: Question[] = [
     text: 'Riguardo agli alcolici:',
     type: 'textarea',
     required: true,
-    placeholder: '1) Bevi alcolici? 2) Quotidianamente o solo weekend? 3) Quantità? 4) Potresti farne a meno o ridurli?',
+    bulletPoints: [
+      'Bevi alcolici?',
+      'Quotidianamente o solo weekend?',
+      'Quantità?',
+      'Potresti farne a meno o ridurli?'
+    ],
+    placeholder: 'Scrivi qui',
   },
   {
     id: 'q63',
@@ -553,21 +619,34 @@ export const VEGAN_QUESTIONS: Question[] = [
     text: 'Quali pasti principali (colazione, pranzo, cena) consumi a casa e quali fuori durante la settimana?',
     type: 'textarea',
     required: true,
-    placeholder: '1) Quante volte a settimana fuori? 2) Dove? 3) Considereresti portarli da casa?',
+    bulletPoints: [
+      'Quante volte a settimana fuori?',
+      'Dove?',
+      'Considereresti portarli da casa?'
+    ],
+    placeholder: 'Scrivi qui',
   },
   {
     id: 'q71',
     text: 'Quanti pasti fai abitualmente ogni giorno?',
     type: 'textarea',
     required: true,
-    placeholder: '1) Quali esattamente? 2) Se non fai 5 pasti, saresti disposto/a a farne almeno 5?',
+    bulletPoints: [
+      'Quali esattamente?',
+      'Se non fai 5 pasti, saresti disposto/a a farne almeno 5?'
+    ],
+    placeholder: 'Scrivi qui',
   },
   {
     id: 'q72',
     text: 'Riguardo alla tipologia di colazione:',
     type: 'textarea',
     required: true,
-    placeholder: '1) Preferisci dolce, salata o entrambe? 2) Necessità particolari?',
+    bulletPoints: [
+      'Preferisci dolce, salata o entrambe?',
+      'Necessità particolari?'
+    ],
+    placeholder: 'Scrivi qui',
   },
   {
     id: 'q73',
@@ -581,21 +660,35 @@ export const VEGAN_QUESTIONS: Question[] = [
     text: 'In merito al caffè (se non lo consumi scrivi "NO"):',
     type: 'textarea',
     required: true,
-    placeholder: '1) Quanti caffè al giorno? 2) Amari o dolcificati? 3) Considereresti dolcificanti acalorici naturali?',
+    bulletPoints: [
+      'Quanti caffè al giorno?',
+      'Amari o dolcificati?',
+      'Considereresti dolcificanti acalorici naturali?'
+    ],
+    placeholder: 'Scrivi qui',
   },
   {
     id: 'q75',
     text: 'Se consumi spuntini durante il giorno (se non li consumi scrivi "NO"):',
     type: 'textarea',
     required: true,
-    placeholder: '1) Cosa consumi abitualmente? 2) Necessità particolari?',
+    bulletPoints: [
+      'Cosa consumi abitualmente?',
+      'Necessità particolari?'
+    ],
+    placeholder: 'Scrivi qui',
   },
   {
     id: 'q76',
     text: 'Riguardo al pranzo:',
     type: 'textarea',
     required: true,
-    placeholder: '1) Consumi primo o secondo o entrambi? 2) È importante chiudere con frutta fresca? 3) Necessità particolari?',
+    bulletPoints: [
+      'Consumi primo o secondo o entrambi?',
+      'È importante chiudere con frutta fresca?',
+      'Necessità particolari?'
+    ],
+    placeholder: 'Scrivi qui',
   },
   {
     id: 'q77',
@@ -634,7 +727,13 @@ export const VEGAN_QUESTIONS: Question[] = [
     text: 'Riguardo agli alcolici:',
     type: 'textarea',
     required: true,
-    placeholder: '1) Bevi alcolici? 2) Quotidianamente o solo weekend? 3) Quantità? 4) Potresti farne a meno o ridurli?',
+    bulletPoints: [
+      'Bevi alcolici?',
+      'Quotidianamente o solo weekend?',
+      'Quantità?',
+      'Potresti farne a meno o ridurli?'
+    ],
+    placeholder: 'Scrivi qui',
   },
   {
     id: 'q82',

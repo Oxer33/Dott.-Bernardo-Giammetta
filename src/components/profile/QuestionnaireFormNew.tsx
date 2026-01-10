@@ -136,6 +136,8 @@ export function QuestionnaireFormNew({
   // State navigazione
   const [currentSection, setCurrentSection] = useState<Section>('profile');
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+  // Traccia le sezioni visitate per mostrare warning arancione se incomplete
+  const [visitedSections, setVisitedSections] = useState<Section[]>(['profile']);
   
   // State UI
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -288,7 +290,9 @@ export function QuestionnaireFormNew({
       if (sections[nextIndex] === 'dietSpecific' && !selectedDietType) {
         nextIndex++;
       }
-      setCurrentSection(sections[nextIndex]);
+      const nextSection = sections[nextIndex];
+      setCurrentSection(nextSection);
+      setVisitedSections(prev => prev.includes(nextSection) ? prev : [...prev, nextSection]);
       setCurrentQuestionIndex(0);
     }
   };
@@ -324,8 +328,11 @@ export function QuestionnaireFormNew({
       }
     };
 
+    // Determina se la domanda è mancante (required ma senza valore)
+    const isMissing = question.required && !value?.trim();
+
     return (
-      <div key={question.id} className="mb-6">
+      <div key={question.id} className={`mb-6 ${isMissing ? 'p-3 rounded-xl border-2 border-orange-300 bg-orange-50/30' : ''}`}>
         <label className="block text-sage-800 font-medium mb-2">
           {question.text}
           {question.required && <span className="text-red-500 ml-1">*</span>}
@@ -333,7 +340,7 @@ export function QuestionnaireFormNew({
         
         {question.hint && (
           <p className="text-sm text-sage-500 mb-3 bg-sage-50 p-3 rounded-lg">
-            💡 {question.hint}
+            {question.hint}
           </p>
         )}
 
@@ -420,7 +427,7 @@ export function QuestionnaireFormNew({
             {question.options.map((option, idx) => (
               <label
                 key={idx}
-                className={`flex items-start gap-3 p-4 rounded-xl border cursor-pointer transition-all ${
+                className={`flex items-start gap-3 p-4 rounded-xl border cursor-pointer transition-all min-h-[60px] ${
                   value === option
                     ? 'border-sage-500 bg-sage-50'
                     : 'border-sage-200 hover:border-sage-300'
@@ -432,11 +439,56 @@ export function QuestionnaireFormNew({
                   value={option}
                   checked={value === option}
                   onChange={(e) => onChange(e.target.value)}
-                  className="mt-1 w-4 h-4 text-sage-600 focus:ring-sage-500"
+                  className="mt-1 w-4 h-4 text-sage-600 focus:ring-sage-500 flex-shrink-0"
                 />
                 <span className="text-sage-700">{option}</span>
               </label>
             ))}
+          </div>
+        )}
+
+        {/* Nuovo tipo: radio multipli + textarea per note aggiuntive */}
+        {question.type === 'radio-with-textarea' && question.options && (
+          <div className="space-y-3">
+            {question.options.map((option, idx) => {
+              const isSelected = value.startsWith(option.split(' ')[0]);
+              return (
+                <label
+                  key={idx}
+                  className={`flex items-start gap-3 p-4 rounded-xl border cursor-pointer transition-all min-h-[60px] ${
+                    isSelected
+                      ? 'border-sage-500 bg-sage-50'
+                      : 'border-sage-200 hover:border-sage-300'
+                  }`}
+                >
+                  <input
+                    type="radio"
+                    name={`question-${question.id}`}
+                    value={option}
+                    checked={isSelected}
+                    onChange={() => {
+                      const currentNote = value.includes('|') ? value.split('|')[1] : '';
+                      onChange(currentNote ? `${option}|${currentNote}` : option);
+                    }}
+                    className="mt-1 w-4 h-4 text-sage-600 focus:ring-sage-500 flex-shrink-0"
+                  />
+                  <span className="text-sage-700">{option}</span>
+                </label>
+              );
+            })}
+            {/* Textarea per note aggiuntive */}
+            <textarea
+              value={value.includes('|') ? value.split('|')[1] : ''}
+              onChange={(e) => {
+                const selectedOption = question.options?.find(opt => value.startsWith(opt.split(' ')[0])) || '';
+                onChange(e.target.value ? `${selectedOption}|${e.target.value}` : selectedOption);
+              }}
+              placeholder={question.placeholder}
+              rows={3}
+              className="w-full px-4 py-3 rounded-xl border border-sage-200 
+                       focus:border-sage-400 focus:ring-2 focus:ring-sage-100
+                       outline-none text-sage-800 placeholder:text-sage-400 resize-none"
+            />
           </div>
         )}
       </div>
@@ -554,18 +606,38 @@ export function QuestionnaireFormNew({
             </div>
           )}
 
-          {currentSection === 'dietSpecific' && selectedDietType && (
+          {currentSection === 'dietSpecific' && (
             <div className="space-y-6">
-              <div className="bg-lavender-50 border border-lavender-200 rounded-xl p-4 mb-6">
-                <p className="text-lavender-700 font-medium">
-                  Domande per: {selectedDietType}
-                </p>
-              </div>
-              
-              {dietSpecificQuestions.map((q) => 
-                renderQuestion(q, dietAnswers[q.id] || '', (val) => 
-                  setDietAnswers(prev => ({ ...prev, [q.id]: val }))
-                )
+              {!selectedDietType ? (
+                <div className="bg-orange-50 border border-orange-200 rounded-xl p-6 text-center">
+                  <AlertCircle className="w-12 h-12 text-orange-500 mx-auto mb-3" />
+                  <p className="text-orange-700 font-medium text-lg mb-2">
+                    Seleziona prima il tuo Stile Alimentare
+                  </p>
+                  <p className="text-orange-600 text-sm mb-4">
+                    Per compilare questa sezione devi prima indicare se sei onnivoro, vegetariano o vegano nella sezione &quot;Stile Alimentare&quot;.
+                  </p>
+                  <button
+                    onClick={() => setCurrentSection('dietType')}
+                    className="px-4 py-2 bg-orange-500 text-white rounded-xl hover:bg-orange-600 transition-colors"
+                  >
+                    Vai a Stile Alimentare
+                  </button>
+                </div>
+              ) : (
+                <>
+                  <div className="bg-lavender-50 border border-lavender-200 rounded-xl p-4 mb-6">
+                    <p className="text-lavender-700 font-medium">
+                      Domande per: {selectedDietType}
+                    </p>
+                  </div>
+                  
+                  {dietSpecificQuestions.map((q) => 
+                    renderQuestion(q, dietAnswers[q.id] || '', (val) => 
+                      setDietAnswers(prev => ({ ...prev, [q.id]: val }))
+                    )
+                  )}
+                </>
               )}
             </div>
           )}
@@ -731,23 +803,32 @@ export function QuestionnaireFormNew({
 
       {/* Navigation Tabs */}
       <div className="flex flex-wrap gap-2 mb-6">
-        {sections
-          .filter(s => s !== 'dietSpecific' || selectedDietType)
-          .map((section, idx) => {
+        {sections.map((section, idx) => {
+            // Mostra sempre dietSpecific ma con avviso se non c'è dieta selezionata
             const isActive = currentSection === section;
             const isComplete = isSectionComplete(section);
+            const isVisited = visitedSections.includes(section);
+            const isIncomplete = isVisited && !isComplete && !isActive;
             const SectionIcon = SECTION_INFO[section].icon;
+            
+            // Nascondi dietSpecific solo se non ha senso mostrarla
+            // Ma ora la mostriamo sempre per l'avviso
             
             return (
               <button
                 key={section}
-                onClick={() => setCurrentSection(section)}
+                onClick={() => {
+                  setCurrentSection(section);
+                  setVisitedSections(prev => prev.includes(section) ? prev : [...prev, section]);
+                }}
                 className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all ${
                   isActive
                     ? 'bg-sage-500 text-white'
                     : isComplete
                       ? 'bg-green-100 text-green-700 hover:bg-green-200'
-                      : 'bg-sage-100 text-sage-600 hover:bg-sage-200'
+                      : isIncomplete
+                        ? 'bg-orange-100 text-orange-700 hover:bg-orange-200 border border-orange-300'
+                        : 'bg-sage-100 text-sage-600 hover:bg-sage-200'
                 }`}
               >
                 <SectionIcon className="w-4 h-4" />

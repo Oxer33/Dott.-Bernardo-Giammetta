@@ -81,16 +81,22 @@ interface PatientProfileViewProps {
 // =============================================================================
 
 // Tipo filtro appuntamenti
-type AppointmentFilter = 'all' | 'confirmed' | 'cancelled';
+type AppointmentFilter = 'all' | 'confirmed' | 'completed' | 'cancelled';
 
 export function PatientProfileView({ patient }: PatientProfileViewProps) {
   const router = useRouter();
   const [appointmentFilter, setAppointmentFilter] = useState<AppointmentFilter>('all');
   
+  // Calcola contatori per ogni filtro
+  const confirmedCount = patient.appointments.filter(apt => apt.status === 'CONFIRMED').length;
+  const completedCount = patient.appointments.filter(apt => apt.status === 'COMPLETED').length;
+  const cancelledCount = patient.appointments.filter(apt => apt.status === 'CANCELLED').length;
+  
   // Filtra appuntamenti in base al filtro selezionato
   const filteredAppointments = patient.appointments.filter(apt => {
     if (appointmentFilter === 'all') return true;
     if (appointmentFilter === 'confirmed') return apt.status === 'CONFIRMED';
+    if (appointmentFilter === 'completed') return apt.status === 'COMPLETED';
     if (appointmentFilter === 'cancelled') return apt.status === 'CANCELLED';
     return true;
   });
@@ -210,8 +216,8 @@ export function PatientProfileView({ patient }: PatientProfileViewProps) {
                   <Calendar className="w-5 h-5 text-lavender-500" />
                   Appuntamenti ({filteredAppointments.length}/{patient.appointments.length})
                 </h2>
-                {/* Filtri */}
-                <div className="flex gap-1">
+                {/* Filtri con contatori */}
+                <div className="flex flex-wrap gap-1">
                   <button
                     onClick={() => setAppointmentFilter('all')}
                     className={`px-2 py-1 text-xs rounded-lg transition-colors ${
@@ -220,7 +226,7 @@ export function PatientProfileView({ patient }: PatientProfileViewProps) {
                         : 'bg-sage-100 text-sage-600 hover:bg-sage-200'
                     }`}
                   >
-                    Tutti
+                    Tutti ({patient.appointments.length})
                   </button>
                   <button
                     onClick={() => setAppointmentFilter('confirmed')}
@@ -230,7 +236,17 @@ export function PatientProfileView({ patient }: PatientProfileViewProps) {
                         : 'bg-green-100 text-green-600 hover:bg-green-200'
                     }`}
                   >
-                    Confermati
+                    Confermati ({confirmedCount})
+                  </button>
+                  <button
+                    onClick={() => setAppointmentFilter('completed')}
+                    className={`px-2 py-1 text-xs rounded-lg transition-colors ${
+                      appointmentFilter === 'completed'
+                        ? 'bg-blue-500 text-white'
+                        : 'bg-blue-100 text-blue-600 hover:bg-blue-200'
+                    }`}
+                  >
+                    Completati ({completedCount})
                   </button>
                   <button
                     onClick={() => setAppointmentFilter('cancelled')}
@@ -240,14 +256,16 @@ export function PatientProfileView({ patient }: PatientProfileViewProps) {
                         : 'bg-red-100 text-red-600 hover:bg-red-200'
                     }`}
                   >
-                    Cancellati
+                    Cancellati ({cancelledCount})
                   </button>
                 </div>
               </div>
               
               {filteredAppointments.length === 0 ? (
                 <p className="text-sage-500 text-center py-4">
-                  {appointmentFilter === 'all' ? 'Nessun appuntamento' : `Nessun appuntamento ${appointmentFilter === 'confirmed' ? 'confermato' : 'cancellato'}`}
+                  {appointmentFilter === 'all' 
+                    ? 'Nessun appuntamento' 
+                    : `Nessun appuntamento ${appointmentFilter === 'confirmed' ? 'confermato' : appointmentFilter === 'completed' ? 'completato' : 'cancellato'}`}
                 </p>
               ) : (
                 <div className="space-y-3 max-h-80 overflow-y-auto">
@@ -259,6 +277,8 @@ export function PatientProfileView({ patient }: PatientProfileViewProps) {
                           ? 'bg-red-50 border-red-100'
                           : apt.status === 'CONFIRMED'
                           ? 'bg-green-50 border-green-100'
+                          : apt.status === 'COMPLETED'
+                          ? 'bg-blue-50 border-blue-100'
                           : 'bg-sage-50 border-sage-100'
                       }`}
                     >
@@ -278,9 +298,11 @@ export function PatientProfileView({ patient }: PatientProfileViewProps) {
                               ? 'bg-red-100 text-red-700'
                               : apt.status === 'CONFIRMED'
                               ? 'bg-green-100 text-green-700'
+                              : apt.status === 'COMPLETED'
+                              ? 'bg-blue-100 text-blue-700'
                               : 'bg-sage-100 text-sage-700'
                           }`}>
-                            {apt.status === 'CANCELLED' ? 'Cancellato' : apt.status === 'CONFIRMED' ? 'Confermato' : apt.status}
+                            {apt.status === 'CANCELLED' ? 'Cancellato' : apt.status === 'CONFIRMED' ? 'Confermato' : apt.status === 'COMPLETED' ? 'Completato' : apt.status}
                           </span>
                         </div>
                       </div>

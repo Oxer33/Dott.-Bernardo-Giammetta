@@ -6,6 +6,7 @@
 
 'use client';
 
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { 
   Calendar, 
@@ -24,6 +25,24 @@ import { AgendaCalendar } from './AgendaCalendar';
 // =============================================================================
 
 export function AgendaMasterView() {
+  const [blacklistCount, setBlacklistCount] = useState(0);
+
+  // Fetch conteggio blacklist per colorare il bottone dinamicamente
+  useEffect(() => {
+    const fetchBlacklistCount = async () => {
+      try {
+        const res = await fetch('/api/admin/blacklist');
+        const data = await res.json();
+        if (data.success) {
+          setBlacklistCount(data.blacklisted?.length || 0);
+        }
+      } catch (err) {
+        console.error('Errore fetch blacklist count:', err);
+      }
+    };
+    fetchBlacklistCount();
+  }, []);
+
   return (
     <div className="min-h-screen bg-cream-50">
       {/* Header compatto per master */}
@@ -82,10 +101,19 @@ export function AgendaMasterView() {
           </Link>
           <Link
             href="/admin?tab=blacklist"
-            className="flex items-center gap-2 px-3 sm:px-4 py-2 rounded-xl font-medium bg-red-50 text-red-600 hover:bg-red-100 border border-red-200"
+            className={`flex items-center gap-2 px-3 sm:px-4 py-2 rounded-xl font-medium ${
+              blacklistCount > 0
+                ? 'bg-red-50 text-red-600 hover:bg-red-100 border border-red-200'
+                : 'bg-white text-sage-600 hover:bg-sage-50 border border-sage-100'
+            }`}
           >
             <UserMinus className="w-4 h-4" />
             <span className="hidden sm:inline">Blacklist</span>
+            {blacklistCount > 0 && (
+              <span className="px-1.5 py-0.5 bg-red-500 text-white text-xs rounded-full">
+                {blacklistCount}
+              </span>
+            )}
           </Link>
         </div>
 
