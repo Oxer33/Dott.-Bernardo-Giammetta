@@ -271,122 +271,122 @@ export const OMNIVORE_QUESTIONS: Question[] = [
   },
   {
     id: 'q30',
-    text: 'Quali pasti principali (colazione, pranzo, cena) consumi a casa e quali fuori durante la settimana?',
+    text: 'Quali **pasti principali** giornalieri (colazione, pranzo, cena) consumi a casa e quali fuori durante la settimana? Se consumi dei pasti fuori, indicami:',
     type: 'textarea',
     required: true,
     bulletPoints: [
-      'Quante volte a settimana fuori?',
-      'Dove (Mensa, Bar, Gastronomia, Ristorante, porti da casa)?',
-      'Considereresti portarli da casa o preferisci orientamenti per gestione fuori?'
+      'Quante volte a settimana (es: dal Lunedì al Venerdì oppure 2 volte a settimana, ecc.)?',
+      'Dove ti appoggi (Mensa, Bar, Gastronomia, Ristorante oppure se ti porti qualcosa da casa)?',
+      'Prenderesti in considerazione la possibilità di **prepararli a casa e portarli con te** (nel caso in cui non lo facessi già)? Oppure preferiresti ricevere degli orientamenti per la gestione del pasto in Mensa/Bar/Gastronomia/Ristorante.'
     ],
     placeholder: 'Scrivi qui',
   },
   {
     id: 'q31',
-    text: 'Quanti pasti fai abitualmente ogni giorno?',
+    text: 'Quanti **pasti** fai abitualmente ogni giorno (es: solo 2 pasti principali, oppure 3 pasti principali, o 3 pasti principali e 1 o 2 o 3 spuntini)? Indicami anche:',
     type: 'textarea',
     required: true,
     bulletPoints: [
-      'Quali esattamente (colazione, pranzo, cena, spuntini...)?',
-      'Se non fai 5 pasti (colazione, pranzo, cena + 2 spuntini), saresti disposto/a a farne almeno 5?'
+      'Quali sono esattamente (es: colazione, pranzo, cena, spuntino di metà mattina, spuntino di metà pomeriggio, spuntino dopo cena, ecc.)?',
+      'Nel caso in cui non ne facessi 5 (colazione, pranzo, cena + 2 spuntini), saresti disposto/a a farne almeno 5?'
     ],
     placeholder: 'Scrivi qui',
   },
   {
     id: 'q32',
-    text: 'Riguardo alla tipologia di colazione:',
+    text: 'Riguardo alla tipologia di **colazione**:',
     type: 'textarea',
     required: true,
     bulletPoints: [
-      'Preferisci dolce, salata o entrambe?',
-      'Necessità particolari (alimento che non può mancare, abbinamento indispensabile...)?'
+      'Preferisci consumare una colazione **dolce** e una **salata** oppure solo opzioni dolci o solo salate?',
+      'Scrivimi, se esistono, anche eventuali **necessità personali particolari** per la colazione (es: un alimento che non può mancare, un abbinamento di cui non puoi fare a meno, ecc.).'
     ],
     placeholder: 'Scrivi qui',
   },
   {
     id: 'q33',
-    text: 'Scrivi 2 tipologie di colazioni che consumi più di frequente:',
+    text: 'Scrivi **2 tipologie di colazioni** che consumi più di frequente:',
     type: 'textarea',
     required: true,
     placeholder: 'Es: "Latte e biscotti" e "Yogurt con frutta"',
   },
   {
     id: 'q34',
-    text: 'In merito al caffè (se non lo consumi scrivi "NO"):',
+    text: 'In merito al **caffè**, se lo consumi (se non lo consumi scrivi "NO"), indicami:',
     type: 'textarea',
     required: true,
     bulletPoints: [
-      'Quanti caffè al giorno?',
-      'Amari o dolcificati (zucchero/Stevia/Eritritolo)?',
-      'Considereresti dolcificanti acalorici naturali?'
+      'Quanti caffè consumi durante la giornata?',
+      'Sono **amari** o **dolcificati** con zucchero o con dolcificanti acalorici (tipo DIETIC classico o Stevia o Eritritolo)?',
+      'Nel caso dolcificassi il caffè abitualmente con lo zucchero ma ti proponessi di utilizzare in alternativa **dolcificanti acalorici naturali** come la Stevia o l\'Eritritolo (rispetto alla Stevia non conferisce retrogusto), potremmo inserirli?'
     ],
     placeholder: 'Scrivi qui',
   },
   {
     id: 'q35',
-    text: 'Se consumi spuntini durante il giorno (se non li consumi scrivi "NO"):',
+    text: 'Se consumi **spuntini** durante il giorno allora indicami (se non li consumi scrivi "NO"):',
     type: 'textarea',
     required: true,
     bulletPoints: [
-      'Cosa consumi abitualmente?',
-      'Necessità particolari (alimento indispensabile, spuntini pratici fuori casa...)?'
+      'Cosa ti capita di consumare abitualmente?',
+      'Scrivimi, se esistono, anche eventuali **necessità personali particolari** per gli spuntini (es: un alimento che non può mancare, spuntini pratici da consumare fuori casa, ecc.).'
     ],
     placeholder: 'Scrivi qui',
   },
   {
     id: 'q36',
-    text: 'Riguardo al pranzo:',
+    text: 'Riguardo al **pranzo**:',
     type: 'textarea',
     required: true,
     bulletPoints: [
-      'Consumi primo (pasta/riso) o secondo (pietanza) o entrambi?',
-      'È importante chiudere con frutta fresca?',
-      'Necessità particolari?'
+      'Solitamente consumi un **primo piatto** (a base di pasta o riso) o un **secondo piatto** (pietanza) o fai entrambi nello stesso pasto?',
+      'Indicami anche se per te è molto importante chiudere il pranzo con la **frutta fresca** o se ne potresti fare anche a meno.',
+      'Scrivimi, se esistono, eventuali **necessità personali particolari** per il pranzo.'
     ],
     placeholder: 'Scrivi qui',
   },
   {
     id: 'q37',
-    text: 'Prenderesti in considerazione un PIATTO UNICO per pranzo?',
+    text: 'Indicami se per pranzo prenderesti in considerazione la possibilità di consumare un **piatto unico** (insalata di cereale o patate) composto da:',
     type: 'textarea',
     required: true,
-    hint: 'Composto da: 1) Cereale integrale (Riso...) o patate + 2) Pietanza (Fiocchi di Latte, Feta Light, Pollo, Piselli, Uova, Tonno, Merluzzo, Salmone...) + 3) Verdura cotta o cruda',
+    hint: '1) **Cereale integrale** in chicco (es: Riso o simile) o patate comuni (o Americane) + 2) **Pietanza** (es: Fiocchi di Latte magri, Feta Light, Petto di Pollo o Tacchino, Piselli, Uova Intere o solo Albumi, Tonno, Merluzzo, Nasello, Platessa, Salmone affettato affumicato) + 3) Porzione di **Verdura** cotta o cruda',
     placeholder: 'Descrivi se ti interesserebbe e eventuali preferenze',
   },
   {
     id: 'q38',
-    text: 'Prenderesti in considerazione un pasto a base di LEGUMI per pranzo?',
+    text: 'Indicami se per pranzo prenderesti in considerazione il consumo di un pasto a base di **Legumi** composto da:',
     type: 'textarea',
     required: true,
-    hint: 'Composto da: 1) Legumi (zuppa, asciutti, vellutata) + 2) Pane tostato o derivato secco + 3) Verdura cotta o cruda',
+    hint: '1) **Legumi** da consumare in zuppa o asciutti o in vellutata + 2) **Pane tostato** o derivato secco (es: Crostini integrali tipo Buitoni, fette WASA Integrali, Gallette di Farro o Kamut) + 3) Porzione di **Verdura** cotta (Minestrone o verdure a gradimento) o cruda',
     placeholder: 'Descrivi se ti interesserebbe e eventuali preferenze',
   },
   {
     id: 'q39',
-    text: 'Prenderesti in considerazione un pasto a base di PASTA per pranzo?',
+    text: 'Indicami se per pranzo prenderesti in considerazione il consumo di un pasto a base di **Pasta**, composto da:',
     type: 'textarea',
     required: true,
-    hint: 'Composto da: 1) Pasta (semola o integrale, anche 100% legumi) + 2) Condimento semplice (pomodoro, pesto, verdure) + 3) Eventuale pietanza + 4) Verdura',
+    hint: '1) **Pasta** di Semola o integrale (anche a base di farina 100% Legumi) + 2) **Condimento semplice** (sugo di pomodoro, pesto alla genovese, minestrone, verdure saltate in padella o in crema) + 3) Eventuale **Pietanza** + 4) Porzione di **Verdura** cotta o cruda',
     placeholder: 'Descrivi se ti interesserebbe e eventuali preferenze/necessità sulla pasta',
   },
   {
     id: 'q40',
-    text: 'Per la CENA le indicazioni saranno di abbinare pietanza + pane/patate + verdura + frutta. Necessità particolari?',
+    text: 'Per la **cena** le indicazioni saranno di abbinare (secondo ben precise frequenze di assunzione settimanale così come da linee guida dettate dalla dieta mediterranea):',
     type: 'textarea',
     required: true,
-    hint: 'Pietanze: carne rossa/bianca, uova, formaggi, salumi magri, pesce secondo frequenze da dieta mediterranea',
+    hint: '1) Una **Pietanza** (es: carne rossa, carne bianca, uova, formaggi, salumi magri, pesce) + 2) **Pane** o patate o derivato secco + 3) Porzione di **Verdura** cruda o cotta + 4) Porzione di **Frutta fresca** a fine pasto. Riportami anche, se esistono, eventuali necessità personali particolari per questo pasto.',
     placeholder: 'Scrivi "OK" se non ci sono necessità, altrimenti riportale',
   },
   {
     id: 'q41',
-    text: 'Riguardo agli alcolici:',
+    text: 'Riguardo agli **alcolici**:',
     type: 'textarea',
     required: true,
     bulletPoints: [
       'Bevi alcolici?',
-      'Quotidianamente o solo weekend?',
-      'Quantità (bicchieri vino, birre piccole/grandi, drink)?',
-      'Potresti farne a meno o ridurli?'
+      'Se si allora specificami se li bevi **quotidianamente** o solo il **fine settimana**.',
+      'Indicami la quantità consumata di **vino** (in bicchieri) o di **birra** (specificami quante birre piccole o grandi) o di **drink** (in bicchieri).',
+      'Nel caso in cui il consumo di alcol sia quotidiano, specificami se potresti farne completamente a meno o se saresti disponibile a ridurlo.'
     ],
     placeholder: 'Scrivi qui',
   },
