@@ -300,6 +300,18 @@
    ```
 3. **Attendi approvazione SES**: produzione (caso #176743190600620)
 
+### 🔧 Questionario + Admin UX V2 - 10/01/2026 (Sessione 20) ✅ COMPLETATO
+- [x] **Domanda q11 (ciclo)**: modificato per scrivere "M" se maschio invece di "non applicabile"
+- [x] **Domanda q17 (obiettivo)**: nuovo tipo `radio-with-textarea` con 3 opzioni radio + textarea note
+- [x] **Radio button uniformi**: aggiunto `min-h-[60px]` per uniformare altezza radio stile alimentare
+- [x] **BulletPoints fuori placeholder**: tutte le domande preferenze (onnivori, vegetariani, vegani)
+- [x] **Rimossa emoji lampadina**: hint ora senza 💡 per serietà professionale
+- [x] **Blacklist dinamico agenda**: rosso solo se ci sono pazienti, altrimenti grigio
+- [x] **Filtri visite admin**: aggiunto filtro "Completati" + contatori per ogni filtro
+- [x] **Sezione preferenze sempre visibile**: con avviso arancione se stile alimentare non selezionato
+- [x] **Label sezioni arancione**: se visitata ma incompleta
+- [x] **Contorno arancione domande**: se required ma mancante
+
 ### 🔧 Questionario + Admin UX - 10/01/2026 (Sessione 19) ✅ COMPLETATO
 - [x] **Bottone Blacklist menu admin**: aggiunto in dashboard e agenda (rosso con badge)
 - [x] **Filtri visite paziente admin**: tutti/confermati/cancellati in PatientProfileView
@@ -309,12 +321,12 @@
 - [x] **Domanda q5 (percorso alimentare)**: radio Sì/No + textarea condizionale "Scrivi qui"
 - [x] **Domanda q6 (lavoro)**: placeholder semplificato "Scrivi qui"
 - [x] **Domanda q8 (attività fisica)**: elenco puntato FUORI dalla textarea, placeholder "Scrivi qui"
-- [x] **Domanda q9 (fumo)**: radio Sì/No + textarea condizionale disabilitata se No
+- [x] **Domanda q9 (fumo)**: radio Sì/No + textarea condizionale "numero di sigarette al giorno indicativo"
 - [x] **Domande q10, q11, q15, q16, q17**: elenchi puntati spostati fuori dal placeholder
 - [x] **Nuovo tipo Question**: `textarea-with-radio` con `radioOptions`, `conditionalOnRadio`, `bulletPoints`
 - [x] **Campo contactEmail**: nuovo campo DB per email comunicazioni (può differire da email login)
 - [x] **Admin vista paziente**: mostra email login + email contatto separatamente
-- ⚠️ **Data nascita/sesso registrazione**: richiede configurazione attributi custom su AWS Cognito Console
+- ⚠️ **Data nascita/sesso registrazione**: già configurato su AWS Cognito (obbligatorio alla registrazione)
 
 ### 🔧 UX Miglioramenti + Navigazione - 09/01/2026 (Sessione 18) ✅ COMPLETATO
 - [x] **Recidivi DB**: nuovo campo `blacklistCount` per tracciare storico rientri blacklist
