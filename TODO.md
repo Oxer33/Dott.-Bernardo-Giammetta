@@ -300,6 +300,20 @@
    ```
 3. **Attendi approvazione SES**: produzione (caso #176743190600620)
 
+### 🔧 Sistema Fatturazione + Fix UI - 10/01/2026 (Sessione 24) ✅ COMPLETATO
+- [x] **Rimossa fascia ridondante /agenda admin**: header "Agenda Appuntamenti" inutile rimosso
+- [x] **Bottone Apri spostato a sinistra**: nelle card pazienti ora è all'estremo sinistro
+- [x] **Modal conferma Rimuovi/Elimina**: avviso che rimuovi toglie accesso, elimina è irreversibile
+- [x] **Sezione billing migliorata**: differenziazione nascita (CF) vs residenza (fattura)
+- [x] **CF ultima casella**: con dicitura "Modificare solo in caso di errore del calcolo automatico"
+- [x] **(Whatsapp o SMS) al numero**: aggiunto in /area-personale e /profilo paziente
+- [x] **Link Fatture in tutti i menu**: AgendaMasterView, MasterDashboard, AdminDashboard, PatientProfileView
+- [x] **Pagina /fatture creata**: con sottosezioni Nuova Fattura e Elenco Fatture
+- [x] **NuovaFattura component**: ricerca paziente, nature spesa, calcolo ENPAB 4%, marca bollo >77.47€
+- [x] **ElencoFatture component**: ricerca, statistiche, visualizza/modifica/stampa fatture
+- [ ] **TODO: API fatture**: implementare salvataggio e recupero fatture dal database
+- [ ] **TODO: Generazione PDF**: implementare generazione PDF fattura per stampa
+
 ### 🔧 UI Admin + Calcolo CF Automatico - 10/01/2026 (Sessione 23) ✅ COMPLETATO
 - [x] **Fix grassetto q17 modal admin**: formatBoldText anche alle risposte textarea
 - [x] **Ridotto spazio /agenda paziente**: py-6 invece di section class
