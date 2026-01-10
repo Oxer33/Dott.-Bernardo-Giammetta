@@ -300,6 +300,17 @@
    ```
 3. **Attendi approvazione SES**: produzione (caso #176743190600620)
 
+### 🔧 UI Admin + Calcolo CF Automatico - 10/01/2026 (Sessione 23) ✅ COMPLETATO
+- [x] **Fix grassetto q17 modal admin**: formatBoldText anche alle risposte textarea
+- [x] **Ridotto spazio /agenda paziente**: py-6 invece di section class
+- [x] **Elenchi puntati modal questionari**: bulletPoints visibili sia in admin che paziente
+- [x] **Dashboard master: whitelist->Elenco pazienti**: rinominato nel menu navigazione
+- [x] **Rimossa fascia inutile Dashboard admin**: header con bottoni Agenda/Blacklist ridondanti
+- [x] **Rimossa fascia inutile /admin**: stessa fascia ridondante rimossa
+- [x] **Menu navigazione admin uniforme**: aggiunto in /admin/paziente/[id] per uniformità
+- [x] **Componente ComuneAutocomplete**: autocomplete per ricerca comuni italiani
+- [x] **Sistema calcolo CF**: lib/codice-fiscale.ts + lib/comuni-italiani.ts + componente UI
+
 ### 🔧 Profilo Paziente + Questionari + Agenda - 10/01/2026 (Sessione 22) ✅ COMPLETATO
 - [x] **Fix grassetto opzioni radio q17**: le opzioni ora mostrano grassetto invece di asterischi
 - [x] **Modal admin questionari migliorato**: testo completo domande, categorie, filtro stile alimentare
