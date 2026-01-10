@@ -64,6 +64,7 @@ export async function GET(request: NextRequest) {
       select: {
         id: true,
         email: true,
+        contactEmail: true, // Email per comunicazioni
         name: true,
         firstName: true,
         lastName: true,

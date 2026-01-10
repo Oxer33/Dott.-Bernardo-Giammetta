@@ -54,6 +54,7 @@ interface PatientData {
   name: string | null;
   email: string;
   phone: string | null;
+  contactEmail: string | null; // Email per comunicazioni (può differire da email login)
   firstName: string | null;
   lastName: string | null;
   birthDate: string | null;
@@ -159,8 +160,12 @@ export function PatientProfileView({ patient }: PatientProfileViewProps) {
                   <p className="font-medium text-sage-800">{patient.lastName || '-'}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-sage-500">Email</p>
+                  <p className="text-sm text-sage-500">Email login</p>
                   <p className="font-medium text-sage-800">{patient.email}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-sage-500">Email contatto</p>
+                  <p className="font-medium text-sage-800">{patient.contactEmail || patient.email}</p>
                 </div>
                 <div>
                   <p className="text-sm text-sage-500">Telefono</p>
