@@ -652,53 +652,109 @@ export function QuestionnaireFormNew({
                 </p>
               </div>
               
-              {/* Luogo di nascita con autocomplete */}
-              <div className="bg-white rounded-xl p-4 border border-sage-200">
-                <ComuneAutocomplete
-                  value={billingData.billingBirthPlace || ''}
-                  onChange={(val) => setBillingData(prev => ({ ...prev, billingBirthPlace: val }))}
-                  onComuneSelect={(comune) => {
-                    // Salva anche il codice catastale per il calcolo CF
-                    setBillingData(prev => ({ 
-                      ...prev, 
-                      billingBirthPlace: comune.nome,
-                      billingBirthProvince: comune.provincia,
-                      billingBirthCodice: comune.codiceCatastale
-                    }));
-                  }}
-                  label="Luogo di nascita"
-                  placeholder="Inizia a digitare il nome del comune..."
-                  required
-                />
+              {/* SEZIONE 1: DATI DI NASCITA (per calcolo CF) */}
+              <div className="bg-lavender-50 rounded-xl p-4 border border-lavender-200">
+                <h4 className="font-semibold text-lavender-800 mb-3 flex items-center gap-2">
+                  <User className="w-4 h-4" />
+                  Dati di Nascita (per Codice Fiscale)
+                </h4>
+                
+                <div className="space-y-4">
+                  <ComuneAutocomplete
+                    value={billingData.billingBirthPlace || ''}
+                    onChange={(val) => setBillingData(prev => ({ ...prev, billingBirthPlace: val }))}
+                    onComuneSelect={(comune) => {
+                      setBillingData(prev => ({ 
+                        ...prev, 
+                        billingBirthPlace: comune.nome,
+                        billingBirthProvince: comune.provincia,
+                        billingBirthCodice: comune.codiceCatastale
+                      }));
+                    }}
+                    label="Comune di nascita"
+                    placeholder="Inizia a digitare il nome del comune..."
+                    required
+                  />
+                </div>
               </div>
 
-              {/* Città di residenza con autocomplete */}
-              <div className="bg-white rounded-xl p-4 border border-sage-200">
-                <ComuneAutocomplete
-                  value={billingData.billingCity || ''}
-                  onChange={(val) => setBillingData(prev => ({ ...prev, billingCity: val }))}
-                  onComuneSelect={(comune) => {
-                    // Compila automaticamente provincia e suggerisci CAP
-                    setBillingData(prev => ({ 
-                      ...prev, 
-                      billingCity: comune.nome,
-                      billingProvince: comune.provincia
-                    }));
-                  }}
-                  label="Città di residenza"
-                  placeholder="Inizia a digitare il nome del comune..."
-                  required
-                />
+              {/* SEZIONE 2: RESIDENZA (per fatturazione) */}
+              <div className="bg-sage-50 rounded-xl p-4 border border-sage-200">
+                <h4 className="font-semibold text-sage-800 mb-3 flex items-center gap-2">
+                  <MapPin className="w-4 h-4" />
+                  Indirizzo di Residenza (per Fattura)
+                </h4>
+                
+                <div className="space-y-4">
+                  <ComuneAutocomplete
+                    value={billingData.billingCity || ''}
+                    onChange={(val) => setBillingData(prev => ({ ...prev, billingCity: val }))}
+                    onComuneSelect={(comune) => {
+                      setBillingData(prev => ({ 
+                        ...prev, 
+                        billingCity: comune.nome,
+                        billingProvince: comune.provincia
+                      }));
+                    }}
+                    label="Città di residenza"
+                    placeholder="Inizia a digitare il nome del comune..."
+                    required
+                  />
+                  
+                  <div className="grid grid-cols-3 gap-3">
+                    <div className="col-span-2">
+                      <label className="block text-sm font-medium text-sage-700 mb-2">Via/Piazza *</label>
+                      <input
+                        type="text"
+                        value={billingData.billingAddress || ''}
+                        onChange={(e) => setBillingData(prev => ({ ...prev, billingAddress: e.target.value }))}
+                        placeholder="Es: Via Roma"
+                        className="w-full px-4 py-3 rounded-xl border border-sage-200 focus:border-sage-400 focus:ring-2 focus:ring-sage-100 outline-none text-sage-800"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-sage-700 mb-2">N. Civico *</label>
+                      <input
+                        type="text"
+                        value={billingData.billingAddressNumber || ''}
+                        onChange={(e) => setBillingData(prev => ({ ...prev, billingAddressNumber: e.target.value }))}
+                        placeholder="123"
+                        className="w-full px-4 py-3 rounded-xl border border-sage-200 focus:border-sage-400 focus:ring-2 focus:ring-sage-100 outline-none text-sage-800"
+                      />
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-sage-700 mb-2">CAP *</label>
+                    <input
+                      type="text"
+                      value={billingData.billingCap || ''}
+                      onChange={(e) => setBillingData(prev => ({ ...prev, billingCap: e.target.value.replace(/[^0-9]/g, '').slice(0, 5) }))}
+                      placeholder="00100"
+                      maxLength={5}
+                      className="w-full px-4 py-3 rounded-xl border border-sage-200 focus:border-sage-400 focus:ring-2 focus:ring-sage-100 outline-none text-sage-800"
+                    />
+                  </div>
+                </div>
               </div>
-              
-              {/* Altri campi billing (via, numero, CAP, CF) */}
-              {BILLING_QUESTIONS.filter(q => 
-                !['billingBirthPlace', 'billingCity'].includes(q.id)
-              ).map((q) => 
-                renderQuestion(q, billingData[q.id] || '', (val) => 
-                  setBillingData(prev => ({ ...prev, [q.id]: val }))
-                )
-              )}
+
+              {/* SEZIONE 3: CODICE FISCALE (ultima, con nota) */}
+              <div className="bg-white rounded-xl p-4 border-2 border-sage-300">
+                <label className="block text-sm font-medium text-sage-700 mb-2">
+                  Codice Fiscale *
+                </label>
+                <input
+                  type="text"
+                  value={billingData.billingCodiceFiscale || ''}
+                  onChange={(e) => setBillingData(prev => ({ ...prev, billingCodiceFiscale: e.target.value.toUpperCase() }))}
+                  placeholder="RSSMRA85M01H501Z"
+                  maxLength={16}
+                  className="w-full px-4 py-3 rounded-xl border border-sage-200 focus:border-sage-400 focus:ring-2 focus:ring-sage-100 outline-none text-sage-800 uppercase font-mono text-lg"
+                />
+                <p className="text-xs text-sage-500 mt-2 italic">
+                  ⚠️ Modificare solo in caso di errore del calcolo automatico
+                </p>
+              </div>
             </div>
           )}
 
