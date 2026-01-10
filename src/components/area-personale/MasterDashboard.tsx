@@ -179,36 +179,9 @@ export function MasterDashboard({ user }: MasterDashboardProps) {
   );
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-cream-50 to-lavender-50 py-12">
+    <div className="min-h-screen bg-gradient-to-b from-cream-50 to-lavender-50 py-8">
       <div className="container-custom">
-        {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="mb-8"
-        >
-          <div className="flex items-center justify-between flex-wrap gap-4">
-            <div className="flex items-center gap-4">
-              <div className="w-14 h-14 rounded-full bg-gradient-to-br from-lavender-400 to-lavender-600 flex items-center justify-center text-white font-bold text-xl shadow-lg">
-                <Settings className="w-7 h-7" />
-              </div>
-              <div>
-                <h1 className="text-2xl font-display font-bold text-sage-900">
-                  Dashboard Master
-                </h1>
-                <p className="text-sage-600">Benvenuto, {user.name?.split(' ')[0] || 'Admin'}!</p>
-              </div>
-            </div>
-            <Link href="/agenda">
-              <Button className="bg-lavender-500 hover:bg-lavender-600" size="sm">
-                <CalendarPlus className="w-4 h-4" />
-                <span>Nuova Prenotazione</span>
-              </Button>
-            </Link>
-          </div>
-        </motion.div>
-
-        {/* Bottoni navigazione master (come in admin) - punto 2 e 6 */}
+        {/* Bottoni navigazione master - senza header ridondante */}
         <div className="flex flex-wrap gap-2 mb-6">
           <Link
             href="/area-personale"
@@ -236,7 +209,7 @@ export function MasterDashboard({ user }: MasterDashboardProps) {
             className="flex items-center gap-2 px-3 sm:px-4 py-2 rounded-xl font-medium bg-white text-sage-600 hover:bg-sage-50 border border-sage-100"
           >
             <UserCheck className="w-4 h-4" />
-            <span className="hidden sm:inline">Whitelist</span>
+            <span className="hidden sm:inline">Elenco Pazienti</span>
           </Link>
           <Link
             href="/admin?tab=timeblocks"

@@ -30,6 +30,12 @@ import {
   X,
   Utensils,
   Heart,
+  Home,
+  CalendarDays,
+  UserCheck,
+  Lock,
+  BarChart3,
+  UserMinus,
 } from 'lucide-react';
 
 // Import configurazione domande per visualizzare testo completo
@@ -123,7 +129,61 @@ export function PatientProfileView({ patient }: PatientProfileViewProps) {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-cream-50 to-lavender-50 py-8">
-      <div className="container-custom max-w-5xl">
+      <div className="container-custom">
+        {/* Menu navigazione admin - uniforme con altre sezioni */}
+        <div className="flex flex-wrap gap-2 mb-6">
+          <Link
+            href="/area-personale"
+            className="flex items-center gap-2 px-4 py-2 rounded-xl font-medium transition-all bg-lavender-100 text-lavender-700 hover:bg-lavender-200 border border-lavender-200"
+          >
+            <Home className="w-4 h-4" />
+            <span className="hidden sm:inline">Dashboard</span>
+          </Link>
+          <Link
+            href="/agenda"
+            className="flex items-center gap-2 px-4 py-2 rounded-xl font-medium transition-all bg-white text-sage-600 hover:bg-sage-50 border border-sage-100"
+          >
+            <CalendarDays className="w-4 h-4" />
+            <span className="hidden sm:inline">Agenda</span>
+          </Link>
+          <Link
+            href="/admin?tab=appointments"
+            className="flex items-center gap-2 px-4 py-2 rounded-xl font-medium transition-all bg-white text-sage-600 hover:bg-sage-50 border border-sage-100"
+          >
+            <Calendar className="w-4 h-4" />
+            <span className="hidden sm:inline">Appuntamenti</span>
+          </Link>
+          <Link
+            href="/admin?tab=whitelist"
+            className="flex items-center gap-2 px-4 py-2 rounded-xl font-medium transition-all bg-sage-500 text-white shadow-md"
+          >
+            <UserCheck className="w-4 h-4" />
+            <span className="hidden sm:inline">Elenco Pazienti</span>
+          </Link>
+          <Link
+            href="/admin?tab=timeblocks"
+            className="flex items-center gap-2 px-4 py-2 rounded-xl font-medium transition-all bg-white text-sage-600 hover:bg-sage-50 border border-sage-100"
+          >
+            <Lock className="w-4 h-4" />
+            <span className="hidden sm:inline">Blocchi</span>
+          </Link>
+          <Link
+            href="/admin?tab=stats"
+            className="flex items-center gap-2 px-4 py-2 rounded-xl font-medium transition-all bg-white text-sage-600 hover:bg-sage-50 border border-sage-100"
+          >
+            <BarChart3 className="w-4 h-4" />
+            <span className="hidden sm:inline">Statistiche</span>
+          </Link>
+          <Link
+            href="/admin?tab=blacklist"
+            className="flex items-center gap-2 px-4 py-2 rounded-xl font-medium transition-all bg-white text-sage-600 hover:bg-sage-50 border border-sage-100"
+          >
+            <UserMinus className="w-4 h-4" />
+            <span className="hidden sm:inline">Blacklist</span>
+          </Link>
+        </div>
+
+        <div className="max-w-5xl mx-auto">
         {/* Header con bottone indietro */}
         <div className="mb-6">
           <button
@@ -498,9 +558,18 @@ export function PatientProfileView({ patient }: PatientProfileViewProps) {
                             className="text-sm font-medium text-sage-600 mb-2"
                             dangerouslySetInnerHTML={{ __html: formatBoldText(question.text) }}
                           />
-                          <p className="text-sage-800 whitespace-pre-wrap bg-white p-3 rounded-lg border border-sage-100">
-                            {String(answer) || '-'}
-                          </p>
+                          {/* Elenchi puntati se presenti */}
+                          {question.bulletPoints && question.bulletPoints.length > 0 && (
+                            <ul className="list-disc list-inside text-sm text-sage-600 mb-3 ml-2 space-y-1">
+                              {question.bulletPoints.map((point, idx) => (
+                                <li key={idx} dangerouslySetInnerHTML={{ __html: formatBoldText(point) }} />
+                              ))}
+                            </ul>
+                          )}
+                          <p 
+                            className="text-sage-800 whitespace-pre-wrap bg-white p-3 rounded-lg border border-sage-100"
+                            dangerouslySetInnerHTML={{ __html: formatBoldText(String(answer) || '-') }}
+                          />
                         </div>
                       );
                     })}
@@ -523,9 +592,18 @@ export function PatientProfileView({ patient }: PatientProfileViewProps) {
                             className="text-sm font-medium text-sage-600 mb-2"
                             dangerouslySetInnerHTML={{ __html: formatBoldText(question.text) }}
                           />
-                          <p className="text-sage-800 whitespace-pre-wrap bg-white p-3 rounded-lg border border-sage-100">
-                            {String(answer) || '-'}
-                          </p>
+                          {/* Elenchi puntati se presenti */}
+                          {question.bulletPoints && question.bulletPoints.length > 0 && (
+                            <ul className="list-disc list-inside text-sm text-sage-600 mb-3 ml-2 space-y-1">
+                              {question.bulletPoints.map((point, idx) => (
+                                <li key={idx} dangerouslySetInnerHTML={{ __html: formatBoldText(point) }} />
+                              ))}
+                            </ul>
+                          )}
+                          <p 
+                            className="text-sage-800 whitespace-pre-wrap bg-white p-3 rounded-lg border border-sage-100"
+                            dangerouslySetInnerHTML={{ __html: formatBoldText(String(answer) || '-') }}
+                          />
                         </div>
                       );
                     })}
@@ -578,6 +656,7 @@ export function PatientProfileView({ patient }: PatientProfileViewProps) {
           </div>
           );
         })()}
+      </div>
       </div>
     </div>
   );

@@ -125,8 +125,8 @@ export default async function AgendaPage() {
         </div>
       </div>
 
-      {/* Calendar Section */}
-      <section className="section">
+      {/* Calendar Section - Ridotto padding */}
+      <section className="py-6 lg:py-8">
         <div className="container-custom">
           <AgendaCalendar />
         </div>

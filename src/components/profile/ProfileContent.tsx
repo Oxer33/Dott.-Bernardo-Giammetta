@@ -682,9 +682,18 @@ export function ProfileContent({ user }: ProfileContentProps) {
                           className="text-sm font-medium text-sage-600 mb-2"
                           dangerouslySetInnerHTML={{ __html: formatBoldText(question.text) }}
                         />
-                        <p className="text-sage-800 whitespace-pre-wrap bg-white p-3 rounded-lg border border-sage-100">
-                          {String(answer) || '-'}
-                        </p>
+                        {/* Elenchi puntati se presenti */}
+                        {question.bulletPoints && question.bulletPoints.length > 0 && (
+                          <ul className="list-disc list-inside text-sm text-sage-600 mb-3 ml-2 space-y-1">
+                            {question.bulletPoints.map((point, idx) => (
+                              <li key={idx} dangerouslySetInnerHTML={{ __html: formatBoldText(point) }} />
+                            ))}
+                          </ul>
+                        )}
+                        <p 
+                          className="text-sage-800 whitespace-pre-wrap bg-white p-3 rounded-lg border border-sage-100"
+                          dangerouslySetInnerHTML={{ __html: formatBoldText(String(answer) || '-') }}
+                        />
                       </div>
                     );
                   })}
@@ -707,9 +716,18 @@ export function ProfileContent({ user }: ProfileContentProps) {
                           className="text-sm font-medium text-sage-600 mb-2"
                           dangerouslySetInnerHTML={{ __html: formatBoldText(question.text) }}
                         />
-                        <p className="text-sage-800 whitespace-pre-wrap bg-white p-3 rounded-lg border border-sage-100">
-                          {String(answer) || '-'}
-                        </p>
+                        {/* Elenchi puntati se presenti */}
+                        {question.bulletPoints && question.bulletPoints.length > 0 && (
+                          <ul className="list-disc list-inside text-sm text-sage-600 mb-3 ml-2 space-y-1">
+                            {question.bulletPoints.map((point, idx) => (
+                              <li key={idx} dangerouslySetInnerHTML={{ __html: formatBoldText(point) }} />
+                            ))}
+                          </ul>
+                        )}
+                        <p 
+                          className="text-sage-800 whitespace-pre-wrap bg-white p-3 rounded-lg border border-sage-100"
+                          dangerouslySetInnerHTML={{ __html: formatBoldText(String(answer) || '-') }}
+                        />
                       </div>
                     );
                   })}

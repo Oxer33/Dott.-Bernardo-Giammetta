@@ -79,47 +79,7 @@ export function AdminDashboard({ user, initialTab }: AdminDashboardProps) {
   
   return (
     <div className="min-h-screen bg-cream-50">
-      {/* Header */}
-      <header className="bg-white border-b border-sage-100 sticky top-0 z-40">
-        <div className="container-custom py-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-2xl font-display font-bold text-sage-900">
-                Dashboard Admin
-              </h1>
-              <p className="text-sage-600 text-sm">
-                Benvenuto, {user.name || 'Dottore'}
-              </p>
-            </div>
-            {/* Bottoni navigazione rapida */}
-            <div className="flex items-center gap-3">
-              <Link href="/agenda">
-                <button className="flex items-center gap-2 px-4 py-2 bg-sage-100 text-sage-700 rounded-xl hover:bg-sage-200 transition-colors">
-                  <CalendarDays className="w-4 h-4" />
-                  <span className="hidden sm:inline">Agenda</span>
-                </button>
-              </Link>
-              <button
-                onClick={() => setActiveTab('blacklist')}
-                className={`flex items-center gap-2 px-4 py-2 rounded-xl transition-colors ${
-                  blacklistCount > 0
-                    ? 'bg-red-100 text-red-700 hover:bg-red-200'
-                    : 'bg-sage-100 text-sage-700 hover:bg-sage-200'
-                }`}
-              >
-                <UserMinus className="w-4 h-4" />
-                <span className="hidden sm:inline">Blacklist</span>
-                {blacklistCount > 0 && (
-                  <span className="px-1.5 py-0.5 bg-red-500 text-white text-xs rounded-full">
-                    {blacklistCount}
-                  </span>
-                )}
-              </button>
-            </div>
-          </div>
-        </div>
-      </header>
-      
+      {/* Contenuto principale senza header ridondante */}
       <div className="container-custom py-8">
         {/* Tabs Navigation - Responsive */}
         <div className="flex flex-wrap gap-2 mb-8">
