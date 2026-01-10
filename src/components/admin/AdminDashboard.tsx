@@ -15,7 +15,8 @@ import {
   UserCheck,
   Home,
   CalendarDays,
-  UserMinus
+  UserMinus,
+  Receipt
 } from 'lucide-react';
 import Link from 'next/link';
 import { AppointmentsList } from './AppointmentsList';
@@ -139,6 +140,15 @@ export function AdminDashboard({ user, initialTab }: AdminDashboardProps) {
               </button>
             );
           })}
+          
+          {/* Link Fatture */}
+          <Link
+            href="/fatture"
+            className="flex items-center gap-2 px-3 sm:px-4 py-2 rounded-xl font-medium bg-amber-100 text-amber-700 hover:bg-amber-200 border border-amber-200"
+          >
+            <Receipt className="w-4 h-4" />
+            <span className="hidden sm:inline">Fatture</span>
+          </Link>
         </div>
         
         {/* Tab Content */}

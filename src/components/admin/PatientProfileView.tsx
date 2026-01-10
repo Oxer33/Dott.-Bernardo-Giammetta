@@ -36,6 +36,7 @@ import {
   Lock,
   BarChart3,
   UserMinus,
+  Receipt,
 } from 'lucide-react';
 
 // Import configurazione domande per visualizzare testo completo
@@ -180,6 +181,13 @@ export function PatientProfileView({ patient }: PatientProfileViewProps) {
           >
             <UserMinus className="w-4 h-4" />
             <span className="hidden sm:inline">Blacklist</span>
+          </Link>
+          <Link
+            href="/fatture"
+            className="flex items-center gap-2 px-4 py-2 rounded-xl font-medium transition-all bg-amber-100 text-amber-700 hover:bg-amber-200 border border-amber-200"
+          >
+            <Receipt className="w-4 h-4" />
+            <span className="hidden sm:inline">Fatture</span>
           </Link>
         </div>
 
