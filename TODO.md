@@ -300,8 +300,19 @@
    ```
 3. **Attendi approvazione SES**: produzione (caso #176743190600620)
 
+### 🔧 Questionario Testi Originali + Admin - 10/01/2026 (Sessione 21) ✅ IN CORSO
+- [x] **Fix bug radio q17**: confronto esatto invece di solo prima parola (tutte iniziavano con "Vuoi")
+- [x] **Admin visualizza questionari**: modal con dettagli completi (commonAnswers, dietAnswers, billingData)
+- [x] **Textarea sempre visibili**: rimosse condizioni, ora sempre mostrate per note aggiuntive
+- [x] **Dati questionario -> profilo**: mappatura corretta campi billing (billingBirthPlace, ecc.)
+- [x] **Testo telefono esatto**: "Scrivimi il Numero di Cellulare per tenerci sempre in contatto..."
+- [x] **Supporto grassetto**: formatBoldText() converte **testo** in <strong>testo</strong>
+- [x] **Testi originali q5-q17**: aggiornati con testi completi e parole chiave in grassetto
+- [x] **Testi originali q19-q29**: onnivori con testi completi e grassetti
+- [ ] **Testi restanti domande**: completare vegetariani e vegani (q45-q84)
+
 ### 🔧 Questionario + Admin UX V2 - 10/01/2026 (Sessione 20) ✅ COMPLETATO
-- [x] **Domanda q11 (ciclo)**: modificato per scrivere "M" se maschio invece di "non applicabile"
+- [x] **Domanda q11 (ciclo)**: modificato per scrivere "y" se maschio invece di "non applicabile"
 - [x] **Domanda q17 (obiettivo)**: nuovo tipo `radio-with-textarea` con 3 opzioni radio + textarea note
 - [x] **Radio button uniformi**: aggiunto `min-h-[60px]` per uniformare altezza radio stile alimentare
 - [x] **BulletPoints fuori placeholder**: tutte le domande preferenze (onnivori, vegetariani, vegani)
