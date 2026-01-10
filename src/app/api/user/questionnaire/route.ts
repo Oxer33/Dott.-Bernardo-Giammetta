@@ -162,6 +162,7 @@ export async function POST(request: NextRequest) {
     if (profileData?.name) updateData.name = profileData.name;
     if (profileData?.phone) updateData.phone = profileData.phone;
     if (profileData?.birthDate) updateData.birthDate = new Date(profileData.birthDate);
+    if (profileData?.contactEmail) updateData.contactEmail = profileData.contactEmail;
     
     // Dati fatturazione
     if (billingData.birthPlace) updateData.birthPlace = billingData.birthPlace;

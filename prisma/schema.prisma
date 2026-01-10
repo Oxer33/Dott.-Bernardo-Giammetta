@@ -39,6 +39,9 @@ model User {
   gender          String?   // Sesso: "M" | "F"
   codiceFiscale   String?   // Codice fiscale (calcolato o inserito)
   
+  // Email di contatto (può essere diversa da email login)
+  contactEmail    String?   // Email per comunicazioni e materiali percorso
+  
   // Dati di residenza
   address         String?   // Indirizzo (via/piazza + nome)
   addressNumber   String?   // Numero civico
