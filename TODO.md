@@ -312,6 +312,8 @@
 - [x] **Domanda q9 (fumo)**: radio Sì/No + textarea condizionale disabilitata se No
 - [x] **Domande q10, q11, q15, q16, q17**: elenchi puntati spostati fuori dal placeholder
 - [x] **Nuovo tipo Question**: `textarea-with-radio` con `radioOptions`, `conditionalOnRadio`, `bulletPoints`
+- [x] **Campo contactEmail**: nuovo campo DB per email comunicazioni (può differire da email login)
+- [x] **Admin vista paziente**: mostra email login + email contatto separatamente
 - ⚠️ **Data nascita/sesso registrazione**: richiede configurazione attributi custom su AWS Cognito Console
 
 ### 🔧 UX Miglioramenti + Navigazione - 09/01/2026 (Sessione 18) ✅ COMPLETATO
