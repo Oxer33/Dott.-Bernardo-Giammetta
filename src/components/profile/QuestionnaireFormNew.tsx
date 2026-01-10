@@ -33,6 +33,7 @@ import {
   Question,
   extractDietType,
   getDietQuestions,
+  formatBoldText,
 } from '@/lib/questionnaire-config';
 
 // =============================================================================
@@ -334,21 +335,22 @@ export function QuestionnaireFormNew({
     return (
       <div key={question.id} className={`mb-6 ${isMissing ? 'p-3 rounded-xl border-2 border-orange-300 bg-orange-50/30' : ''}`}>
         <label className="block text-sage-800 font-medium mb-2">
-          {question.text}
+          <span dangerouslySetInnerHTML={{ __html: formatBoldText(question.text) }} />
           {question.required && <span className="text-red-500 ml-1">*</span>}
         </label>
         
         {question.hint && (
-          <p className="text-sm text-sage-500 mb-3 bg-sage-50 p-3 rounded-lg">
-            {question.hint}
-          </p>
+          <p 
+            className="text-sm text-sage-500 mb-3 bg-sage-50 p-3 rounded-lg"
+            dangerouslySetInnerHTML={{ __html: formatBoldText(question.hint) }}
+          />
         )}
 
         {/* Bullet points fuori dalla textarea */}
         {question.bulletPoints && question.bulletPoints.length > 0 && (
           <ol className="list-decimal list-inside text-sm text-sage-600 mb-3 bg-sage-50 p-3 rounded-lg space-y-1">
             {question.bulletPoints.map((point, idx) => (
-              <li key={idx}>{point}</li>
+              <li key={idx} dangerouslySetInnerHTML={{ __html: formatBoldText(point) }} />
             ))}
           </ol>
         )}
@@ -402,23 +404,16 @@ export function QuestionnaireFormNew({
                 </label>
               ))}
             </div>
-            {/* Textarea condizionale */}
-            {radioValue === question.conditionalOnRadio && (
-              <textarea
-                value={textValue || ''}
-                onChange={(e) => handleRadioWithTextChange('Sì', e.target.value)}
-                placeholder={question.placeholder}
-                rows={3}
-                className="w-full px-4 py-3 rounded-xl border border-sage-200 
-                         focus:border-sage-400 focus:ring-2 focus:ring-sage-100
-                         outline-none text-sage-800 placeholder:text-sage-400 resize-none"
-              />
-            )}
-            {radioValue === 'No' && (
-              <div className="px-4 py-3 bg-sage-100 rounded-xl text-sage-500 text-sm">
-                Nessuna risposta aggiuntiva richiesta
-              </div>
-            )}
+            {/* Textarea SEMPRE visibile per note aggiuntive */}
+            <textarea
+              value={textValue || ''}
+              onChange={(e) => handleRadioWithTextChange(radioValue || 'Sì', e.target.value)}
+              placeholder={question.placeholder || 'Note aggiuntive (opzionale)'}
+              rows={3}
+              className="w-full px-4 py-3 rounded-xl border border-sage-200 
+                       focus:border-sage-400 focus:ring-2 focus:ring-sage-100
+                       outline-none text-sage-800 placeholder:text-sage-400 resize-none"
+            />
           </div>
         )}
 
@@ -451,7 +446,9 @@ export function QuestionnaireFormNew({
         {question.type === 'radio-with-textarea' && question.options && (
           <div className="space-y-3">
             {question.options.map((option, idx) => {
-              const isSelected = value.startsWith(option.split(' ')[0]);
+              // Controlla se l'opzione corrente è selezionata (confronto esatto, non solo prima parola)
+              const valueWithoutNote = value.includes('|') ? value.split('|')[0] : value;
+              const isSelected = valueWithoutNote === option;
               return (
                 <label
                   key={idx}
@@ -476,11 +473,12 @@ export function QuestionnaireFormNew({
                 </label>
               );
             })}
-            {/* Textarea per note aggiuntive */}
+            {/* Textarea per note aggiuntive - SEMPRE visibile */}
             <textarea
               value={value.includes('|') ? value.split('|')[1] : ''}
               onChange={(e) => {
-                const selectedOption = question.options?.find(opt => value.startsWith(opt.split(' ')[0])) || '';
+                const valueWithoutNote = value.includes('|') ? value.split('|')[0] : value;
+                const selectedOption = question.options?.find(opt => opt === valueWithoutNote) || '';
                 onChange(e.target.value ? `${selectedOption}|${e.target.value}` : selectedOption);
               }}
               placeholder={question.placeholder}
@@ -536,7 +534,9 @@ export function QuestionnaireFormNew({
               <div className="space-y-4">
                 {/* Numero di telefono - SOLO NUMERI */}
                 <div className="space-y-1">
-                  <label className="text-sm text-sage-600 font-medium">Numero di telefono *</label>
+                  <label className="text-sm text-sage-600 font-medium">
+                    Scrivimi il Numero di Cellulare per tenerci sempre in contatto per qualsiasi esigenza informativa inerente il nostro percorso: *
+                  </label>
                   <input
                     type="tel"
                     value={editablePhone}

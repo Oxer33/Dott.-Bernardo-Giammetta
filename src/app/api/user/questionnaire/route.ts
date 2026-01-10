@@ -164,13 +164,13 @@ export async function POST(request: NextRequest) {
     if (profileData?.birthDate) updateData.birthDate = new Date(profileData.birthDate);
     if (profileData?.contactEmail) updateData.contactEmail = profileData.contactEmail;
     
-    // Dati fatturazione
-    if (billingData.birthPlace) updateData.birthPlace = billingData.birthPlace;
-    if (billingData.address) updateData.address = billingData.address;
-    if (billingData.addressNumber) updateData.addressNumber = billingData.addressNumber;
-    if (billingData.cap) updateData.cap = billingData.cap;
-    if (billingData.city) updateData.city = billingData.city;
-    if (billingData.codiceFiscale) updateData.codiceFiscale = billingData.codiceFiscale;
+    // Dati fatturazione (i campi sono prefissati con "billing" nel questionario)
+    if (billingData.billingBirthPlace) updateData.birthPlace = billingData.billingBirthPlace;
+    if (billingData.billingAddress) updateData.address = billingData.billingAddress;
+    if (billingData.billingAddressNumber) updateData.addressNumber = billingData.billingAddressNumber;
+    if (billingData.billingCap) updateData.cap = billingData.billingCap;
+    if (billingData.billingCity) updateData.city = billingData.billingCity;
+    if (billingData.billingCodiceFiscale) updateData.codiceFiscale = billingData.billingCodiceFiscale;
 
     if (Object.keys(updateData).length > 0) {
       await db.user.update({

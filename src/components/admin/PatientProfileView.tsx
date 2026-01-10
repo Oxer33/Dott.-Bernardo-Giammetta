@@ -26,6 +26,8 @@ import {
   Plus,
   Filter,
   XCircle,
+  Eye,
+  X,
 } from 'lucide-react';
 
 // =============================================================================
@@ -47,6 +49,9 @@ interface Questionnaire {
   dietType: string;
   createdAt: string;
   privacyConsent: boolean;
+  commonAnswers: string;   // JSON stringificato
+  dietAnswers: string;     // JSON stringificato
+  billingData: string;     // JSON stringificato
 }
 
 interface PatientData {
@@ -86,6 +91,8 @@ type AppointmentFilter = 'all' | 'confirmed' | 'completed' | 'cancelled';
 export function PatientProfileView({ patient }: PatientProfileViewProps) {
   const router = useRouter();
   const [appointmentFilter, setAppointmentFilter] = useState<AppointmentFilter>('all');
+  // State per visualizzare questionario
+  const [selectedQuestionnaire, setSelectedQuestionnaire] = useState<Questionnaire | null>(null);
   
   // Calcola contatori per ogni filtro
   const confirmedCount = patient.appointments.filter(apt => apt.status === 'CONFIRMED').length;
@@ -348,11 +355,20 @@ export function PatientProfileView({ patient }: PatientProfileViewProps) {
                             {format(parseISO(q.createdAt), "d MMM yyyy 'alle' HH:mm", { locale: it })}
                           </p>
                         </div>
-                        {idx === 0 && (
-                          <span className="px-2 py-0.5 bg-green-100 text-green-700 text-xs rounded-full">
-                            Ultimo
-                          </span>
-                        )}
+                        <div className="flex items-center gap-2">
+                          {idx === 0 && (
+                            <span className="px-2 py-0.5 bg-green-100 text-green-700 text-xs rounded-full">
+                              Ultimo
+                            </span>
+                          )}
+                          <button
+                            onClick={() => setSelectedQuestionnaire(q)}
+                            className="p-1.5 bg-lavender-100 text-lavender-700 rounded-lg hover:bg-lavender-200 transition-colors"
+                            title="Visualizza questionario"
+                          >
+                            <Eye className="w-4 h-4" />
+                          </button>
+                        </div>
                       </div>
                     </div>
                   ))}
@@ -395,6 +411,116 @@ export function PatientProfileView({ patient }: PatientProfileViewProps) {
             </motion.div>
           </div>
         </div>
+
+        {/* Modal Visualizza Questionario */}
+        {selectedQuestionnaire && (
+          <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col"
+            >
+              {/* Header Modal */}
+              <div className="flex items-center justify-between p-6 border-b border-sage-100">
+                <div>
+                  <h2 className="text-xl font-semibold text-sage-900">
+                    Questionario - {selectedQuestionnaire.dietType}
+                  </h2>
+                  <p className="text-sm text-sage-500">
+                    Compilato il {format(parseISO(selectedQuestionnaire.createdAt), "d MMMM yyyy 'alle' HH:mm", { locale: it })}
+                  </p>
+                </div>
+                <button
+                  onClick={() => setSelectedQuestionnaire(null)}
+                  className="p-2 hover:bg-sage-100 rounded-lg transition-colors"
+                >
+                  <X className="w-5 h-5 text-sage-600" />
+                </button>
+              </div>
+
+              {/* Contenuto Modal - Scrollabile */}
+              <div className="flex-1 overflow-y-auto p-6 space-y-6">
+                {/* Risposte Comuni */}
+                <div>
+                  <h3 className="font-semibold text-sage-800 mb-3 flex items-center gap-2">
+                    <ClipboardList className="w-5 h-5 text-lavender-500" />
+                    Stile di Vita e Salute
+                  </h3>
+                  <div className="space-y-3">
+                    {Object.entries(JSON.parse(selectedQuestionnaire.commonAnswers || '{}')).map(([key, value]) => (
+                      <div key={key} className="bg-sage-50 p-3 rounded-lg">
+                        <p className="text-xs font-medium text-sage-500 mb-1">Domanda {key.replace('q', '')}</p>
+                        <p className="text-sage-800 whitespace-pre-wrap">{String(value) || '-'}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Risposte Specifiche Dieta */}
+                <div>
+                  <h3 className="font-semibold text-sage-800 mb-3 flex items-center gap-2">
+                    <FileText className="w-5 h-5 text-lavender-500" />
+                    Preferenze Alimentari ({selectedQuestionnaire.dietType})
+                  </h3>
+                  <div className="space-y-3">
+                    {Object.entries(JSON.parse(selectedQuestionnaire.dietAnswers || '{}')).map(([key, value]) => (
+                      <div key={key} className="bg-sage-50 p-3 rounded-lg">
+                        <p className="text-xs font-medium text-sage-500 mb-1">Domanda {key.replace('q', '')}</p>
+                        <p className="text-sage-800 whitespace-pre-wrap">{String(value) || '-'}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Dati Fatturazione */}
+                <div>
+                  <h3 className="font-semibold text-sage-800 mb-3 flex items-center gap-2">
+                    <MapPin className="w-5 h-5 text-lavender-500" />
+                    Dati Fatturazione
+                  </h3>
+                  <div className="grid md:grid-cols-2 gap-3">
+                    {Object.entries(JSON.parse(selectedQuestionnaire.billingData || '{}')).map(([key, value]) => {
+                      const labels: Record<string, string> = {
+                        billingBirthPlace: 'Luogo di nascita',
+                        billingAddress: 'Indirizzo',
+                        billingAddressNumber: 'Numero civico',
+                        billingCap: 'CAP',
+                        billingCity: 'Città',
+                        billingCodiceFiscale: 'Codice Fiscale',
+                      };
+                      return (
+                        <div key={key} className="bg-sage-50 p-3 rounded-lg">
+                          <p className="text-xs font-medium text-sage-500 mb-1">{labels[key] || key}</p>
+                          <p className="text-sage-800">{String(value) || '-'}</p>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Privacy */}
+                <div className="bg-green-50 p-4 rounded-xl border border-green-200">
+                  <div className="flex items-center gap-2">
+                    <CheckCircle className="w-5 h-5 text-green-600" />
+                    <span className="text-green-800 font-medium">
+                      Consenso privacy: {selectedQuestionnaire.privacyConsent ? 'Autorizzato' : 'Non autorizzato'}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Footer Modal */}
+              <div className="p-4 border-t border-sage-100 bg-sage-50">
+                <button
+                  onClick={() => setSelectedQuestionnaire(null)}
+                  className="w-full py-2 bg-sage-500 text-white rounded-xl hover:bg-sage-600 transition-colors"
+                >
+                  Chiudi
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
       </div>
     </div>
   );

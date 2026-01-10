@@ -6,17 +6,22 @@
 // Tipo per le domande
 export interface Question {
   id: string;
-  text: string;
+  text: string;          // Testo domanda (supporta **grassetto** che verrà convertito)
   type: 'text' | 'textarea' | 'radio' | 'checkbox' | 'textarea-with-radio' | 'radio-with-textarea';
   required: boolean;
   placeholder?: string;
   options?: string[];
-  hint?: string; // Esempi o suggerimenti sotto la domanda
+  hint?: string;         // Esempi o suggerimenti sotto la domanda
   // Nuovi campi per domande con radio Si/No + textarea condizionale
   radioOptions?: string[]; // Opzioni radio (es: ['Sì', 'No'])
   conditionalOnRadio?: string; // Mostra textarea solo se radio = questo valore
   // Per domande con elenco puntato da mostrare FUORI dalla textarea
-  bulletPoints?: string[]; // Punti da mostrare come lista sopra la textarea
+  bulletPoints?: string[]; // Punti da mostrare come lista sopra la textarea (supporta **grassetto**)
+}
+
+// Helper per convertire **testo** in <strong>testo</strong>
+export function formatBoldText(text: string): string {
+  return text.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
 }
 
 // =============================================================================
@@ -27,44 +32,44 @@ export interface Question {
 export const COMMON_QUESTIONS: Question[] = [
   {
     id: 'q5',
-    text: 'Hai mai affrontato un percorso alimentare con il supporto di un professionista? Se sì allora quante volte e con quale obiettivo?',
+    text: 'Hai mai affrontato un **percorso alimentare** con il supporto di un professionista? Se si allora quante volte e con quale obiettivo?',
     type: 'textarea-with-radio',
     required: true,
     radioOptions: ['Sì', 'No'],
     conditionalOnRadio: 'Sì',
-    placeholder: 'Scrivi qui',
+    placeholder: 'Scrivi qui quante volte e con quale obiettivo',
   },
   {
     id: 'q6',
-    text: 'Svolgi una tipologia di lavoro sedentario oppure ti ritrovi a muoverti molto durante le ore lavorative settimanali?',
+    text: 'Svolgi una tipologia di **lavoro sedentario** oppure ti ritrovi a muoverti molto durante le ore lavorative settimanali?',
     type: 'textarea',
     required: true,
     placeholder: 'Scrivi qui',
   },
   {
     id: 'q7',
-    text: 'Nelle ore libere dopo il lavoro e nelle giornate di riposo dal lavoro tendi ad essere sedentario/a o cerchi di muoverti?',
+    text: 'Nelle ore libere dopo il lavoro e nelle giornate di riposo dal lavoro tendi ad essere **sedentario/a** o cerchi di muoverti (per esempio passeggiare, uscire in bici, fare del trekking)?',
     type: 'textarea',
     required: true,
-    placeholder: 'Per esempio passeggiare, uscire in bici, fare del trekking...',
+    placeholder: 'Scrivi qui',
   },
   {
     id: 'q8',
-    text: 'Svolgi un\'attività fisica programmata quindi un allenamento settimanale? Se la risposta è sì allora indicami:',
+    text: 'Svolgi un\'**attività fisica programmata** quindi un **allenamento settimanale**? Se la risposta è si allora indicami:',
     type: 'textarea',
     required: true,
     bulletPoints: [
-      'tipologia di attività svolta (per esempio sala pesi, crossfit, nuoto, pilates, yoga, atletica leggera, ecc...)',
-      'quante sedute svolgi a settimana',
-      'durata di ogni singola seduta',
-      'fascia oraria',
-      'solo nel caso in cui fossi agonista specificami anche se sei in fase di carico, scarico o pre-competizione'
+      '**tipologia** di attività svolta (per esempio sala pesi, crossfit, nuoto, pilates, yoga, atletica leggera, ect ect...)',
+      '**quante sedute** svolgi a settimana',
+      '**durata** di ogni singola seduta',
+      '**fascia oraria**',
+      'solo nel caso in cui fossi agonista specificami anche se sei in **fase di carico, scarico o pre-competizione**'
     ],
     placeholder: 'Scrivi qui',
   },
   {
     id: 'q9',
-    text: 'Hai l\'abitudine di fumare? Se sì indicami quante sigarette al giorno:',
+    text: 'Hai l\'abitudine di **fumare**? Se si indicami quante sigarette al giorno:',
     type: 'textarea-with-radio',
     required: true,
     radioOptions: ['Sì', 'No'],
@@ -73,84 +78,84 @@ export const COMMON_QUESTIONS: Question[] = [
   },
   {
     id: 'q10',
-    text: 'Riguardo al sonno, indicami:',
+    text: 'Riguardo al **sonno**, indicami:',
     type: 'textarea',
     required: true,
     bulletPoints: [
-      'Quante ore dormi continuativamente (e causa risvegli notturni)',
-      'Ore totali',
-      'Vorresti integrazione per migliorarlo?',
-      'Integratori già provati senza effetto?'
+      'Quante ore riesci a **dormire continuativamente**. In caso di risvegli notturni riportami la causa.',
+      'Quante ore dormi **in totale** (anche se discontinue).',
+      'Nel caso di un **sonno cattivo** per cause non esterne, vorresti consigliata un\'**integrazione** utile per provare a migliorarlo?',
+      'In caso di sonno cattivo indicami anche **se hai già provato degli integratori** (scrivimi i nomi se li ricordi) che però non hanno dato effetti positivi.'
     ],
     placeholder: 'Scrivi qui',
   },
   {
     id: 'q11',
-    text: 'Riguardo al Ciclo (se maschio scrivi "M"):',
+    text: 'In caso di sesso maschile rispondi scrivendo soltanto \'y\'. Riguardo al **Ciclo**:',
     type: 'textarea',
     required: true,
     bulletPoints: [
-      'Ciclo regolare/Menopausa?',
-      'Doloroso/sopportabile?',
-      'Tentazioni alimentari pre-ciclo?',
-      'Assumi farmaci/integratori per ciclo?',
-      'Vorresti integrazione naturale?'
+      'Il ciclo è regolare senza **pillola**? Oppure siamo in Menopausa o Post menopausa?',
+      'Il ciclo è molto **doloroso** o sopportabile o quasi asintomatico?',
+      'La settimana pre-ciclo e del ciclo è critica dal punto di vista delle **tentazioni alimentari**?',
+      'Nel caso di ciclo doloroso o molto stimolante la fame indicami **se stai già assumendo qualche rimedio** farmacologico o da integratore? Se è si scrivimi i nomi dei prodotti assunti e le modalità di assunzione.',
+      'Nel caso in cui non stessi assumendo nulla per ridurre i fastidi, indicami se vorresti **consigliato il protocollo di integrazione** naturale utile a renderlo più sopportabile?'
     ],
-    placeholder: 'Scrivi qui oppure "M" se maschio',
+    placeholder: 'Scrivi qui oppure "y" se maschio',
   },
   {
     id: 'q12',
-    text: 'Sono presenti condizioni patologiche diagnosticate da un Medico? Se sì riportale:',
+    text: 'Sono presenti **condizioni patologiche** diagnosticate da un Medico? Se si allora riportamele di seguito:',
     type: 'textarea',
     required: true,
     placeholder: 'Elenca eventuali patologie diagnosticate o scrivi "Nessuna"',
   },
   {
     id: 'q13',
-    text: 'Assumi farmaci? Se sì indicami nome e modalità di assunzione:',
+    text: '**Assumi farmaci**? Se è si indicami qui sotto il nome e la modalità di assunzione:',
     type: 'textarea',
     required: true,
     placeholder: 'Nome farmaco e come/quando lo assumi, oppure "Nessuno"',
   },
   {
     id: 'q14',
-    text: 'Assumi integratori? Se sì indicami nome e modalità di assunzione:',
+    text: '**Assumi integratori**? Se è si indicami qui sotto il nome e la modalità di assunzione:',
     type: 'textarea',
     required: true,
     placeholder: 'Nome integratore e come/quando lo assumi, oppure "Nessuno"',
   },
   {
     id: 'q15',
-    text: 'In merito ad allergie:',
+    text: 'In merito ad **allergie**:',
     type: 'textarea',
     required: true,
     bulletPoints: [
-      'Allergie ad alimenti o stagionali diagnosticate?',
-      'Specificale anche se non diagnosticate ma percepisci fastidi'
+      'Sono presenti **allergie ad alimenti o stagionali** diagnosticate da un medico?',
+      'Sia nel caso in cui ci sia una diagnosi medica che **nel caso in cui non ci sia una diagnosi medica** (ma percepiamo fastidi o sintomi nell\'assunzione di particolari cibi) specifichiamole.'
     ],
     placeholder: 'Scrivi qui',
   },
   {
     id: 'q16',
-    text: 'Riguardo alla regolarità intestinale:',
+    text: 'Riguardo alla **regolarità intestinale**, indicami:',
     type: 'textarea',
     required: true,
     bulletPoints: [
-      'Quante volte al giorno/settimana?',
-      'Assumi integratori per regolarità?',
-      'Integratori già provati senza effetto?'
+      'Quante volte **vai di corpo** durante il giorno? Se non vai di corpo giornalmente allora indicami quante volte evacui settimanalmente.',
+      'Assumi **integratori** (scrivi i nomi) per favorire la regolarità? Nel caso non assumessi nulla e non andassi giornalmente di corpo specificami se vorresti consigliato un integratore naturale utile a questo scopo.',
+      'Se hai già provato degli **integratori che però non hanno dato effetti positivi** nel regolarizzarti allora scrivimi i nomi.'
     ],
     placeholder: 'Scrivi qui',
   },
   {
     id: 'q17',
-    text: 'Qual è il tuo obiettivo personale per cui vuoi iniziare questo percorso? Indicami se:',
+    text: 'Qual è il tuo **obiettivo personale** per cui vuoi iniziare questo percorso? Indicami se:',
     type: 'radio-with-textarea',
     required: true,
     options: [
-      'Vuoi RIDURRE il grasso corporeo, quindi il peso, migliorando l\'alimentazione',
-      'Vuoi AUMENTARE il peso e anche la massa muscolare (valido solo se ci alleniamo) migliorando l\'alimentazione',
-      'Vuoi MANTENERE il peso migliorando solamente l\'alimentazione e anche lo stato di forma fisica (valido solo se ci alleniamo)'
+      'Vuoi **ridurre** il grasso corporeo, quindi il peso, migliorando l\'alimentazione?',
+      'Oppure **aumentare** il peso e anche la massa muscolare (valida solo se ci alleniamo) migliorando l\'alimentazione?',
+      'Oppure **mantenere** il peso migliorando solamente l\'alimentazione e anche lo stato di forma fisica (valido solo se ci alleniamo)?'
     ],
     placeholder: 'Note aggiuntive (opzionale)',
   },
@@ -179,90 +184,90 @@ export const DIET_TYPE_QUESTION: Question = {
 export const OMNIVORE_QUESTIONS: Question[] = [
   {
     id: 'q19',
-    text: 'LEGUMI che NON gradisci (lascia vuoto se gradisci tutto):',
+    text: 'Indicami tra i **LEGUMI** elencati di seguito se sono presenti legumi che **non consumi assolutamente** e che quindi non vuoi vengano inseriti nel piano. Scrivi soltanto i legumi che non gradisci altrimenti, se gradisci tutto, lascia la casella di risposta vuota.',
     type: 'textarea',
     required: false,
-    hint: 'Legumi: Ceci, Fagioli, Piselli, Lenticchie',
+    hint: '**Legumi**: Ceci, Fagioli, Piselli, Lenticchie.',
     placeholder: 'Scrivi solo quelli che non vuoi nel piano',
   },
   {
     id: 'q20',
-    text: 'CARNI ROSSE che NON gradisci (lascia vuoto se gradisci tutto):',
+    text: 'Indicami tra le **CARNI ROSSE** elencate di seguito se sono presenti tipologie che **non consumi assolutamente** e che quindi non vuoi vengano inserite nel piano. Scrivi soltanto le tipologie che non gradisci altrimenti, se gradisci tutto, lascia la casella di risposta vuota.',
     type: 'textarea',
     required: false,
-    hint: 'Carne rossa: manzo, vitello, maiale (fettina/bistecca o hamburger)',
+    hint: '**Carne rossa**: manzo, vitello, maiale sia in versione fettina/bistecca che in versione hamburger.',
     placeholder: 'Scrivi solo quelle che non vuoi nel piano',
   },
   {
     id: 'q21',
-    text: 'CARNI BIANCHE che NON gradisci (lascia vuoto se gradisci tutto):',
+    text: 'Indicami tra le **CARNI BIANCHE** elencate di seguito se sono presenti tipologie che **non consumi assolutamente** e che quindi non vuoi vengano inserite nel piano. Scrivi soltanto le tipologie che non gradisci altrimenti, se gradisci tutto, lascia la casella di risposta vuota.',
     type: 'textarea',
     required: false,
-    hint: 'Carne bianca: pollo o tacchino (fettina/bistecca o hamburger)',
+    hint: '**Carne bianca**: pollo o tacchino sia in versione fettina/bistecca che in versione hamburger.',
     placeholder: 'Scrivi solo quelle che non vuoi nel piano',
   },
   {
     id: 'q22',
-    text: 'UOVA - versioni che NON gradisci (lascia vuoto se gradisci tutto):',
+    text: 'Indicami per le **UOVA** se sono presenti versioni che **non consumi assolutamente** e che quindi non vuoi vengano inserite nel piano. Scrivi soltanto le versioni che non gradisci altrimenti, se gradisci tutto, lascia la casella di risposta vuota.',
     type: 'textarea',
     required: false,
-    hint: 'Uova: versione intera o soli albumi (in brick o tetrapack)',
+    hint: '**Uova**: sia in versione intera che soli albumi (in brick o tetrapack).',
     placeholder: 'Scrivi solo quelle che non vuoi nel piano',
   },
   {
     id: 'q23',
-    text: 'PESCE - tipologie che NON gradisci (lascia vuoto se gradisci tutto):',
+    text: 'Indicami tra le diverse tipologie di **PESCE** elencate di seguito se sono presenti tipologie che **non consumi assolutamente** e che quindi non vuoi vengano inserite nel piano. Scrivi soltanto le tipologie che non gradisci altrimenti, se gradisci tutto, lascia la casella di risposta vuota.',
     type: 'textarea',
     required: false,
-    hint: 'Con lisca (Merluzzo, Nasello, Persico, Platessa, Sogliola, Orata, Pesce Spada, Tonno fresco, Branzino, Salmone, Sarde, Alici, Sgombro), Molluschi (Calamari, Polpo, Seppia, Totani), Crostacei (Gamberi)',
+    hint: '**Pesce**: sia **con lisca** (es: Merluzzo, Nasello, Persico, Platessa, Sogliola, Orata, Pesce Spada, Tonno fresco, Branzino, Salmone, Sarde, Alici, Sgombro), sia **molluschi** (es: Calamari, Polpo, Seppia, Totani) che **crostacei** (es: Gamberi).',
     placeholder: 'Scrivi solo quelli che non vuoi nel piano',
   },
   {
     id: 'q24',
-    text: 'FORMAGGI - tipologie che NON gradisci (lascia vuoto se gradisci tutto):',
+    text: 'Indicami tra le diverse tipologie di **FORMAGGIO** elencate di seguito se sono presenti tipologie che **non consumi assolutamente** e che quindi non vuoi vengano inserite nel piano. Scrivi soltanto le tipologie che non gradisci altrimenti, se gradisci tutto, lascia la casella di risposta vuota.',
     type: 'textarea',
     required: false,
-    hint: 'Freschi light (Mozzarella, Stracchino, Ricotta, Feta, Fiocchi di Latte, Philadelphia), Stagionati (Parmigiano, Grana, Asiago, Emmenthal, Pecorino). Specifica se non vuoi versione light.',
+    hint: '**Formaggi**: sia **freschi** nella versione light (es: Mozzarella, Stracchino, Ricotta, Feta, Fiocchi di Latte, Philadelphia) che **stagionati** (es: Parmigiano, Grana, Asiago, Emmenthal, Pecorino). Se non vuoi assolutamente assumere la versione light dei formaggi freschi specificalo. Prenderemo in considerazione anche la versione senza lattosio solo se è necessario.',
     placeholder: 'Scrivi solo quelli che non vuoi nel piano',
   },
   {
     id: 'q25',
-    text: 'SALUMI MAGRI - tipologie che NON gradisci (lascia vuoto se gradisci tutto):',
+    text: 'Indicami tra le diverse tipologie di **SALUMI MAGRI** elencate di seguito se sono presenti tipologie che **non consumi assolutamente** e che quindi non vuoi vengano inserite nel piano. Scrivi soltanto le tipologie che non gradisci altrimenti, se gradisci tutto, lascia la casella di risposta vuota.',
     type: 'textarea',
     required: false,
-    hint: 'Bresaola, Fesa di Pollo o Tacchino arrosto, Prosciutto Crudo sgrassato. Riportami eventuali salumi non presenti di cui non puoi fare a meno.',
+    hint: '**Salumi magri**: Bresaola, Fesa di Pollo o Tacchino arrosto, Prosciutto Crudo sgrassato. Riportami eventuali salumi non presenti tra i precedenti di cui non puoi fare assolutamente a meno.',
     placeholder: 'Scrivi solo quelli che non vuoi nel piano',
   },
   {
     id: 'q26',
-    text: 'CONDIMENTI - Ti interessa anche l\'avocado come alternativa all\'olio EVO?',
+    text: 'Riguardo ai **CONDIMENTI** di base sarà inserito l\'olio extravergine d\'oliva. Specificami se potrebbe interessarti in alternativa anche l\'avocado scrivendo \'si avocado\' oppure \'no avocado\'.',
     type: 'radio',
     required: true,
     options: ['Sì avocado', 'No avocado'],
   },
   {
     id: 'q27',
-    text: 'VERDURA - tipologie che NON gradisci (lascia vuoto se gradisci tutto):',
+    text: 'Indicami tra le diverse tipologie di **VERDURA** elencate di seguito se sono presenti tipologie che **non consumi assolutamente** e che quindi non vuoi vengano inserite nel piano. Scrivi soltanto le tipologie che non gradisci altrimenti, se gradisci tutto, lascia la casella di risposta vuota.',
     type: 'textarea',
     required: false,
-    hint: 'Cotte (Broccolo, Cavolfiore, Verza, Cime di rapa, Funghi, Cicoria, Bietola, Spinaci, Carciofi, Zucchine, Peperoni, Melanzane, Fagiolini), Crude (Iceberg, Trocadero, Gentile, Romana, Rucola, Valeriana, Radicchio, Finocchi, Pomodori, Indivia belga, Sedano, Carote, Cetrioli)',
+    hint: '**Verdure**: **cotte** (es: Broccolo, Cavolfiore, Verza, Cime di rapa, Funghi, Cicoria, Bietola, Spinaci, Carciofi, Zucchine, Peperoni, Melanzane, Fagiolini) o **crude** (es: Iceberg, Trocadero, Gentile, Romana, Rucola, Valeriana, Radicchio, Finocchi, Pomodori, Indivia belga, Sedano, Carote, Cetrioli).',
     placeholder: 'Scrivi solo quelle che non vuoi nel piano',
   },
   {
     id: 'q28',
-    text: 'CARBOIDRATI - tipologie che NON gradisci (lascia vuoto se gradisci tutto):',
+    text: 'Indicami tra le diverse tipologie di **CARBOIDRATO** elencate di seguito se sono presenti tipologie che **non consumi assolutamente** e che quindi non vuoi vengano inserite nel piano. Scrivi soltanto le tipologie che non gradisci altrimenti, se gradisci tutto, lascia la casella di risposta vuota.',
     type: 'textarea',
     required: false,
-    hint: 'Pasta, cereale in chicco (riso, farro...), patate, pane, derivati secchi (Crostini integrali Buitoni, fette WASA, Gallette di Farro/Kamut/Riso/Mais)',
+    hint: '**Fonti di carboidrati**: pasta, cereale in chicco (es: riso o farro o simili), patate, pane, derivato secco del pane (es: Crostini integrali tipo Buitoni, fette WASA Integrali, Gallette di Farro o Kamut o Riso o Mais, se è necessario utilizzeremo derivati secchi simili ma senza glutine).',
     placeholder: 'Scrivi solo quelli che non vuoi nel piano',
   },
   {
     id: 'q29',
-    text: 'Consumi almeno 3 volte a settimana il pesce azzurro fresco?',
+    text: 'Consumi almeno 3 volte a settimana il **pesce azzurro fresco**?',
     type: 'radio',
     required: true,
     options: ['Sì', 'No'],
-    hint: 'Esempi: Suri, Sarde, Alici, Sgombro fresco, Pesce Spada, Lanzardo, Tonno fresco, Palamita, Lampuga, Ricciola, Sugarello, Alaccia, Aguglia, Aringa...',
+    hint: 'Esempi di pesce azzurro sono: Suri, Sarde, Alici, Sgombro fresco, Pesce Spada, Lanzardo, Tonno fresco, Palamita, Lampuga, Ricciola, Sugarello, Alaccia, Aguglia, Aringa, Tonno Alletterato, Pesce Sciabola, Costardella, Spratto.',
   },
   {
     id: 'q30',
