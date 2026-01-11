@@ -350,7 +350,7 @@ export const OMNIVORE_QUESTIONS: Question[] = [
     text: 'Indicami se per pranzo prenderesti in considerazione la possibilità di consumare un **piatto unico** (insalata di cereale o patate) composto da:',
     type: 'textarea',
     required: true,
-    hint: '1) **Cereale integrale** in chicco (es: Riso o simile) o patate comuni (o Americane) + 2) **Pietanza** (es: Fiocchi di Latte magri, Feta Light, Petto di Pollo o Tacchino, Piselli, Uova Intere o solo Albumi, Tonno, Merluzzo, Nasello, Platessa, Salmone affettato affumicato) + 3) Porzione di **Verdura** cotta o cruda',
+    hint: '1) **Cereale integrale** in chicco (es: Riso o simile) o patate comuni (o Americane) + 2) **Pietanza** (es: Fiocchi di Latte magri, Feta Light, Petto di Pollo o Tacchino, Piselli, Uova Intere o solo Albumi, Tonno, Merluzzo, Nasello, Platessa, Salmone affettato affumicato) + 3) Porzione di Verdura cotta o cruda da consumare in maniera dissociata dal piatto unico oppure da spezzettare ed includere nel piatto unico.',
     placeholder: 'Descrivi se ti interesserebbe e eventuali preferenze',
   },
   {
@@ -358,7 +358,7 @@ export const OMNIVORE_QUESTIONS: Question[] = [
     text: 'Indicami se per pranzo prenderesti in considerazione il consumo di un pasto a base di **Legumi** composto da:',
     type: 'textarea',
     required: true,
-    hint: '1) **Legumi** da consumare in zuppa o asciutti o in vellutata + 2) **Pane tostato** o derivato secco (es: Crostini integrali tipo Buitoni, fette WASA Integrali, Gallette di Farro o Kamut) + 3) Porzione di **Verdura** cotta (Minestrone o verdure a gradimento) o cruda',
+    hint: '1) **Legumi** da consumare in zuppa o asciutti o in vellutata + 2) **Pane tostato** o derivato secco (es: Crostini integrali tipo Buitoni, fette WASA Integrali, Gallette di Farro o Kamut, pane o derivato senza glutine se è necessario) + 3) Porzione di **Verdura** cotta (Minestrone o verdure a gradimento) o cruda',
     placeholder: 'Descrivi se ti interesserebbe e eventuali preferenze',
   },
   {
@@ -366,7 +366,7 @@ export const OMNIVORE_QUESTIONS: Question[] = [
     text: 'Indicami se per pranzo prenderesti in considerazione il consumo di un pasto a base di **Pasta**, composto da:',
     type: 'textarea',
     required: true,
-    hint: '1) **Pasta** di Semola o integrale (anche a base di farina 100% Legumi) + 2) **Condimento semplice** (sugo di pomodoro, pesto alla genovese, minestrone, verdure saltate in padella o in crema) + 3) Eventuale **Pietanza** + 4) Porzione di **Verdura** cotta o cruda',
+    hint: '1) **Pasta** di Semola o integrale. Specificami anche se prenderesti in considerazione la pasta a base di **farina 100%  Legumi come alternativa** + 2) **Condimento semplice** (sugo di pomodoro, pesto alla genovese, minestrone, verdure saltate in padella o in crema) + 3) Eventuale **Pietanza**. Intendo per esempio: Fiocchi di Latte magri, Feta Light, Petto di Pollo o Tacchino, Piselli, Uova Intere (o solo Albumi), Tonno, Merluzzo, Nasello, Platessa, Salmone affettato affumicato. + 4) Porzione di Verdura cotta o cruda. + 5) Riportami anche, se esistono, eventuali necessità personali particolari in merito all'utilizzo di pasta.',
     placeholder: 'Descrivi se ti interesserebbe e eventuali preferenze/necessità sulla pasta',
   },
   {
@@ -374,8 +374,8 @@ export const OMNIVORE_QUESTIONS: Question[] = [
     text: 'Per la **cena** le indicazioni saranno di abbinare (secondo ben precise frequenze di assunzione settimanale così come da linee guida dettate dalla dieta mediterranea):',
     type: 'textarea',
     required: true,
-    hint: '1) Una **Pietanza** (es: carne rossa, carne bianca, uova, formaggi, salumi magri, pesce) + 2) **Pane** o patate o derivato secco + 3) Porzione di **Verdura** cruda o cotta + 4) Porzione di **Frutta fresca** a fine pasto. Riportami anche, se esistono, eventuali necessità personali particolari per questo pasto.',
-    placeholder: 'Scrivi "OK" se non ci sono necessità, altrimenti riportale',
+    hint: '1) Una **Pietanza** (es: carne rossa, carne bianca, uova, formaggi, salumi magri, pesce) + 2) **Pane** o patate o derivato secco (es: Crostini integrali Buitoni, fette WASA Integrali, Gallette di Farro o Kamut, pane o derivato senza glutine se è necessario). + 3) Porzione di **Verdura** cruda o cotta. + 4) Porzione di **Frutta fresca** a fine pasto.',
+    placeholder: 'Scrivi "OK" se non ci sono particolari necessità altrimenti riportami esigenze specifiche per questo pasto.',
   },
   {
     id: 'q41',
@@ -395,7 +395,7 @@ export const OMNIVORE_QUESTIONS: Question[] = [
     text: 'Riguardo al PASTO LIBERO settimanale (pizza, sushi, carbonara...):',
     type: 'textarea',
     required: true,
-    hint: 'In questa prima fase il pasto libero sarà 1 a settimana nella giornata che preferisci',
+    hint: 'In questa prima fase il pasto libero sarà 1 a settimana all'interno della giornata che più preferirai sfruttare per farlo. Al pasto libero si è "liberi" di consumare tutto ciò che desideriamo (pizza, sushi, carbonara, ecc.).',
     placeholder: 'Scrivi "OK" se non ci sono necessità particolari, altrimenti riportale',
   },
 ];
@@ -431,7 +431,7 @@ export const VEGETARIAN_QUESTIONS: Question[] = [
   },
   {
     id: 'q48',
-    text: 'Riguardo ai **CONDIMENTI** di base sarà inserito l\'olio extravergine d\'oliva. Specificami se potrebbe interessarti in alternativa anche l\'avocado scrivendo \'si avocado\' oppure \'no avocado\'.',
+    text: 'Riguardo ai **CONDIMENTI** di base sarà inserito l\'olio extravergine d\'oliva. Specificami se potrebbe interessarti in alternativa anche l\'avocado.',
     type: 'radio',
     required: true,
     options: ['Sì avocado', 'No avocado'],
@@ -533,7 +533,7 @@ export const VEGETARIAN_QUESTIONS: Question[] = [
     text: 'Indicami se per pranzo prenderesti in considerazione la possibilità di consumare un **piatto unico** (insalata di cereale o patate) composto da:',
     type: 'textarea',
     required: true,
-    hint: '1) **Cereale integrale** in chicco (es: Riso o simile) o patate comuni (o Americane) + 2) **Pietanza** (es: Fiocchi di Latte magri, Feta Light, Tofu, Piselli, Uova Intere o solo Albume, Affettato vegetale di Mopur o Lupini, Tempeh, Fagioli di Soia Edamame) + 3) Porzione di **Verdura** cotta o cruda',
+    hint: '1) **Cereale integrale** in chicco (es: Riso o simile) o patate comuni (o Americane) + 2) **Pietanza** (es: Fiocchi di Latte magri, Feta Light, Tofu, Piselli, Uova Intere o solo Albume, Affettato vegetale di Mopur o Lupini, Tempeh, Fagioli di Soia Edamame) + 3) Porzione di Verdura cotta o cruda da consumare in maniera dissociata dal piatto unico oppure da spezzettare ed includere nel piatto unico.',
     placeholder: 'Descrivi se ti interesserebbe e eventuali preferenze',
   },
   {
@@ -541,7 +541,7 @@ export const VEGETARIAN_QUESTIONS: Question[] = [
     text: 'Indicami se per pranzo prenderesti in considerazione il consumo di un pasto a base di **Legumi** composto da:',
     type: 'textarea',
     required: true,
-    hint: '1) **Legumi** da consumare in zuppa o asciutti o in vellutata + 2) **Pane tostato** o derivato secco (es: Crostini integrali tipo Buitoni, fette WASA Integrali, Gallette di Farro o Kamut) + 3) Porzione di **Verdura** cotta (Minestrone o verdure a gradimento) o cruda',
+    hint: '1) **Legumi** da consumare in zuppa o asciutti o in vellutata + 2) **Pane tostato** o derivato secco (es: Crostini integrali tipo Buitoni, fette WASA Integrali, Gallette di Farro o Kamut, pane o derivato senza glutine se è necessario) + 3) Porzione di **Verdura** cotta (Minestrone o verdure a gradimento) o cruda',
     placeholder: 'Descrivi se ti interesserebbe e eventuali preferenze',
   },
   {
@@ -549,7 +549,7 @@ export const VEGETARIAN_QUESTIONS: Question[] = [
     text: 'Indicami se per pranzo prenderesti in considerazione il consumo di un pasto a base di **Pasta**, composto da:',
     type: 'textarea',
     required: true,
-    hint: '1) **Pasta** di Semola o integrale (anche a base di farina 100% Legumi) + 2) **Condimento semplice** (sugo di pomodoro, pesto alla genovese, minestrone, verdure saltate in padella o in crema) + 3) Eventuale **Pietanza** (es: Fiocchi di Latte magri, Feta Light, Tofu, Piselli, Uova, Affettato vegetale, Tempeh, Edamame) + 4) Porzione di **Verdura** cotta o cruda',
+    hint: '1) **Pasta** di Semola o integrale. Specificami anche se prenderesti in considerazione la pasta a base di **farina 100%  Legumi come alternativa** + 2) **Condimento semplice** (sugo di pomodoro, pesto alla genovese, minestrone, verdure saltate in padella o in crema) + 3) Eventuale **Pietanza**. Intendo per esempio: Fiocchi di Latte magri, Feta Light, Tofu, Piselli, Uova Intere (o solo Albume), Affettato vegetale di Mopur o Lupini, Tempeh, Fagioli di Soia Edamame. + 4) Porzione di **Verdura** cotta o cruda. + 5) Riportami anche, se esistono, eventuali necessità personali particolari in merito all\'utilizzo di pasta',
     placeholder: 'Descrivi se ti interesserebbe e eventuali preferenze',
   },
   {
@@ -557,8 +557,8 @@ export const VEGETARIAN_QUESTIONS: Question[] = [
     text: 'Per la **cena** le indicazioni saranno di abbinare (secondo ben precise frequenze di assunzione settimanale):',
     type: 'textarea',
     required: true,
-    hint: '1) Una **Pietanza vegetariana** (es: Tempeh, Burger di Soia, Uova, Formaggi, Seitan, Affettato Vegetale, Tofu, Legumi) + 2) **Pane** o patate o derivato secco + 3) Porzione di **Verdura** cruda o cotta + 4) Porzione di **Frutta fresca** a fine pasto. Riportami anche, se esistono, eventuali necessità personali particolari per questo pasto.',
-    placeholder: 'Scrivi "OK" se non ci sono necessità, altrimenti riportale',
+    hint: '1) Una **Pietanza** (es: Tempeh, Burger di Soia, Uova, Formaggi, Seitan, Affettato Vegetale, Tofu, Legumi) + 2) **Pane** o patate o derivato secco (es: Crostini integrali Buitoni, fette WASA Integrali, Gallette di Farro o Kamut, pane o derivato senza glutine se è necessario) + 3) Porzione di **Verdura** cruda o cotta + 4) Porzione di **Frutta fresca** a fine pasto.',
+    placeholder: 'Scrivi "OK" se non ci sono particolari necessità altrimenti riportami esigenze specifiche per questo pasto.',
   },
   {
     id: 'q62',
@@ -578,7 +578,7 @@ export const VEGETARIAN_QUESTIONS: Question[] = [
     text: 'Riguardo al **PASTO LIBERO** settimanale:',
     type: 'textarea',
     required: true,
-    hint: 'In questa prima fase il pasto libero sarà 1 a settimana nella giornata che preferisci. Può essere una pizza o qualsiasi altro primo piatto/secondo piatto/panino di tuo gradimento.',
+    hint: 'In questa prima fase il pasto libero sarà 1 a settimana all’interno della giornata che più preferirai sfruttare per farlo. Al pasto libero si è “liberi” di consumare tutto ciò che desideriamo (pizza o qualsiasi primo piatto o secondo piatto o panino di tuo gradimento).',
     placeholder: 'Scrivi "OK" se non ci sono necessità particolari, altrimenti riportale',
   },
 ];
@@ -598,7 +598,7 @@ export const VEGAN_QUESTIONS: Question[] = [
   },
   {
     id: 'q67',
-    text: 'Riguardo ai **CONDIMENTI** di base sarà inserito l\'olio extravergine d\'oliva. Specificami se potrebbe interessarti in alternativa anche l\'avocado scrivendo \'si avocado\' oppure \'no avocado\'.',
+    text: 'Riguardo ai **CONDIMENTI** di base sarà inserito l\'olio extravergine d\'oliva. Specificami se potrebbe interessarti in alternativa anche l\'avocado.',
     type: 'radio',
     required: true,
     options: ['Sì avocado', 'No avocado'],
@@ -700,7 +700,7 @@ export const VEGAN_QUESTIONS: Question[] = [
     text: 'Indicami se per pranzo prenderesti in considerazione la possibilità di consumare un **piatto unico** (insalata di cereale o patate) composto da:',
     type: 'textarea',
     required: true,
-    hint: '1) **Cereale integrale** in chicco (es: Riso o simile) o patate comuni (o Americane) + 2) **Pietanza** (es: Tofu, Piselli, Affettato vegetale di Mopur o Lupini, Tempeh, Fagioli di Soia Edamame, Legumi) + 3) Porzione di **Verdura** cotta o cruda',
+    hint: '1) **Cereale integrale** in chicco (es: Riso o simile) o patate comuni (o Americane) + 2) **Pietanza** (es: Tofu, Piselli, Affettato vegetale di Mopur o Lupini, Tempeh, Fagioli di Soia Edamame, Legumi) + 3) Porzione di Verdura cotta o cruda da consumare in maniera dissociata dal piatto unico oppure da spezzettare ed includere nel piatto unico.',
     placeholder: 'Descrivi se ti interesserebbe e eventuali preferenze',
   },
   {
@@ -708,7 +708,7 @@ export const VEGAN_QUESTIONS: Question[] = [
     text: 'Indicami se per pranzo prenderesti in considerazione il consumo di un pasto a base di **Legumi** composto da:',
     type: 'textarea',
     required: true,
-    hint: '1) **Legumi** da consumare in zuppa o asciutti o in vellutata + 2) **Pane tostato** o derivato secco (es: Crostini integrali tipo Buitoni, fette WASA Integrali, Gallette di Farro o Kamut) + 3) Porzione di **Verdura** cotta (Minestrone o verdure a gradimento) o cruda',
+    hint: '1) **Legumi** da consumare in zuppa o asciutti o in vellutata + 2) **Pane tostato** o derivato secco (es: Crostini integrali tipo Buitoni, fette WASA Integrali, Gallette di Farro o Kamut, pane o derivato senza glutine se è necessario) + 3) Porzione di **Verdura** cotta (Minestrone o verdure a gradimento) o cruda',
     placeholder: 'Descrivi se ti interesserebbe e eventuali preferenze',
   },
   {
@@ -716,7 +716,7 @@ export const VEGAN_QUESTIONS: Question[] = [
     text: 'Indicami se per pranzo prenderesti in considerazione il consumo di un pasto a base di **Pasta**, composto da:',
     type: 'textarea',
     required: true,
-    hint: '1) **Pasta** di Semola o integrale (anche a base di farina 100% Legumi) + 2) **Condimento semplice** (sugo di pomodoro, pesto alla genovese, minestrone, verdure saltate in padella o in crema) + 3) Eventuale **Pietanza vegana** (es: Tofu, Piselli, Affettato vegetale, Tempeh, Edamame, Legumi) + 4) Porzione di **Verdura** cotta o cruda',
+    hint: '1) **Pasta** di Semola o integrale. Specificami anche se prenderesti in considerazione la pasta a base di **farina 100%  Legumi come alternativa** + 2) **Condimento semplice** (sugo di pomodoro, pesto alla genovese, minestrone, verdure saltate in padella o in crema) + 3) Eventuale **Pietanza**. Intendo per esempio: Tofu, Piselli, Affettato vegetale di Mopur o Lupini, Tempeh, Fagioli di Soia Edamame, Legumi.  + 4) Porzione di **Verdura** cotta o cruda. + 5) Riportami anche, se esistono, eventuali necessità personali particolari in merito all'utilizzo di pasta.',
     placeholder: 'Descrivi se ti interesserebbe e eventuali preferenze',
   },
   {
@@ -724,8 +724,8 @@ export const VEGAN_QUESTIONS: Question[] = [
     text: 'Per la **cena** le indicazioni saranno di abbinare (secondo ben precise frequenze di assunzione settimanale):',
     type: 'textarea',
     required: true,
-    hint: '1) Una **Pietanza vegana** (es: Tempeh, Burger Vegani fatti in casa, Seitan, Affettato Vegetale, Tofu, Legumi) + 2) **Pane** o patate o derivato secco + 3) Porzione di **Verdura** cruda o cotta + 4) Porzione di **Frutta fresca** a fine pasto. Riportami anche, se esistono, eventuali necessità personali particolari per questo pasto.',
-    placeholder: 'Scrivi "OK" se non ci sono necessità, altrimenti riportale',
+    hint: '1) Una **Pietanza** (es: Tempeh, Burger Vegani fatti in casa, Seitan, Affettato Vegetale, Tofu, Legumi) + 2) **Pane** o patate o derivato secco (es: Crostini integrali Buitoni, fette WASA Integrali, Gallette di Farro o Kamut, pane o derivato senza glutine se è necessario) + 3) Porzione di **Verdura** cruda o cotta + 4) Porzione di **Frutta fresca** a fine pasto.',
+    placeholder: 'Scrivi "OK" se non ci sono particolari necessità altrimenti riportami esigenze specifiche per questo pasto.',
   },
   {
     id: 'q81',
@@ -745,7 +745,7 @@ export const VEGAN_QUESTIONS: Question[] = [
     text: 'Riguardo al **PASTO LIBERO** settimanale:',
     type: 'textarea',
     required: true,
-    hint: 'In questa prima fase il pasto libero sarà 1 a settimana nella giornata che preferisci. Può essere una pizza o qualsiasi altro primo piatto/secondo piatto/panino di tuo gradimento.',
+    hint: 'In questa prima fase il pasto libero sarà 1 a settimana all’interno della giornata che più preferirai sfruttare per farlo. Al pasto libero si è “liberi” di consumare tutto ciò che desideriamo (pizza o qualsiasi primo piatto o secondo piatto o panino di tuo gradimento).',
     placeholder: 'Scrivi "OK" se non ci sono necessità particolari, altrimenti riportale',
   },
 ];

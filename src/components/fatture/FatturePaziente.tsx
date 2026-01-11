@@ -11,6 +11,7 @@ import {
   Search, 
   FileText,
   Printer,
+  Download,
   Eye,
   Calendar,
   Loader2,
@@ -18,6 +19,7 @@ import {
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { it } from 'date-fns/locale';
+import { stampaPDF, scaricaPDF, DatiFatturaPDF } from '@/lib/invoice-pdf';
 
 // =============================================================================
 // TIPI
@@ -99,6 +101,25 @@ export function FatturePaziente() {
       default: return code;
     }
   };
+
+  // Prepara dati per PDF (paziente non ha accesso ai propri dati completi via fattura)
+  const preparaDatiPDF = (fattura: Fattura): DatiFatturaPDF => ({
+    numeroFattura: fattura.invoiceNumber,
+    dataFattura: fattura.invoiceDate,
+    paziente: {
+      nome: 'Paziente', // I dati paziente non sono inclusi nella fattura per privacy
+    },
+    prestazioni: [{
+      descrizione: 'Prestazione sanitaria',
+      importo: fattura.subtotal
+    }],
+    imponibile: fattura.subtotal,
+    contributoENPAB: fattura.contributo,
+    marcaDaBollo: fattura.bollo,
+    totale: fattura.total,
+    metodoPagamento: fattura.paymentMethod,
+    stato: fattura.status
+  });
 
   return (
     <div className="space-y-6">
@@ -184,9 +205,23 @@ export function FatturePaziente() {
                       <button
                         onClick={() => setSelectedFattura(fattura)}
                         className="p-2 text-sage-400 hover:text-sage-600 hover:bg-sage-100 rounded-lg transition-colors"
-                        title="Visualizza e stampa"
+                        title="Visualizza"
                       >
                         <Eye className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={() => stampaPDF(preparaDatiPDF(fattura))}
+                        className="p-2 text-sage-400 hover:text-amber-600 hover:bg-amber-50 rounded-lg transition-colors"
+                        title="Stampa"
+                      >
+                        <Printer className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={() => scaricaPDF(preparaDatiPDF(fattura))}
+                        className="p-2 text-sage-400 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors"
+                        title="Scarica PDF"
+                      >
+                        <Download className="w-4 h-4" />
                       </button>
                     </div>
                   </div>

@@ -25,6 +25,7 @@ import {
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { it } from 'date-fns/locale';
+import { stampaPDF, scaricaPDF, DatiFatturaPDF } from '@/lib/invoice-pdf';
 
 // =============================================================================
 // TIPI
@@ -41,6 +42,12 @@ interface Fattura {
     name: string | null;
     email: string;
     codiceFiscale: string | null;
+    birthDate: string | null;
+    birthPlace: string | null;
+    address: string | null;
+    addressNumber: string | null;
+    city: string | null;
+    cap: string | null;
   };
   subtotal: number;
   contributo: number;
@@ -48,6 +55,7 @@ interface Fattura {
   total: number;
   status: string;
   paymentMethod: string;
+  description?: string;
 }
 
 interface Stats {
@@ -66,6 +74,31 @@ const getNomePaziente = (user: Fattura['user']) => {
   return user.name || user.email;
 };
 
+// Helper per preparare dati PDF
+const preparaDatiPDF = (fattura: Fattura): DatiFatturaPDF => ({
+  numeroFattura: fattura.invoiceNumber,
+  dataFattura: fattura.invoiceDate,
+  paziente: {
+    nome: getNomePaziente(fattura.user),
+    codiceFiscale: fattura.user.codiceFiscale || undefined,
+    indirizzo: fattura.user.address 
+      ? `${fattura.user.address} ${fattura.user.addressNumber || ''}`
+      : undefined,
+    cap: fattura.user.cap || undefined,
+    citta: fattura.user.city || undefined,
+  },
+  prestazioni: [{
+    descrizione: fattura.description || 'Prestazione sanitaria',
+    importo: fattura.subtotal
+  }],
+  imponibile: fattura.subtotal,
+  contributoENPAB: fattura.contributo,
+  marcaDaBollo: fattura.bollo,
+  totale: fattura.total,
+  metodoPagamento: fattura.paymentMethod,
+  stato: fattura.status
+});
+
 // =============================================================================
 // COMPONENTE PRINCIPALE
 // =============================================================================
@@ -78,8 +111,13 @@ export function ElencoFatture() {
   const [selectedFattura, setSelectedFattura] = useState<Fattura | null>(null);
   const [editingFattura, setEditingFattura] = useState<Fattura | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  // Stati per modifica fattura completa
   const [editStatus, setEditStatus] = useState('');
   const [editPayment, setEditPayment] = useState('');
+  const [editDate, setEditDate] = useState('');
+  const [editNumber, setEditNumber] = useState('');
+  const [editDescription, setEditDescription] = useState('');
+  const [editSubtotal, setEditSubtotal] = useState('');
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
@@ -116,10 +154,17 @@ export function ElencoFatture() {
     setDeletingId(null);
   };
 
-  // Salva modifiche fattura
+  // Salva modifiche fattura (tutti i campi)
   const handleSaveEdit = async () => {
     if (!editingFattura) return;
     setSaving(true);
+    
+    // Calcola nuovi totali se l'importo è cambiato
+    const nuovoSubtotal = parseFloat(editSubtotal) || editingFattura.subtotal;
+    const nuovoContributo = Math.round((nuovoSubtotal * 0.04) * 100) / 100;
+    const nuovoTotaleLordo = nuovoSubtotal + nuovoContributo;
+    const nuovoBollo = nuovoTotaleLordo > 77.47 ? 2 : 0;
+    const nuovoTotale = nuovoTotaleLordo + nuovoBollo;
     
     try {
       const res = await fetch(`/api/fatture/${editingFattura.id}`, {
@@ -127,7 +172,14 @@ export function ElencoFatture() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           status: editStatus,
-          paymentMethod: editPayment
+          paymentMethod: editPayment,
+          invoiceDate: editDate,
+          invoiceNumber: editNumber,
+          description: editDescription,
+          subtotal: nuovoSubtotal,
+          contributo: nuovoContributo,
+          bollo: nuovoBollo,
+          total: nuovoTotale
         })
       });
       const data = await res.json();
@@ -144,11 +196,15 @@ export function ElencoFatture() {
     setSaving(false);
   };
 
-  // Apri modal modifica
+  // Apri modal modifica con tutti i campi
   const openEditModal = (fattura: Fattura) => {
     setEditingFattura(fattura);
     setEditStatus(fattura.status);
     setEditPayment(fattura.paymentMethod || 'MP05');
+    setEditDate(fattura.invoiceDate.split('T')[0]);
+    setEditNumber(fattura.invoiceNumber);
+    setEditDescription(fattura.description || 'Prestazione sanitaria');
+    setEditSubtotal(fattura.subtotal.toFixed(2));
   };
 
   // Carica fatture da API
@@ -341,11 +397,18 @@ export function ElencoFatture() {
                         <Edit className="w-4 h-4" />
                       </button>
                       <button
-                        onClick={() => setSelectedFattura(fattura)}
+                        onClick={() => stampaPDF(preparaDatiPDF(fattura))}
                         className="p-2 text-sage-400 hover:text-amber-600 hover:bg-amber-50 rounded-lg transition-colors"
                         title="Stampa PDF"
                       >
                         <Printer className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={() => scaricaPDF(preparaDatiPDF(fattura))}
+                        className="p-2 text-sage-400 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors"
+                        title="Scarica PDF"
+                      >
+                        <Download className="w-4 h-4" />
                       </button>
                       <button
                         onClick={() => handleDelete(fattura.id)}
@@ -508,7 +571,18 @@ export function ElencoFatture() {
                 className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-amber-500 text-white rounded-xl hover:bg-amber-600"
               >
                 <Printer className="w-4 h-4" />
-                Stampa PDF
+                Stampa
+              </button>
+              <button 
+                onClick={() => {
+                  if (selectedFattura) {
+                    scaricaPDF(preparaDatiPDF(selectedFattura));
+                  }
+                }}
+                className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-green-500 text-white rounded-xl hover:bg-green-600"
+              >
+                <Download className="w-4 h-4" />
+                Scarica PDF
               </button>
               <button 
                 onClick={() => setSelectedFattura(null)}
@@ -521,17 +595,17 @@ export function ElencoFatture() {
         </div>
       )}
 
-      {/* Modal modifica fattura */}
+      {/* Modal modifica fattura COMPLETO */}
       {editingFattura && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6"
+            className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full p-6 max-h-[90vh] overflow-y-auto"
           >
             <div className="flex justify-between items-start mb-4">
               <h3 className="text-xl font-semibold text-sage-900">
-                Modifica Fattura n. {editingFattura.invoiceNumber}
+                Modifica Fattura Completa
               </h3>
               <button
                 onClick={() => setEditingFattura(null)}
@@ -544,52 +618,114 @@ export function ElencoFatture() {
             <div className="space-y-4">
               {/* Info paziente (readonly) */}
               <div className="bg-sage-50 rounded-xl p-4">
-                <p className="text-sm text-sage-500 mb-1">Paziente</p>
+                <p className="text-sm text-sage-500 mb-1">Paziente (non modificabile)</p>
                 <p className="font-semibold text-sage-800">{getNomePaziente(editingFattura.user)}</p>
                 <p className="text-sm text-sage-600">{editingFattura.user.email}</p>
               </div>
 
-              {/* Data e totale (readonly) */}
+              {/* Numero e Data fattura (modificabili) */}
               <div className="grid grid-cols-2 gap-4">
-                <div className="bg-sage-50 rounded-xl p-4">
-                  <p className="text-sm text-sage-500 mb-1">Data</p>
-                  <p className="font-semibold text-sage-800">
-                    {format(new Date(editingFattura.invoiceDate), 'd/MM/yyyy')}
-                  </p>
+                <div>
+                  <label className="block text-sm font-medium text-sage-700 mb-2">Numero Fattura</label>
+                  <input
+                    type="text"
+                    value={editNumber}
+                    onChange={(e) => setEditNumber(e.target.value)}
+                    className="w-full px-4 py-2 rounded-xl border border-sage-200 focus:border-sage-400 outline-none"
+                  />
                 </div>
-                <div className="bg-sage-50 rounded-xl p-4">
-                  <p className="text-sm text-sage-500 mb-1">Totale</p>
-                  <p className="font-bold text-xl text-sage-800">€ {editingFattura.total.toFixed(2)}</p>
+                <div>
+                  <label className="block text-sm font-medium text-sage-700 mb-2">Data Fattura</label>
+                  <input
+                    type="date"
+                    value={editDate}
+                    onChange={(e) => setEditDate(e.target.value)}
+                    className="w-full px-4 py-2 rounded-xl border border-sage-200 focus:border-sage-400 outline-none"
+                  />
                 </div>
               </div>
 
-              {/* Stato (modificabile) */}
+              {/* Descrizione prestazione (modificabile) */}
               <div>
-                <label className="block text-sm font-medium text-sage-700 mb-2">Stato fattura</label>
-                <select
-                  value={editStatus}
-                  onChange={(e) => setEditStatus(e.target.value)}
+                <label className="block text-sm font-medium text-sage-700 mb-2">Descrizione Prestazione</label>
+                <input
+                  type="text"
+                  value={editDescription}
+                  onChange={(e) => setEditDescription(e.target.value)}
+                  placeholder="Es: Prima visita nutrizionale"
                   className="w-full px-4 py-2 rounded-xl border border-sage-200 focus:border-sage-400 outline-none"
-                >
-                  <option value="EMESSA">Emessa</option>
-                  <option value="PAGATA">Pagata</option>
-                  <option value="ANNULLATA">Annullata</option>
-                </select>
+                />
               </div>
 
-              {/* Metodo pagamento (modificabile) */}
+              {/* Importo (modificabile) */}
               <div>
-                <label className="block text-sm font-medium text-sage-700 mb-2">Metodo pagamento</label>
-                <select
-                  value={editPayment}
-                  onChange={(e) => setEditPayment(e.target.value)}
+                <label className="block text-sm font-medium text-sage-700 mb-2">Imponibile (€)</label>
+                <input
+                  type="number"
+                  step="0.01"
+                  value={editSubtotal}
+                  onChange={(e) => setEditSubtotal(e.target.value)}
                   className="w-full px-4 py-2 rounded-xl border border-sage-200 focus:border-sage-400 outline-none"
-                >
-                  <option value="MP01">Contanti</option>
-                  <option value="MP05">Bonifico</option>
-                  <option value="MP08">POS (Carta)</option>
-                </select>
+                />
+                <p className="text-xs text-sage-500 mt-1">
+                  Contributo ENPAB 4% e bollo verranno ricalcolati automaticamente
+                </p>
               </div>
+
+              {/* Stato e Metodo pagamento */}
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-sage-700 mb-2">Stato fattura</label>
+                  <select
+                    value={editStatus}
+                    onChange={(e) => setEditStatus(e.target.value)}
+                    className="w-full px-4 py-2 rounded-xl border border-sage-200 focus:border-sage-400 outline-none bg-white"
+                  >
+                    <option value="EMESSA">Emessa</option>
+                    <option value="PAGATA">Pagata</option>
+                    <option value="ANNULLATA">Annullata</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-sage-700 mb-2">Metodo pagamento</label>
+                  <select
+                    value={editPayment}
+                    onChange={(e) => setEditPayment(e.target.value)}
+                    className="w-full px-4 py-2 rounded-xl border border-sage-200 focus:border-sage-400 outline-none bg-white"
+                  >
+                    <option value="MP08">POS (Carta)</option>
+                    <option value="MP05">Bonifico</option>
+                    <option value="MP01">Contanti</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* Anteprima totali calcolati */}
+              {editSubtotal && (
+                <div className="bg-green-50 rounded-xl p-4 border border-green-200">
+                  <p className="text-sm font-medium text-green-800 mb-2">Anteprima Totali:</p>
+                  <div className="text-sm text-green-700 space-y-1">
+                    <div className="flex justify-between">
+                      <span>Imponibile:</span>
+                      <span>€ {parseFloat(editSubtotal).toFixed(2)}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Contributo ENPAB 4%:</span>
+                      <span>€ {(parseFloat(editSubtotal) * 0.04).toFixed(2)}</span>
+                    </div>
+                    {(parseFloat(editSubtotal) * 1.04) > 77.47 && (
+                      <div className="flex justify-between">
+                        <span>Marca da bollo:</span>
+                        <span>€ 2.00</span>
+                      </div>
+                    )}
+                    <div className="flex justify-between font-bold pt-2 border-t border-green-300">
+                      <span>TOTALE:</span>
+                      <span>€ {((parseFloat(editSubtotal) * 1.04) + ((parseFloat(editSubtotal) * 1.04) > 77.47 ? 2 : 0)).toFixed(2)}</span>
+                    </div>
+                  </div>
+                </div>
+              )}
 
               {/* Azioni */}
               <div className="flex gap-3 mt-6">
@@ -612,6 +748,17 @@ export function ElencoFatture() {
           </motion.div>
         </div>
       )}
+
+      {/* Bottone Modifica dati fatturazione */}
+      <div className="mt-8 pt-6 border-t border-sage-200">
+        <button
+          onClick={() => window.location.href = '/profilo'}
+          className="w-full flex items-center justify-center gap-3 px-6 py-4 bg-gradient-to-r from-lavender-500 to-lavender-600 text-white rounded-2xl font-semibold text-lg hover:from-lavender-600 hover:to-lavender-700 transition-all shadow-lg hover:shadow-xl"
+        >
+          <Edit className="w-6 h-6" />
+          Modifica i miei dati di fatturazione
+        </button>
+      </div>
     </div>
   );
 }

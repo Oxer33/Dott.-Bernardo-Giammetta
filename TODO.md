@@ -300,6 +300,22 @@
    ```
 3. **Attendi approvazione SES**: produzione (caso #176743190600620)
 
+### 🔧 Sistema Fatturazione PDF Professionale - 12/01/2026 (Sessione 27) ✅ COMPLETATO
+- [x] **Fix calcolo fattura**: 100€ inseriti restano 100€ (scorporo corretto di bollo e ENPAB)
+- [x] **Dicitura ENPAB completa**: "Contributo integrativo Enpab 4.0% (art.8, comma 3, Dlgs 103/96)"
+- [x] **PDF professionale**: creato `src/lib/invoice-pdf.ts` con template HTML professionale
+- [x] **Note legali in PDF**: "Operazione effettuata in franchigia d'iva..." a fondo pagina
+- [x] **Rimuovere about:blank**: PDF generato senza riferimenti a pagina vuota
+- [x] **Fix stampa NuovaFattura**: ora genera PDF professionale invece di stampare la pagina web
+- [x] **Bottone Scarica PDF admin**: aggiunto accanto a Stampa e Modifica in ElencoFatture
+- [x] **Bottoni paziente**: Stampa + Scarica PDF aggiunti in FatturePaziente
+- [x] **Bottone "Modifica dati fatturazione"**: grande bottone in fondo a ElencoFatture
+- [x] **Preset stato PAGATA**: nuove fatture hanno stato PAGATA di default
+- [x] **Preset pagamento POS**: nuove fatture hanno metodo pagamento POS di default
+- [x] **Dropdown stato/pagamento**: selezionabili in creazione fattura (EMESSA/PAGATA, Contanti/Bonifico/POS)
+- [x] **Modal modifica completo**: modifica numero, data, descrizione, importo, stato, pagamento
+- [x] **Anteprima totali in modifica**: calcolo automatico ENPAB e bollo durante editing
+
 ### 🔧 Fix Fatturazione Completa + Paziente - 11/01/2026 (Sessione 26) ✅ COMPLETATO
 - [x] **Calcolo fattura corretto**: bollo e contributo INCLUSI nel prezzo (scorporo automatico)
 - [x] **Rimossi 4 preset nature spesa**: ora l'utente le aggiunge manualmente

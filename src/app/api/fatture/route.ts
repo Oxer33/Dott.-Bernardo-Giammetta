@@ -39,9 +39,14 @@ export async function GET(request: NextRequest) {
             name: true,
             email: true,
             codiceFiscale: true,
+            birthDate: true,
+            birthPlace: true,
+            address: true,
+            addressNumber: true,
+            city: true,
+            cap: true,
           }
-        },
-        items: true
+        }
       },
       orderBy: { invoiceDate: 'desc' }
     });
@@ -91,10 +96,6 @@ export async function GET(request: NextRequest) {
         contributo: Number(f.contributo),
         bollo: Number(f.bollo),
         total: Number(f.total),
-        items: f.items.map(i => ({
-          ...i,
-          amount: Number(i.amount)
-        }))
       })),
       stats 
     });
@@ -140,12 +141,23 @@ export async function POST(request: NextRequest) {
       }, { status: 400 });
     }
     
-    // Calcola totali
-    const subtotal = items.reduce((sum: number, item: { amount: number }) => sum + item.amount, 0);
-    const contributo = subtotal * 0.04; // ENPAB 4%
-    const totaleLordo = subtotal + contributo;
-    const bollo = totaleLordo > 77.47 ? 2 : 0;
-    const total = totaleLordo + bollo;
+    // Calcola totali - IL PREZZO INSERITO È IL TOTALE FINALE (INCLUSIVO)
+    // Dobbiamo scorporare bollo e contributo ENPAB 4%
+    const totaleInserito = items.reduce((sum: number, item: { amount: number }) => sum + item.amount, 0);
+    
+    // Scorporo: se totale > 79.47€ c'è bollo (77.47 + 2)
+    let bollo = 0;
+    let totaleConContributo = totaleInserito;
+    
+    if (totaleInserito > 79.47) {
+      bollo = 2;
+      totaleConContributo = totaleInserito - bollo;
+    }
+    
+    // Scorporo contributo ENPAB 4%: subtotal = totaleConContributo / 1.04
+    const subtotal = Math.round((totaleConContributo / 1.04) * 100) / 100;
+    const contributo = Math.round((totaleConContributo - subtotal) * 100) / 100;
+    const total = totaleInserito; // Il totale resta quello inserito dall'utente
     
     // Determina anno e numero progressivo
     const anno = new Date(invoiceDate).getFullYear();
@@ -154,14 +166,18 @@ export async function POST(request: NextRequest) {
     
     // Se non è specificato, genera numero progressivo
     if (!invoiceNumber) {
-      const lastInvoice = await db.invoice.findFirst({
-        where: { invoiceYear: anno },
-        orderBy: { invoiceNumber: 'desc' }
+      // Cerca l'ultima fattura dell'anno
+      const fattureAnno = await db.invoice.findMany({
+        where: {
+          invoiceNumber: { endsWith: `/${anno}` }
+        },
+        orderBy: { createdAt: 'desc' },
+        take: 1
       });
       
       let progressivo = 1;
-      if (lastInvoice) {
-        const match = lastInvoice.invoiceNumber.match(/^(\d+)\//);
+      if (fattureAnno.length > 0) {
+        const match = fattureAnno[0].invoiceNumber.match(/^(\d+)\//);
         if (match) {
           progressivo = parseInt(match[1]) + 1;
         }
@@ -169,7 +185,7 @@ export async function POST(request: NextRequest) {
       finalInvoiceNumber = `${progressivo}/${anno}`;
     }
     
-    // Crea fattura con righe
+    // Crea fattura con items
     const fattura = await db.invoice.create({
       data: {
         userId,
@@ -199,8 +215,7 @@ export async function POST(request: NextRequest) {
             email: true,
             codiceFiscale: true,
           }
-        },
-        items: true
+        }
       }
     });
     
@@ -212,10 +227,6 @@ export async function POST(request: NextRequest) {
         contributo: Number(fattura.contributo),
         bollo: Number(fattura.bollo),
         total: Number(fattura.total),
-        items: fattura.items.map(i => ({
-          ...i,
-          amount: Number(i.amount)
-        }))
       }
     });
     

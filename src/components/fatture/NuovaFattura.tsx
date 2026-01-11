@@ -23,6 +23,7 @@ import {
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { it } from 'date-fns/locale';
+import { stampaPDF, DatiFatturaPDF } from '@/lib/invoice-pdf';
 
 // =============================================================================
 // TIPI
@@ -111,6 +112,10 @@ export function NuovaFattura() {
   const [dataFattura, setDataFattura] = useState(format(new Date(), 'yyyy-MM-dd'));
   const [righe, setRighe] = useState<RigaFattura[]>([]);
   const [natureSalvate, setNatureSalvate] = useState<NaturaSpesa[]>(NATURE_SPESA_DEFAULT);
+  
+  // State stato e pagamento - PRESET: PAGATA + POS
+  const [statoFattura, setStatoFattura] = useState('PAGATA');
+  const [metodoPagamento, setMetodoPagamento] = useState('MP08'); // POS
   
   // State nuova natura spesa
   const [showNuovaNatura, setShowNuovaNatura] = useState(false);
@@ -298,8 +303,8 @@ export function NuovaFattura() {
             description: r.descrizione,
             amount: r.importo
           })),
-          paymentMethod: 'MP05',
-          status: 'EMESSA'
+          paymentMethod: metodoPagamento,
+          status: statoFattura
         })
       });
       
@@ -326,16 +331,42 @@ export function NuovaFattura() {
     }
   };
 
-  // Stampa fattura (genera PDF)
-  const handleStampa = async () => {
+  // Stampa fattura (genera PDF professionale)
+  const handleStampa = () => {
     if (!selectedPaziente || righe.length === 0) {
       setError('Seleziona un paziente e aggiungi almeno una prestazione');
       return;
     }
     
-    // Per ora apre una finestra di stampa del browser
-    // TODO: Implementare generazione PDF professionale
-    window.print();
+    // Prepara dati per PDF professionale
+    const datiFattura: DatiFatturaPDF = {
+      numeroFattura: numeroFattura || 'ANTEPRIMA',
+      dataFattura: dataFattura,
+      paziente: {
+        nome: selectedPaziente.firstName && selectedPaziente.lastName
+          ? `${selectedPaziente.firstName} ${selectedPaziente.lastName}`
+          : selectedPaziente.name || 'Nome non specificato',
+        codiceFiscale: selectedPaziente.codiceFiscale || undefined,
+        indirizzo: selectedPaziente.address 
+          ? `${selectedPaziente.address} ${selectedPaziente.addressNumber || ''}`
+          : undefined,
+        cap: selectedPaziente.cap || undefined,
+        citta: selectedPaziente.city || undefined,
+      },
+      prestazioni: righe.map(r => ({
+        descrizione: r.descrizione,
+        importo: r.importo
+      })),
+      imponibile: totaleImponibile,
+      contributoENPAB: contributoENPAB,
+      marcaDaBollo: marcaDaBollo,
+      totale: totaleFinale,
+      metodoPagamento: metodoPagamento,
+      stato: statoFattura
+    };
+    
+    // Genera e stampa PDF professionale
+    stampaPDF(datiFattura);
   };
 
   return (
@@ -462,6 +493,33 @@ export function NuovaFattura() {
                   onChange={(e) => setDataFattura(e.target.value)}
                   className="w-full px-4 py-2 rounded-xl border border-sage-200 focus:border-sage-400 outline-none"
                 />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-sage-700 mb-2">
+                  Stato Fattura
+                </label>
+                <select
+                  value={statoFattura}
+                  onChange={(e) => setStatoFattura(e.target.value)}
+                  className="w-full px-4 py-2 rounded-xl border border-sage-200 focus:border-sage-400 outline-none bg-white"
+                >
+                  <option value="PAGATA">Pagata</option>
+                  <option value="EMESSA">Emessa (non pagata)</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-sage-700 mb-2">
+                  Metodo Pagamento
+                </label>
+                <select
+                  value={metodoPagamento}
+                  onChange={(e) => setMetodoPagamento(e.target.value)}
+                  className="w-full px-4 py-2 rounded-xl border border-sage-200 focus:border-sage-400 outline-none bg-white"
+                >
+                  <option value="MP08">POS (Carta)</option>
+                  <option value="MP05">Bonifico</option>
+                  <option value="MP01">Contanti</option>
+                </select>
               </div>
             </div>
           </div>
@@ -592,7 +650,7 @@ export function NuovaFattura() {
                 <span>€ {totaleImponibile.toFixed(2)}</span>
               </div>
               <div className="flex justify-between text-sage-600">
-                <span>Contributo ENPAB 4%</span>
+                <span className="text-sm">Contributo integrativo Enpab 4.0% (art.8, comma 3, Dlgs 103/96)</span>
                 <span>€ {contributoENPAB.toFixed(2)}</span>
               </div>
               <div className="flex justify-between text-sage-600">

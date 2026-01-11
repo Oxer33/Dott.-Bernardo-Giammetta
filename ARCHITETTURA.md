@@ -287,10 +287,17 @@ Il sistema previene abusi nelle prenotazioni contando le cancellazioni di appunt
 - `GET/POST/DELETE /api/fatture/expense-types`: gestione nature spesa
 
 ### Calcoli Automatici:
-1. **Imponibile**: somma righe fattura
-2. **Contributo ENPAB**: 4% dell'imponibile
-3. **Marca da bollo**: €2.00 se totale lordo > €77.47
-4. **Totale**: imponibile + contributo + bollo
+1. **Totale inserito**: il prezzo che l'utente inserisce È il totale finale (inclusivo)
+2. **Scorporo bollo**: se totale > €79.47, sottraiamo €2.00 di bollo
+3. **Scorporo ENPAB**: imponibile = (totale - bollo) / 1.04
+4. **Contributo ENPAB**: 4% dell'imponibile (con dicitura legale art.8, comma 3, Dlgs 103/96)
+
+### Generazione PDF Professionale:
+- **Utility**: `src/lib/invoice-pdf.ts`
+- **Funzioni**: `stampaPDF()`, `scaricaPDF()`, `generaHTMLFattura()`
+- **Template HTML**: stile professionale con header dottore, dati paziente, tabella prestazioni
+- **Note legali**: "Operazione effettuata in franchigia d'iva..." a fondo pagina
+- **Preset default**: stato PAGATA, metodo POS
 
 ### Statistiche:
 - Fatture questa settimana (count + totale €)
