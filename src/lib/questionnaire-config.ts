@@ -366,7 +366,7 @@ export const OMNIVORE_QUESTIONS: Question[] = [
     text: 'Indicami se per pranzo prenderesti in considerazione il consumo di un pasto a base di **Pasta**, composto da:',
     type: 'textarea',
     required: true,
-    hint: '1) **Pasta** di Semola o integrale. Specificami anche se prenderesti in considerazione la pasta a base di **farina 100%  Legumi come alternativa** + 2) **Condimento semplice** (sugo di pomodoro, pesto alla genovese, minestrone, verdure saltate in padella o in crema) + 3) Eventuale **Pietanza**. Intendo per esempio: Fiocchi di Latte magri, Feta Light, Petto di Pollo o Tacchino, Piselli, Uova Intere (o solo Albumi), Tonno, Merluzzo, Nasello, Platessa, Salmone affettato affumicato. + 4) Porzione di Verdura cotta o cruda. + 5) Riportami anche, se esistono, eventuali necessità personali particolari in merito all'utilizzo di pasta.',
+    hint: '1) **Pasta** di Semola o integrale. Specificami anche se prenderesti in considerazione la pasta a base di **farina 100% Legumi come alternativa** + 2) **Condimento semplice** (sugo di pomodoro, pesto alla genovese, minestrone, verdure saltate in padella o in crema) + 3) Eventuale **Pietanza**. Intendo per esempio: Fiocchi di Latte magri, Feta Light, Petto di Pollo o Tacchino, Piselli, Uova Intere (o solo Albumi), Tonno, Merluzzo, Nasello, Platessa, Salmone affettato affumicato. + 4) Porzione di Verdura cotta o cruda. + 5) Riportami anche, se esistono, eventuali necessità personali particolari in merito all\'utilizzo di pasta.',
     placeholder: 'Descrivi se ti interesserebbe e eventuali preferenze/necessità sulla pasta',
   },
   {
@@ -395,7 +395,7 @@ export const OMNIVORE_QUESTIONS: Question[] = [
     text: 'Riguardo al PASTO LIBERO settimanale (pizza, sushi, carbonara...):',
     type: 'textarea',
     required: true,
-    hint: 'In questa prima fase il pasto libero sarà 1 a settimana all'interno della giornata che più preferirai sfruttare per farlo. Al pasto libero si è "liberi" di consumare tutto ciò che desideriamo (pizza, sushi, carbonara, ecc.).',
+    hint: 'In questa prima fase il pasto libero sarà 1 a settimana all\'interno della giornata che più preferirai sfruttare per farlo. Al pasto libero si è "liberi" di consumare tutto ciò che desideriamo (pizza, sushi, carbonara, ecc.).',
     placeholder: 'Scrivi "OK" se non ci sono necessità particolari, altrimenti riportale',
   },
 ];
@@ -578,8 +578,8 @@ export const VEGETARIAN_QUESTIONS: Question[] = [
     text: 'Riguardo al **PASTO LIBERO** settimanale:',
     type: 'textarea',
     required: true,
-    hint: 'In questa prima fase il pasto libero sarà 1 a settimana all’interno della giornata che più preferirai sfruttare per farlo. Al pasto libero si è “liberi” di consumare tutto ciò che desideriamo (pizza o qualsiasi primo piatto o secondo piatto o panino di tuo gradimento).',
-    placeholder: 'Scrivi "OK" se non ci sono necessità particolari, altrimenti riportale',
+    hint: 'In questa prima fase il pasto libero sara 1 a settimana all\'interno della giornata che piu preferirai sfruttare per farlo. Al pasto libero si e "liberi" di consumare tutto cio che desideriamo (pizza o qualsiasi primo piatto o secondo piatto o panino di tuo gradimento).',
+    placeholder: 'Scrivi "OK" se non ci sono necessita particolari, altrimenti riportale',
   },
 ];
 
@@ -716,7 +716,7 @@ export const VEGAN_QUESTIONS: Question[] = [
     text: 'Indicami se per pranzo prenderesti in considerazione il consumo di un pasto a base di **Pasta**, composto da:',
     type: 'textarea',
     required: true,
-    hint: '1) **Pasta** di Semola o integrale. Specificami anche se prenderesti in considerazione la pasta a base di **farina 100%  Legumi come alternativa** + 2) **Condimento semplice** (sugo di pomodoro, pesto alla genovese, minestrone, verdure saltate in padella o in crema) + 3) Eventuale **Pietanza**. Intendo per esempio: Tofu, Piselli, Affettato vegetale di Mopur o Lupini, Tempeh, Fagioli di Soia Edamame, Legumi.  + 4) Porzione di **Verdura** cotta o cruda. + 5) Riportami anche, se esistono, eventuali necessità personali particolari in merito all'utilizzo di pasta.',
+    hint: '1) **Pasta** di Semola o integrale. Specificami anche se prenderesti in considerazione la pasta a base di **farina 100% Legumi come alternativa** + 2) **Condimento semplice** (sugo di pomodoro, pesto alla genovese, minestrone, verdure saltate in padella o in crema) + 3) Eventuale **Pietanza**. Intendo per esempio: Tofu, Piselli, Affettato vegetale di Mopur o Lupini, Tempeh, Fagioli di Soia Edamame, Legumi. + 4) Porzione di **Verdura** cotta o cruda. + 5) Riportami anche, se esistono, eventuali necessita personali particolari in merito all\'utilizzo di pasta.',
     placeholder: 'Descrivi se ti interesserebbe e eventuali preferenze',
   },
   {
@@ -745,8 +745,8 @@ export const VEGAN_QUESTIONS: Question[] = [
     text: 'Riguardo al **PASTO LIBERO** settimanale:',
     type: 'textarea',
     required: true,
-    hint: 'In questa prima fase il pasto libero sarà 1 a settimana all’interno della giornata che più preferirai sfruttare per farlo. Al pasto libero si è “liberi” di consumare tutto ciò che desideriamo (pizza o qualsiasi primo piatto o secondo piatto o panino di tuo gradimento).',
-    placeholder: 'Scrivi "OK" se non ci sono necessità particolari, altrimenti riportale',
+    hint: 'In questa prima fase il pasto libero sara 1 a settimana all\'interno della giornata che piu preferirai sfruttare per farlo. Al pasto libero si e "liberi" di consumare tutto cio che desideriamo (pizza o qualsiasi primo piatto o secondo piatto o panino di tuo gradimento).',
+    placeholder: 'Scrivi "OK" se non ci sono necessita particolari, altrimenti riportale',
   },
 ];
 
