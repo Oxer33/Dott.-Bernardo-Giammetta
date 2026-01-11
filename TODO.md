@@ -300,6 +300,20 @@
    ```
 3. **Attendi approvazione SES**: produzione (caso #176743190600620)
 
+### 🔧 Fix Fatturazione Completa + Paziente - 11/01/2026 (Sessione 26) ✅ COMPLETATO
+- [x] **Calcolo fattura corretto**: bollo e contributo INCLUSI nel prezzo (scorporo automatico)
+- [x] **Rimossi 4 preset nature spesa**: ora l'utente le aggiunge manualmente
+- [x] **Modal modifica fattura completo**: modifica stato (EMESSA/PAGATA/ANNULLATA) e metodo pagamento
+- [x] **Bottone elimina fattura**: con conferma e API DELETE
+- [x] **API /api/fatture/[id]**: GET dettaglio, PUT modifica, DELETE elimina
+- [x] **Stampa PDF migliorata**: anteprima fattura + stampa in nuova finestra (non più pagina sito)
+- [x] **Sezione Fatture paziente**: /le-mie-fatture con solo visualizzazione e stampa
+- [x] **API /api/user/fatture**: GET fatture del paziente corrente
+- [x] **Link Fatture in PatientNavigation**: aggiunto nel menu navigazione paziente
+- [x] **Testi questionario giustificati**: text-justify su domande, hint e bullet points
+- [x] **QuestionnaireFormNew.tsx**: verificato che SERVE - NON eliminato (usato da /profilo/questionario)
+- [ ] **TODO: Migrare database**: eseguire `npx prisma db push` per applicare nuovi modelli
+
 ### 🔧 Fix Sistema Fatturazione Avanzato - 11/01/2026 (Sessione 25) ✅ COMPLETATO
 - [x] **Rimosso /api/debug/env**: endpoint debug non più accessibile in produzione
 - [x] **Rimossi file obsoleti**: questionnaire-data.ts e QuestionnaireForm.tsx (unificati in questionnaire-config.ts)
@@ -310,8 +324,6 @@
 - [x] **NuovaFattura migliorato**: bottone elimina nature spesa, salvataggio su API, numero incrementale automatico
 - [x] **ElencoFatture migliorato**: statistiche settimana/mese/anno, ricerca data in formati multipli (01/2026, gennaio, etc.)
 - [x] **Bottoni funzionanti**: visualizza, modifica stato, stampa (browser), scarica PDF (in sviluppo)
-- [ ] **TODO: Migrare database**: eseguire `npx prisma db push` per applicare nuovi modelli
-- [ ] **TODO: Generazione PDF professionale**: implementare come in Autofatturazione STS
 
 ### 🔧 Sistema Fatturazione + Fix UI - 10/01/2026 (Sessione 24) ✅ COMPLETATO
 - [x] **Rimossa fascia ridondante /agenda admin**: header "Agenda Appuntamenti" inutile rimosso
