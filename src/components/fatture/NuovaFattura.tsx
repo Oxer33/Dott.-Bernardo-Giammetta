@@ -56,15 +56,43 @@ interface RigaFattura {
 }
 
 // =============================================================================
-// NATURE SPESA PREDEFINITE (fallback se API non disponibile)
+// NATURE SPESA - Nessun preset, l'utente le aggiunge manualmente
 // =============================================================================
 
-const NATURE_SPESA_DEFAULT: NaturaSpesa[] = [
-  { id: 'default-1', descrizione: 'Prima visita nutrizionale', importo: 100 },
-  { id: 'default-2', descrizione: 'Visita di controllo', importo: 60 },
-  { id: 'default-3', descrizione: 'Elaborazione piano alimentare', importo: 80 },
-  { id: 'default-4', descrizione: 'Consulenza nutrizionale online', importo: 50 },
-];
+const NATURE_SPESA_DEFAULT: NaturaSpesa[] = [];
+
+// =============================================================================
+// FUNZIONI CALCOLO FATTURA
+// Il prezzo selezionato INCLUDE già bollo e contributo ENPAB
+// Esempio: 100€ = imponibile ~94.23 + contributo 4% ~3.77 + bollo 2€
+// =============================================================================
+
+function calcolaScorporoFattura(totaleConBollo: number) {
+  // Se il totale è <= 77.47€, non c'è bollo
+  // Altrimenti, togliamo 2€ di bollo e poi scorporiamo il 4%
+  
+  let bollo = 0;
+  let totaleConContributo = totaleConBollo;
+  
+  // Verifica se c'è bollo (soglia 77.47€ sul lordo senza bollo)
+  // Dobbiamo iterare perché il bollo dipende dal totale lordo che dipende dal bollo
+  // Semplificazione: se totale > 79.47€ (77.47 + 2), c'è sicuramente bollo
+  if (totaleConBollo > 79.47) {
+    bollo = 2;
+    totaleConContributo = totaleConBollo - bollo;
+  }
+  
+  // Scorporo contributo ENPAB 4%: imponibile = totale / 1.04
+  const imponibile = totaleConContributo / 1.04;
+  const contributo = totaleConContributo - imponibile;
+  
+  return {
+    imponibile: Math.round(imponibile * 100) / 100,
+    contributo: Math.round(contributo * 100) / 100,
+    bollo,
+    totale: totaleConBollo
+  };
+}
 
 // =============================================================================
 // COMPONENTE PRINCIPALE
@@ -94,12 +122,10 @@ export function NuovaFattura() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
 
-  // Calcoli automatici
-  const totaleImponibile = righe.reduce((sum, r) => sum + r.importo, 0);
-  const contributoENPAB = totaleImponibile * 0.04; // 4% ENPAB
-  const totaleLordo = totaleImponibile + contributoENPAB;
-  const marcaDaBollo = totaleLordo > 77.47 ? 2 : 0; // Marca da bollo se > 77.47€
-  const totaleFinale = totaleLordo + marcaDaBollo;
+  // Calcoli automatici - il prezzo selezionato INCLUDE già bollo e contributo
+  const totaleSelezionato = righe.reduce((sum, r) => sum + r.importo, 0);
+  const calcoli = calcolaScorporoFattura(totaleSelezionato);
+  const { imponibile: totaleImponibile, contributo: contributoENPAB, bollo: marcaDaBollo, totale: totaleFinale } = calcoli;
 
   // Ricerca pazienti con debounce
   useEffect(() => {
@@ -562,28 +588,31 @@ export function NuovaFattura() {
 
             <div className="space-y-3">
               <div className="flex justify-between text-sage-600">
-                <span>Imponibile</span>
+                <span>Imponibile (prestazione)</span>
                 <span>€ {totaleImponibile.toFixed(2)}</span>
               </div>
               <div className="flex justify-between text-sage-600">
-                <span>Contributo ENPAB (4%)</span>
+                <span>Contributo ENPAB 4%</span>
                 <span>€ {contributoENPAB.toFixed(2)}</span>
               </div>
               <div className="flex justify-between text-sage-600">
-                <span>Totale lordo</span>
-                <span>€ {totaleLordo.toFixed(2)}</span>
+                <span>Subtotale</span>
+                <span>€ {(totaleImponibile + contributoENPAB).toFixed(2)}</span>
               </div>
               {marcaDaBollo > 0 && (
-                <div className="flex justify-between text-amber-600">
-                  <span>Marca da bollo (oltre €77,47)</span>
+                <div className="flex justify-between text-sage-600">
+                  <span>Marca da bollo</span>
                   <span>€ {marcaDaBollo.toFixed(2)}</span>
                 </div>
               )}
               <div className="border-t border-sage-200 pt-3 mt-3">
-                <div className="flex justify-between text-lg font-bold text-sage-800">
+                <div className="flex justify-between text-lg font-bold text-green-700">
                   <span>TOTALE FATTURA</span>
                   <span>€ {totaleFinale.toFixed(2)}</span>
                 </div>
+                <p className="text-xs text-sage-500 mt-1">
+                  (bollo e contributo già inclusi nel prezzo)
+                </p>
               </div>
             </div>
           </div>

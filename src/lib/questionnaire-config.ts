@@ -240,7 +240,7 @@ export const OMNIVORE_QUESTIONS: Question[] = [
   },
   {
     id: 'q26',
-    text: 'Riguardo ai **CONDIMENTI** di base sarà inserito l\'olio extravergine d\'oliva. Specificami se potrebbe interessarti in alternativa anche l\'avocado scrivendo \'si avocado\' oppure \'no avocado\'.',
+    text: 'Riguardo ai **CONDIMENTI** di base sarà inserito l\'olio extravergine d\'oliva. Specificami se potrebbe interessarti in alternativa anche l\'avocado.',
     type: 'radio',
     required: true,
     options: ['Sì avocado', 'No avocado'],

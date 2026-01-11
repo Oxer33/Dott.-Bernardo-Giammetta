@@ -336,21 +336,21 @@ export function QuestionnaireFormNew({
 
     return (
       <div key={question.id} className={`mb-6 ${isMissing ? 'p-3 rounded-xl border-2 border-orange-300 bg-orange-50/30' : ''}`}>
-        <label className="block text-sage-800 font-medium mb-2">
+        <label className="block text-sage-800 font-medium mb-2 text-justify">
           <span dangerouslySetInnerHTML={{ __html: formatBoldText(question.text) }} />
           {question.required && <span className="text-red-500 ml-1">*</span>}
         </label>
         
         {question.hint && (
           <p 
-            className="text-sm text-sage-500 mb-3 bg-sage-50 p-3 rounded-lg"
+            className="text-sm text-sage-500 mb-3 bg-sage-50 p-3 rounded-lg text-justify"
             dangerouslySetInnerHTML={{ __html: formatBoldText(question.hint) }}
           />
         )}
 
         {/* Bullet points fuori dalla textarea */}
         {question.bulletPoints && question.bulletPoints.length > 0 && (
-          <ol className="list-decimal list-inside text-sm text-sage-600 mb-3 bg-sage-50 p-3 rounded-lg space-y-1">
+          <ol className="list-decimal list-inside text-sm text-sage-600 mb-3 bg-sage-50 p-3 rounded-lg space-y-1 text-justify">
             {question.bulletPoints.map((point, idx) => (
               <li key={idx} dangerouslySetInnerHTML={{ __html: formatBoldText(point) }} />
             ))}

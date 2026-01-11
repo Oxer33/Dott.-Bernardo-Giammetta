@@ -17,7 +17,11 @@ import {
   Calendar,
   User,
   Loader2,
-  AlertCircle
+  AlertCircle,
+  Trash2,
+  X,
+  Save,
+  CheckCircle
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { it } from 'date-fns/locale';
@@ -31,14 +35,19 @@ interface Fattura {
   invoiceNumber: string;
   invoiceDate: string;
   user: {
+    id: string;
     firstName: string | null;
     lastName: string | null;
     name: string | null;
     email: string;
     codiceFiscale: string | null;
   };
+  subtotal: number;
+  contributo: number;
+  bollo: number;
   total: number;
   status: string;
+  paymentMethod: string;
 }
 
 interface Stats {
@@ -68,6 +77,79 @@ export function ElencoFatture() {
   const [loading, setLoading] = useState(true);
   const [selectedFattura, setSelectedFattura] = useState<Fattura | null>(null);
   const [editingFattura, setEditingFattura] = useState<Fattura | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [editStatus, setEditStatus] = useState('');
+  const [editPayment, setEditPayment] = useState('');
+  const [saving, setSaving] = useState(false);
+  const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+
+  // Ricarica fatture
+  const reloadFatture = async () => {
+    try {
+      const res = await fetch('/api/fatture');
+      const data = await res.json();
+      if (data.success) {
+        setFatture(data.fatture || []);
+        setStats(data.stats || null);
+      }
+    } catch (err) {
+      console.error('Errore caricamento fatture:', err);
+    }
+  };
+
+  // Elimina fattura
+  const handleDelete = async (id: string) => {
+    if (!confirm('Sei sicuro di voler eliminare questa fattura? L\'azione \u00e8 irreversibile.')) return;
+    
+    try {
+      const res = await fetch(`/api/fatture/${id}`, { method: 'DELETE' });
+      const data = await res.json();
+      if (data.success) {
+        setMessage({ type: 'success', text: 'Fattura eliminata' });
+        reloadFatture();
+      } else {
+        setMessage({ type: 'error', text: data.error || 'Errore eliminazione' });
+      }
+    } catch (err) {
+      setMessage({ type: 'error', text: 'Errore di connessione' });
+    }
+    setDeletingId(null);
+  };
+
+  // Salva modifiche fattura
+  const handleSaveEdit = async () => {
+    if (!editingFattura) return;
+    setSaving(true);
+    
+    try {
+      const res = await fetch(`/api/fatture/${editingFattura.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          status: editStatus,
+          paymentMethod: editPayment
+        })
+      });
+      const data = await res.json();
+      if (data.success) {
+        setMessage({ type: 'success', text: 'Fattura aggiornata' });
+        setEditingFattura(null);
+        reloadFatture();
+      } else {
+        setMessage({ type: 'error', text: data.error || 'Errore salvataggio' });
+      }
+    } catch (err) {
+      setMessage({ type: 'error', text: 'Errore di connessione' });
+    }
+    setSaving(false);
+  };
+
+  // Apri modal modifica
+  const openEditModal = (fattura: Fattura) => {
+    setEditingFattura(fattura);
+    setEditStatus(fattura.status);
+    setEditPayment(fattura.paymentMethod || 'MP05');
+  };
 
   // Carica fatture da API
   useEffect(() => {
@@ -117,13 +199,31 @@ export function ElencoFatture() {
 
   // Colore stato
   const getStatoColor = (stato: string) => {
-    switch (stato) {
-      case 'pagata': return 'bg-green-100 text-green-700';
-      case 'emessa': return 'bg-amber-100 text-amber-700';
-      case 'annullata': return 'bg-red-100 text-red-700';
+    switch (stato.toUpperCase()) {
+      case 'PAGATA': return 'bg-green-100 text-green-700';
+      case 'EMESSA': return 'bg-amber-100 text-amber-700';
+      case 'ANNULLATA': return 'bg-red-100 text-red-700';
       default: return 'bg-sage-100 text-sage-700';
     }
   };
+
+  // Metodo pagamento label
+  const getPaymentLabel = (code: string) => {
+    switch (code) {
+      case 'MP01': return 'Contanti';
+      case 'MP05': return 'Bonifico';
+      case 'MP08': return 'POS (Carta)';
+      default: return code;
+    }
+  };
+
+  // Nascondi messaggio dopo 3 secondi
+  useEffect(() => {
+    if (message) {
+      const timer = setTimeout(() => setMessage(null), 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [message]);
 
   return (
     <div className="space-y-6">
@@ -234,25 +334,25 @@ export function ElencoFatture() {
                         <Eye className="w-4 h-4" />
                       </button>
                       <button
-                        onClick={() => setEditingFattura(fattura)}
-                        className="p-2 text-sage-400 hover:text-sage-600 hover:bg-sage-100 rounded-lg transition-colors"
-                        title="Modifica stato"
+                        onClick={() => openEditModal(fattura)}
+                        className="p-2 text-sage-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                        title="Modifica fattura"
                       >
                         <Edit className="w-4 h-4" />
                       </button>
                       <button
-                        onClick={() => window.print()}
-                        className="p-2 text-sage-400 hover:text-sage-600 hover:bg-sage-100 rounded-lg transition-colors"
-                        title="Stampa"
+                        onClick={() => setSelectedFattura(fattura)}
+                        className="p-2 text-sage-400 hover:text-amber-600 hover:bg-amber-50 rounded-lg transition-colors"
+                        title="Stampa PDF"
                       >
                         <Printer className="w-4 h-4" />
                       </button>
                       <button
-                        onClick={() => alert('Generazione PDF in sviluppo')}
-                        className="p-2 text-sage-400 hover:text-sage-600 hover:bg-sage-100 rounded-lg transition-colors"
-                        title="Scarica PDF"
+                        onClick={() => handleDelete(fattura.id)}
+                        className="p-2 text-sage-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                        title="Elimina fattura"
                       >
-                        <Download className="w-4 h-4" />
+                        <Trash2 className="w-4 h-4" />
                       </button>
                     </div>
                   </div>
@@ -263,13 +363,23 @@ export function ElencoFatture() {
         )}
       </div>
 
-      {/* Modal dettaglio fattura */}
+      {/* Messaggio feedback */}
+      {message && (
+        <div className={`fixed top-4 right-4 z-50 px-4 py-3 rounded-xl shadow-lg flex items-center gap-2 ${
+          message.type === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+        }`}>
+          {message.type === 'success' ? <CheckCircle className="w-5 h-5" /> : <AlertCircle className="w-5 h-5" />}
+          {message.text}
+        </div>
+      )}
+
+      {/* Modal dettaglio/stampa fattura */}
       {selectedFattura && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="bg-white rounded-2xl shadow-2xl max-w-lg w-full p-6"
+            className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full p-6 max-h-[90vh] overflow-y-auto"
           >
             <div className="flex justify-between items-start mb-4">
               <h3 className="text-xl font-semibold text-sage-900">
@@ -279,52 +389,223 @@ export function ElencoFatture() {
                 onClick={() => setSelectedFattura(null)}
                 className="p-2 hover:bg-sage-100 rounded-lg"
               >
-                ✕
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Anteprima PDF-style */}
+            <div id="fattura-print" className="bg-white border border-sage-200 rounded-xl p-6 mb-4">
+              {/* Header fattura */}
+              <div className="grid grid-cols-2 gap-8 mb-6">
+                <div>
+                  <p className="font-bold">Dott. Bernardo Giammetta</p>
+                  <p className="text-sm text-sage-600">Biologo Nutrizionista</p>
+                  <p className="text-sm text-sage-600">Via Daniele Manin n°10</p>
+                  <p className="text-sm text-sage-600">40129 Bologna</p>
+                  <p className="text-sm text-sage-600">P.IVA: 02712040811</p>
+                  <p className="text-sm text-sage-600">Cell: +39 3920979135</p>
+                </div>
+                <div className="text-right">
+                  <p className="font-bold">{getNomePaziente(selectedFattura.user)}</p>
+                  <p className="text-sm text-sage-600">{selectedFattura.user.email}</p>
+                  <p className="text-sm font-mono text-sage-500">CF: {selectedFattura.user.codiceFiscale || 'N/D'}</p>
+                </div>
+              </div>
+
+              {/* Numero e data */}
+              <div className="mb-6">
+                <p className="font-bold text-lg">Fattura n. {selectedFattura.invoiceNumber}</p>
+                <p className="text-sage-600">del {format(new Date(selectedFattura.invoiceDate), 'd/MM/yyyy')}</p>
+              </div>
+
+              {/* Tabella importi */}
+              <table className="w-full mb-4">
+                <thead>
+                  <tr className="border-b-2 border-sage-300">
+                    <th className="text-left py-2">Descrizione</th>
+                    <th className="text-right py-2">Importo</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr className="border-b border-sage-200">
+                    <td className="py-2">Prestazione sanitaria</td>
+                    <td className="text-right">€ {selectedFattura.subtotal?.toFixed(2) || '0.00'}</td>
+                  </tr>
+                  <tr className="border-b border-sage-200">
+                    <td className="py-2 text-sage-600">Contributo integrativo Enpab 4.0%</td>
+                    <td className="text-right text-sage-600">€ {selectedFattura.contributo?.toFixed(2) || '0.00'}</td>
+                  </tr>
+                </tbody>
+              </table>
+
+              {/* Totali */}
+              <div className="space-y-1 mb-4">
+                <div className="flex justify-between">
+                  <span>Imponibile:</span>
+                  <span>€ {((selectedFattura.subtotal || 0) + (selectedFattura.contributo || 0)).toFixed(2)}</span>
+                </div>
+                {(selectedFattura.bollo || 0) > 0 && (
+                  <div className="flex justify-between border-t border-sage-200 pt-1">
+                    <span>MARCA DA BOLLO:</span>
+                    <span>€ {selectedFattura.bollo?.toFixed(2)}</span>
+                  </div>
+                )}
+                <div className="flex justify-between font-bold text-lg border-t-2 border-sage-300 pt-2">
+                  <span>TOTALE FATTURA:</span>
+                  <span>€ {selectedFattura.total.toFixed(2)}</span>
+                </div>
+              </div>
+
+              {/* Metodo pagamento */}
+              <p className="text-sm mt-4">
+                <strong>Fattura pagata tramite {getPaymentLabel(selectedFattura.paymentMethod)}</strong>
+              </p>
+
+              {/* Note legali */}
+              <div className="text-xs text-sage-500 mt-6 pt-4 border-t border-sage-200">
+                <p>Operazione effettuata in franchigia d'iva e ritenuta d'acconto ai sensi dell'art.1 comma 67 della legge 23 dicembre 2014 n.190</p>
+                <p>Bollo assolto sull'originale ove dovuto</p>
+              </div>
+            </div>
+
+            {/* Stato */}
+            <div className="flex items-center gap-2 mb-4">
+              <span className="text-sage-600">Stato:</span>
+              <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatoColor(selectedFattura.status)}`}>
+                {selectedFattura.status}
+              </span>
+            </div>
+
+            {/* Azioni */}
+            <div className="flex gap-3">
+              <button 
+                onClick={() => {
+                  const printContent = document.getElementById('fattura-print');
+                  if (printContent) {
+                    const printWindow = window.open('', '_blank');
+                    if (printWindow) {
+                      printWindow.document.write(`
+                        <html>
+                          <head>
+                            <title>Fattura ${selectedFattura.invoiceNumber}</title>
+                            <style>
+                              body { font-family: Arial, sans-serif; padding: 40px; }
+                              table { width: 100%; border-collapse: collapse; }
+                              th, td { padding: 8px; text-align: left; }
+                              th { border-bottom: 2px solid #333; }
+                              td { border-bottom: 1px solid #ddd; }
+                              .text-right { text-align: right; }
+                            </style>
+                          </head>
+                          <body>${printContent.innerHTML}</body>
+                        </html>
+                      `);
+                      printWindow.document.close();
+                      printWindow.print();
+                    }
+                  }
+                }}
+                className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-amber-500 text-white rounded-xl hover:bg-amber-600"
+              >
+                <Printer className="w-4 h-4" />
+                Stampa PDF
+              </button>
+              <button 
+                onClick={() => setSelectedFattura(null)}
+                className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-sage-100 text-sage-700 rounded-xl hover:bg-sage-200"
+              >
+                Chiudi
+              </button>
+            </div>
+          </motion.div>
+        </div>
+      )}
+
+      {/* Modal modifica fattura */}
+      {editingFattura && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6"
+          >
+            <div className="flex justify-between items-start mb-4">
+              <h3 className="text-xl font-semibold text-sage-900">
+                Modifica Fattura n. {editingFattura.invoiceNumber}
+              </h3>
+              <button
+                onClick={() => setEditingFattura(null)}
+                className="p-2 hover:bg-sage-100 rounded-lg"
+              >
+                <X className="w-5 h-5" />
               </button>
             </div>
 
             <div className="space-y-4">
+              {/* Info paziente (readonly) */}
               <div className="bg-sage-50 rounded-xl p-4">
                 <p className="text-sm text-sage-500 mb-1">Paziente</p>
-                <p className="font-semibold text-sage-800">{getNomePaziente(selectedFattura.user)}</p>
-                <p className="text-sm text-sage-600">{selectedFattura.user.email}</p>
-                <p className="text-sm font-mono text-sage-500">{selectedFattura.user.codiceFiscale || 'N/D'}</p>
+                <p className="font-semibold text-sage-800">{getNomePaziente(editingFattura.user)}</p>
+                <p className="text-sm text-sage-600">{editingFattura.user.email}</p>
               </div>
 
+              {/* Data e totale (readonly) */}
               <div className="grid grid-cols-2 gap-4">
                 <div className="bg-sage-50 rounded-xl p-4">
                   <p className="text-sm text-sage-500 mb-1">Data</p>
                   <p className="font-semibold text-sage-800">
-                    {format(new Date(selectedFattura.invoiceDate), 'd MMMM yyyy', { locale: it })}
+                    {format(new Date(editingFattura.invoiceDate), 'd/MM/yyyy')}
                   </p>
                 </div>
                 <div className="bg-sage-50 rounded-xl p-4">
                   <p className="text-sm text-sage-500 mb-1">Totale</p>
-                  <p className="font-bold text-xl text-sage-800">€ {selectedFattura.total.toFixed(2)}</p>
+                  <p className="font-bold text-xl text-sage-800">€ {editingFattura.total.toFixed(2)}</p>
                 </div>
               </div>
 
-              <div className="bg-sage-50 rounded-xl p-4">
-                <p className="text-sm text-sage-500 mb-1">Stato</p>
-                <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatoColor(selectedFattura.status)}`}>
-                  {selectedFattura.status}
-                </span>
+              {/* Stato (modificabile) */}
+              <div>
+                <label className="block text-sm font-medium text-sage-700 mb-2">Stato fattura</label>
+                <select
+                  value={editStatus}
+                  onChange={(e) => setEditStatus(e.target.value)}
+                  className="w-full px-4 py-2 rounded-xl border border-sage-200 focus:border-sage-400 outline-none"
+                >
+                  <option value="EMESSA">Emessa</option>
+                  <option value="PAGATA">Pagata</option>
+                  <option value="ANNULLATA">Annullata</option>
+                </select>
               </div>
 
+              {/* Metodo pagamento (modificabile) */}
+              <div>
+                <label className="block text-sm font-medium text-sage-700 mb-2">Metodo pagamento</label>
+                <select
+                  value={editPayment}
+                  onChange={(e) => setEditPayment(e.target.value)}
+                  className="w-full px-4 py-2 rounded-xl border border-sage-200 focus:border-sage-400 outline-none"
+                >
+                  <option value="MP01">Contanti</option>
+                  <option value="MP05">Bonifico</option>
+                  <option value="MP08">POS (Carta)</option>
+                </select>
+              </div>
+
+              {/* Azioni */}
               <div className="flex gap-3 mt-6">
                 <button 
-                  onClick={() => window.print()}
-                  className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-amber-500 text-white rounded-xl hover:bg-amber-600"
+                  onClick={handleSaveEdit}
+                  disabled={saving}
+                  className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-amber-500 text-white rounded-xl hover:bg-amber-600 disabled:opacity-50"
                 >
-                  <Printer className="w-4 h-4" />
-                  Stampa
+                  {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+                  Salva modifiche
                 </button>
                 <button 
-                  onClick={() => alert('Generazione PDF in sviluppo')}
+                  onClick={() => setEditingFattura(null)}
                   className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-sage-100 text-sage-700 rounded-xl hover:bg-sage-200"
                 >
-                  <Download className="w-4 h-4" />
-                  Scarica PDF
+                  Annulla
                 </button>
               </div>
             </div>

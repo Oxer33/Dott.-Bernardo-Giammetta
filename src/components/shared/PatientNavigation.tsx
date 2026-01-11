@@ -7,7 +7,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Calendar, Home, User } from 'lucide-react';
+import { Calendar, Home, User, Receipt } from 'lucide-react';
 
 // =============================================================================
 // COMPONENTE
@@ -20,6 +20,7 @@ export function PatientNavigation() {
     { href: '/agenda', label: 'Agenda', icon: Calendar },
     { href: '/area-personale', label: 'Area personale', icon: Home },
     { href: '/profilo', label: 'Profilo', icon: User },
+    { href: '/le-mie-fatture', label: 'Fatture', icon: Receipt },
   ];
 
   return (
