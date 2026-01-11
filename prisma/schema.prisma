@@ -324,6 +324,10 @@ model Invoice {
   
   // Stato: EMESSA, PAGATA, ANNULLATA
   status          String    @default("EMESSA")
+  
+  // Descrizione prestazione principale (per modifica rapida)
+  description     String?   // Es: "Prima visita nutrizionale"
+  
   pdfPath         String?   // Path al file PDF generato
   stsSubmitted    Boolean   @default(false)    // Inviata a Sistema Tessera Sanitaria
   stsSubmittedAt  DateTime?

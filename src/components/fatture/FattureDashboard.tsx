@@ -139,16 +139,13 @@ export function FattureDashboard() {
           </button>
         </div>
 
-        {/* Tab Content */}
-        <motion.div
-          key={activeTab}
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3 }}
-        >
-          {activeTab === 'nuova' && <NuovaFattura />}
-          {activeTab === 'elenco' && <ElencoFatture />}
-        </motion.div>
+        {/* Tab Content - Usa display invece di mount/unmount per preservare stato */}
+        <div className={activeTab === 'nuova' ? 'block' : 'hidden'}>
+          <NuovaFattura />
+        </div>
+        <div className={activeTab === 'elenco' ? 'block' : 'hidden'}>
+          <ElencoFatture />
+        </div>
       </div>
     </div>
   );

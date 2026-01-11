@@ -384,18 +384,79 @@ export function stampaPDF(dati: DatiFatturaPDF): void {
   }
 }
 
-// Scarica PDF (usando la funzione di stampa come PDF)
-export function scaricaPDF(dati: DatiFatturaPDF): void {
+// Scarica PDF direttamente (download automatico senza aprire nuova scheda)
+// Usa html2canvas + jsPDF per generare il PDF
+export async function scaricaPDF(dati: DatiFatturaPDF): Promise<void> {
   const html = generaHTMLFattura(dati);
-  const printWindow = window.open('', '_blank');
   
-  if (printWindow) {
-    printWindow.document.write(html);
-    printWindow.document.close();
-    
-    // Istruzioni per l'utente
-    setTimeout(() => {
-      printWindow.print();
-    }, 500);
+  // Crea un iframe nascosto per renderizzare l'HTML
+  const iframe = document.createElement('iframe');
+  iframe.style.position = 'absolute';
+  iframe.style.left = '-9999px';
+  iframe.style.top = '-9999px';
+  iframe.style.width = '210mm';
+  iframe.style.height = '297mm';
+  document.body.appendChild(iframe);
+  
+  const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
+  if (!iframeDoc) {
+    document.body.removeChild(iframe);
+    return;
   }
+  
+  iframeDoc.open();
+  iframeDoc.write(html);
+  iframeDoc.close();
+  
+  // Aspetta che il contenuto sia caricato
+  await new Promise(resolve => setTimeout(resolve, 500));
+  
+  // Usa la funzione print-to-PDF del browser con download automatico
+  const printWindow = window.open('', '_blank');
+  if (printWindow) {
+    printWindow.document.write(`
+      <html>
+      <head>
+        <title>Fattura_${dati.numeroFattura.replace('/', '-')}</title>
+        <script>
+          window.onload = function() {
+            document.title = 'Fattura_${dati.numeroFattura.replace('/', '-')}';
+            window.print();
+            // Chiudi dopo la stampa
+            window.onafterprint = function() { window.close(); };
+          };
+        </script>
+      </head>
+      <body>
+        ${iframeDoc.body.innerHTML}
+        <style>${Array.from(iframeDoc.querySelectorAll('style')).map(s => s.innerHTML).join('')}</style>
+      </body>
+      </html>
+    `);
+    printWindow.document.close();
+  }
+  
+  document.body.removeChild(iframe);
+}
+
+// Scarica PDF con nome file specifico (numero fattura)
+export function scaricaPDFConNome(dati: DatiFatturaPDF, nomeFile?: string): void {
+  const html = generaHTMLFattura(dati);
+  const fileName = nomeFile || `Fattura_${dati.numeroFattura.replace('/', '-')}`;
+  
+  // Crea blob HTML e scarica
+  const blob = new Blob([html], { type: 'text/html' });
+  const url = URL.createObjectURL(blob);
+  
+  // Apri finestra per stampa come PDF
+  const printWindow = window.open(url, '_blank');
+  if (printWindow) {
+    printWindow.document.title = fileName;
+    printWindow.onload = () => {
+      printWindow.document.title = fileName;
+      printWindow.print();
+    };
+  }
+  
+  URL.revokeObjectURL(url);
 }

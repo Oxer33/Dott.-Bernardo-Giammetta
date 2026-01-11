@@ -62,7 +62,7 @@ export async function GET(
 }
 
 // =============================================================================
-// PUT - Modifica fattura (stato e metodo pagamento)
+// PUT - Modifica fattura COMPLETA (tutti i campi)
 // =============================================================================
 
 export async function PUT(
@@ -83,7 +83,17 @@ export async function PUT(
     }
     
     const body = await request.json();
-    const { status, paymentMethod } = body;
+    const { 
+      status, 
+      paymentMethod, 
+      invoiceDate, 
+      invoiceNumber, 
+      description, 
+      subtotal, 
+      contributo, 
+      bollo, 
+      total 
+    } = body;
     
     // Verifica che la fattura esista
     const existing = await db.invoice.findUnique({ where: { id: params.id } });
@@ -91,10 +101,18 @@ export async function PUT(
       return NextResponse.json({ success: false, error: 'Fattura non trovata' }, { status: 404 });
     }
     
-    // Aggiorna solo i campi modificabili
-    const updateData: Record<string, string> = {};
+    // Aggiorna tutti i campi modificabili
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const updateData: Record<string, any> = {};
     if (status) updateData.status = status;
     if (paymentMethod) updateData.paymentMethod = paymentMethod;
+    if (invoiceDate) updateData.invoiceDate = new Date(invoiceDate);
+    if (invoiceNumber) updateData.invoiceNumber = invoiceNumber;
+    if (description !== undefined) updateData.description = description;
+    if (subtotal !== undefined) updateData.subtotal = subtotal;
+    if (contributo !== undefined) updateData.contributo = contributo;
+    if (bollo !== undefined) updateData.bollo = bollo;
+    if (total !== undefined) updateData.total = total;
     
     const fattura = await db.invoice.update({
       where: { id: params.id },

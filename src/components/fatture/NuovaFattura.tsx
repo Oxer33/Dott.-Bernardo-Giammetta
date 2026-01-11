@@ -23,7 +23,8 @@ import {
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { it } from 'date-fns/locale';
-import { stampaPDF, DatiFatturaPDF } from '@/lib/invoice-pdf';
+import { stampaPDF, scaricaPDF, DatiFatturaPDF } from '@/lib/invoice-pdf';
+import { Settings } from 'lucide-react';
 
 // =============================================================================
 // TIPI
@@ -280,7 +281,7 @@ export function NuovaFattura() {
     setNatureSalvate(prev => prev.filter(n => n.id !== id));
   };
 
-  // Salva fattura
+  // Salva fattura + download PDF automatico
   const handleSalvaFattura = async () => {
     if (!selectedPaziente || righe.length === 0) {
       setError('Seleziona un paziente e aggiungi almeno una prestazione');
@@ -290,6 +291,33 @@ export function NuovaFattura() {
     setSaving(true);
     setError(null);
     setSuccess(null);
+
+    // Prepara dati PDF prima del reset
+    const datiFatturaPDF: DatiFatturaPDF = {
+      numeroFattura: numeroFattura || 'ANTEPRIMA',
+      dataFattura: dataFattura,
+      paziente: {
+        nome: selectedPaziente.firstName && selectedPaziente.lastName
+          ? `${selectedPaziente.firstName} ${selectedPaziente.lastName}`
+          : selectedPaziente.name || 'Nome non specificato',
+        codiceFiscale: selectedPaziente.codiceFiscale || undefined,
+        indirizzo: selectedPaziente.address 
+          ? `${selectedPaziente.address} ${selectedPaziente.addressNumber || ''}`
+          : undefined,
+        cap: selectedPaziente.cap || undefined,
+        citta: selectedPaziente.city || undefined,
+      },
+      prestazioni: righe.map(r => ({
+        descrizione: r.descrizione,
+        importo: r.importo
+      })),
+      imponibile: totaleImponibile,
+      contributoENPAB: contributoENPAB,
+      marcaDaBollo: marcaDaBollo,
+      totale: totaleFinale,
+      metodoPagamento: metodoPagamento,
+      stato: statoFattura
+    };
 
     try {
       const res = await fetch('/api/fatture', {
@@ -312,6 +340,13 @@ export function NuovaFattura() {
       
       if (data.success) {
         setSuccess(`Fattura n. ${data.fattura.invoiceNumber} salvata con successo!`);
+        
+        // Aggiorna numero fattura nei dati PDF
+        datiFatturaPDF.numeroFattura = data.fattura.invoiceNumber;
+        
+        // Download PDF automatico con finestra salva file
+        await scaricaPDF(datiFatturaPDF);
+        
         // Reset form
         setSelectedPaziente(null);
         setRighe([]);
@@ -697,6 +732,17 @@ export function NuovaFattura() {
               <Printer className="w-5 h-5" />
               Stampa
             </button>
+          </div>
+
+          {/* Bottone modifica dati fatturazione */}
+          <div className="mt-6 pt-6 border-t border-sage-200">
+            <a
+              href="/profilo"
+              className="w-full flex items-center justify-center gap-3 px-6 py-4 bg-lavender-100 text-lavender-700 rounded-xl font-medium hover:bg-lavender-200 transition-colors border-2 border-lavender-300"
+            >
+              <Settings className="w-5 h-5" />
+              Modifica i miei dati di fatturazione
+            </a>
           </div>
         </div>
       </div>

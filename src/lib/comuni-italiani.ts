@@ -26,12 +26,19 @@ export async function caricaComuni(): Promise<ComuneItaliano[]> {
   
   try {
     // In ambiente browser/Next.js, facciamo una fetch
-    const response = await fetch('/api/comuni');
+    const response = await fetch('/api/comuni?limit=10000');
     const data = await response.json();
     
     if (data.success && data.comuni) {
-      comuniCache = data.comuni;
-      return data.comuni;
+      // Mappa al formato ComuneItaliano
+      const mappedComuni: ComuneItaliano[] = data.comuni.map((c: { nome: string; provincia: string; codiceCatastale: string }) => ({
+        denominazione_ita: c.nome,
+        sigla_provincia: c.provincia,
+        codice_belfiore: c.codiceCatastale,
+        codice_istat: '',
+      }));
+      comuniCache = mappedComuni;
+      return mappedComuni;
     }
     
     return [];

@@ -28,6 +28,9 @@ import Link from 'next/link';
 import { format, parseISO } from 'date-fns';
 import { it } from 'date-fns/locale';
 import { PatientNavigation } from '@/components/shared/PatientNavigation';
+import { ComuneAutocomplete } from '@/components/shared/ComuneAutocomplete';
+import { calcolaCodiceFiscale } from '@/lib/codice-fiscale';
+import { caricaComuni, trovaComunePerNome, ComuneItaliano } from '@/lib/comuni-italiani';
 
 // Import configurazione domande per visualizzazione questionari
 import {
@@ -90,17 +93,26 @@ interface UserProfile {
 }
 
 export function ProfileContent({ user }: ProfileContentProps) {
-  // Form state - dati base
+  // Form state - dati base (Informazioni cliente)
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [phone, setPhone] = useState('');
+  
   // Form state - dati anagrafici
+  const [birthDate, setBirthDate] = useState('');
   const [birthPlace, setBirthPlace] = useState('');
-  const [codiceFiscale, setCodiceFiscale] = useState('');
+  const [birthProvince, setBirthProvince] = useState('');
+  const [gender, setGender] = useState('');
+  
+  // Form state - dati di residenza
   const [address, setAddress] = useState('');
   const [addressNumber, setAddressNumber] = useState('');
   const [city, setCity] = useState('');
+  const [province, setProvince] = useState('');
   const [cap, setCap] = useState('');
+  
+  // Form state - altri dati
+  const [codiceFiscale, setCodiceFiscale] = useState('');
   const [contactEmail, setContactEmail] = useState('');
   
   // UI state
@@ -113,6 +125,39 @@ export function ProfileContent({ user }: ProfileContentProps) {
   const [questionnaires, setQuestionnaires] = useState<QuestionnaireInfo[]>([]);
   const [loadingQuestionnaires, setLoadingQuestionnaires] = useState(true);
   const [selectedQuestionnaire, setSelectedQuestionnaire] = useState<QuestionnaireInfo | null>(null);
+  
+  // State per comuni (per calcolo CF automatico)
+  const [comuni, setComuni] = useState<ComuneItaliano[]>([]);
+  
+  // Carica comuni all'avvio (per calcolo CF)
+  useEffect(() => {
+    caricaComuni().then(setComuni);
+  }, []);
+  
+  // Calcola CF automaticamente quando cambiano i dati
+  useEffect(() => {
+    if (firstName && lastName && birthDate && gender && birthPlace && comuni.length > 0) {
+      // Trova il codice catastale del comune di nascita
+      const comuneNascita = trovaComunePerNome(comuni, birthPlace);
+      if (comuneNascita) {
+        try {
+          const cfCalcolato = calcolaCodiceFiscale({
+            nome: firstName,
+            cognome: lastName,
+            dataNascita: birthDate,
+            sesso: gender as 'M' | 'F',
+            codiceCatastale: comuneNascita.codice_belfiore
+          });
+          // Aggiorna CF solo se non è già stato inserito manualmente
+          if (!codiceFiscale || codiceFiscale.length < 16) {
+            setCodiceFiscale(cfCalcolato);
+          }
+        } catch (err) {
+          console.error('Errore calcolo CF:', err);
+        }
+      }
+    }
+  }, [firstName, lastName, birthDate, gender, birthPlace, comuni]);
 
   // Fetch profilo completo all'avvio
   useEffect(() => {
@@ -122,15 +167,23 @@ export function ProfileContent({ user }: ProfileContentProps) {
         const data = await res.json();
         if (data.success && data.user) {
           const u = data.user;
+          // Dati base
           setFirstName(u.firstName || u.name?.split(' ')[0] || '');
           setLastName(u.lastName || u.name?.split(' ').slice(1).join(' ') || '');
           setPhone(u.phone || '');
+          // Dati anagrafici
+          setBirthDate(u.birthDate ? u.birthDate.split('T')[0] : '');
           setBirthPlace(u.birthPlace || '');
-          setCodiceFiscale(u.codiceFiscale || '');
+          setBirthProvince(u.birthProvince || '');
+          setGender(u.gender || '');
+          // Dati residenza
           setAddress(u.address || '');
           setAddressNumber(u.addressNumber || '');
           setCity(u.city || '');
+          setProvince(u.province || '');
           setCap(u.cap || '');
+          // Altri dati
+          setCodiceFiscale(u.codiceFiscale || '');
           setContactEmail(u.contactEmail || '');
         }
       } catch (err) {
@@ -181,15 +234,23 @@ export function ProfileContent({ user }: ProfileContentProps) {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          // Dati base
           firstName: firstName.trim(),
           lastName: lastName.trim(),
           phone: phone.trim(),
+          // Dati anagrafici
+          birthDate: birthDate || null,
           birthPlace: birthPlace.trim(),
-          codiceFiscale: codiceFiscale.trim().toUpperCase(),
+          birthProvince: birthProvince.trim().toUpperCase(),
+          gender: gender,
+          // Dati residenza
           address: address.trim(),
           addressNumber: addressNumber.trim(),
           city: city.trim(),
+          province: province.trim().toUpperCase(),
           cap: cap.trim(),
+          // Altri dati
+          codiceFiscale: codiceFiscale.trim().toUpperCase(),
           contactEmail: contactEmail.trim(),
         }),
       });
@@ -314,66 +375,117 @@ export function ProfileContent({ user }: ProfileContentProps) {
               </div>
             </div>
 
-            {/* Sezione Dati Anagrafici per Fatturazione */}
+            {/* ========== SEZIONE DATI ANAGRAFICI (come STS) ========== */}
             <div className="border-t border-sage-200 pt-6 mt-6">
               <h3 className="text-lg font-semibold text-sage-800 mb-4 flex items-center gap-2">
-                <MapPin className="w-5 h-5 text-lavender-500" />
-                Dati per Fatturazione
+                <FileText className="w-5 h-5 text-lavender-500" />
+                Dati Anagrafici
               </h3>
-              <p className="text-sm text-sage-500 mb-4">
-                Questi dati verranno utilizzati per la fatturazione delle visite.
-              </p>
               
-              <div className="grid md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-sage-700 mb-2">
-                    Luogo di nascita
-                  </label>
-                  <input
-                    type="text"
+              {/* Data di Nascita */}
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-sage-700 mb-2">
+                  Data di Nascita *
+                </label>
+                <input
+                  type="date"
+                  value={birthDate}
+                  onChange={(e) => setBirthDate(e.target.value)}
+                  className="w-full px-4 py-3 rounded-xl border border-sage-200 
+                           focus:border-lavender-400 focus:ring-2 focus:ring-lavender-100
+                           outline-none text-sage-800"
+                />
+              </div>
+
+              {/* Comune di Nascita + Provincia (con autocomplete) */}
+              <div className="grid grid-cols-3 gap-4 mb-4">
+                <div className="col-span-2">
+                  <ComuneAutocomplete
                     value={birthPlace}
-                    onChange={(e) => setBirthPlace(e.target.value)}
-                    placeholder="Es: Roma"
-                    className="w-full px-4 py-3 rounded-xl border border-sage-200 
-                             focus:border-lavender-400 focus:ring-2 focus:ring-lavender-100
-                             outline-none text-sage-800 placeholder:text-sage-400"
+                    onChange={setBirthPlace}
+                    onProvinciaChange={setBirthProvince}
+                    label="Comune di Nascita"
+                    placeholder="Inizia a digitare..."
+                    required
                   />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-sage-700 mb-2">
-                    Codice Fiscale
+                    Provincia
                   </label>
                   <input
                     type="text"
-                    value={codiceFiscale}
-                    onChange={(e) => setCodiceFiscale(e.target.value.toUpperCase())}
-                    placeholder="RSSMRA85M01H501Z"
-                    maxLength={16}
+                    value={birthProvince}
+                    onChange={(e) => setBirthProvince(e.target.value.toUpperCase().slice(0, 2))}
+                    placeholder="RM"
+                    maxLength={2}
                     className="w-full px-4 py-3 rounded-xl border border-sage-200 
                              focus:border-lavender-400 focus:ring-2 focus:ring-lavender-100
-                             outline-none text-sage-800 placeholder:text-sage-400 uppercase"
+                             outline-none text-sage-800 placeholder:text-sage-400 uppercase text-center"
                   />
                 </div>
               </div>
 
-              <div className="grid md:grid-cols-3 gap-4 mt-4">
-                <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-sage-700 mb-2">
-                    Indirizzo
+              {/* Sesso */}
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-sage-700 mb-2">
+                  Sesso
+                </label>
+                <div className="flex gap-6">
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="radio"
+                      name="gender"
+                      value="M"
+                      checked={gender === 'M'}
+                      onChange={(e) => setGender(e.target.value)}
+                      className="w-5 h-5 text-lavender-500 focus:ring-lavender-400"
+                    />
+                    <span className="text-sage-700">Maschile</span>
                   </label>
-                  <input
-                    type="text"
-                    value={address}
-                    onChange={(e) => setAddress(e.target.value)}
-                    placeholder="Via Roma"
-                    className="w-full px-4 py-3 rounded-xl border border-sage-200 
-                             focus:border-lavender-400 focus:ring-2 focus:ring-lavender-100
-                             outline-none text-sage-800 placeholder:text-sage-400"
-                  />
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="radio"
+                      name="gender"
+                      value="F"
+                      checked={gender === 'F'}
+                      onChange={(e) => setGender(e.target.value)}
+                      className="w-5 h-5 text-lavender-500 focus:ring-lavender-400"
+                    />
+                    <span className="text-sage-700">Femminile</span>
+                  </label>
                 </div>
+              </div>
+            </div>
+
+            {/* ========== SEZIONE DATI DI RESIDENZA (come STS) ========== */}
+            <div className="border-t border-sage-200 pt-6 mt-6">
+              <h3 className="text-lg font-semibold text-sage-800 mb-4 flex items-center gap-2">
+                <MapPin className="w-5 h-5 text-lavender-500" />
+                Dati di Residenza
+              </h3>
+              
+              {/* Indirizzo */}
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-sage-700 mb-2">
+                  Indirizzo *
+                </label>
+                <input
+                  type="text"
+                  value={address}
+                  onChange={(e) => setAddress(e.target.value)}
+                  placeholder="Via Roma"
+                  className="w-full px-4 py-3 rounded-xl border border-sage-200 
+                           focus:border-lavender-400 focus:ring-2 focus:ring-lavender-100
+                           outline-none text-sage-800 placeholder:text-sage-400"
+                />
+              </div>
+
+              {/* N. Civico + Comune di Residenza */}
+              <div className="grid grid-cols-4 gap-4 mb-4">
                 <div>
                   <label className="block text-sm font-medium text-sage-700 mb-2">
-                    N. Civico
+                    N. civico
                   </label>
                   <input
                     type="text"
@@ -385,26 +497,39 @@ export function ProfileContent({ user }: ProfileContentProps) {
                              outline-none text-sage-800 placeholder:text-sage-400"
                   />
                 </div>
+                <div className="col-span-3">
+                  <ComuneAutocomplete
+                    value={city}
+                    onChange={setCity}
+                    onProvinciaChange={setProvince}
+                    onCapChange={setCap}
+                    label="Comune di Residenza"
+                    placeholder="Inizia a digitare..."
+                    required
+                  />
+                </div>
               </div>
 
-              <div className="grid md:grid-cols-2 gap-4 mt-4">
+              {/* Provincia + CAP */}
+              <div className="grid grid-cols-2 gap-4 mb-4">
                 <div>
                   <label className="block text-sm font-medium text-sage-700 mb-2">
-                    Città
+                    Provincia *
                   </label>
                   <input
                     type="text"
-                    value={city}
-                    onChange={(e) => setCity(e.target.value)}
-                    placeholder="Roma"
+                    value={province}
+                    onChange={(e) => setProvince(e.target.value.toUpperCase().slice(0, 2))}
+                    placeholder="RM"
+                    maxLength={2}
                     className="w-full px-4 py-3 rounded-xl border border-sage-200 
                              focus:border-lavender-400 focus:ring-2 focus:ring-lavender-100
-                             outline-none text-sage-800 placeholder:text-sage-400"
+                             outline-none text-sage-800 placeholder:text-sage-400 uppercase"
                   />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-sage-700 mb-2">
-                    CAP
+                    CAP *
                   </label>
                   <input
                     type="text"
@@ -417,6 +542,28 @@ export function ProfileContent({ user }: ProfileContentProps) {
                              outline-none text-sage-800 placeholder:text-sage-400"
                   />
                 </div>
+              </div>
+            </div>
+
+            {/* ========== CODICE FISCALE (calcolato automaticamente) ========== */}
+            <div className="border-t border-sage-200 pt-6 mt-6">
+              <div>
+                <label className="block text-sm font-medium text-sage-700 mb-2">
+                  Codice Fiscale
+                </label>
+                <input
+                  type="text"
+                  value={codiceFiscale}
+                  onChange={(e) => setCodiceFiscale(e.target.value.toUpperCase())}
+                  placeholder="RSSMRA85M01H501Z"
+                  maxLength={16}
+                  className="w-full px-4 py-3 rounded-xl border border-sage-200 
+                           focus:border-lavender-400 focus:ring-2 focus:ring-lavender-100
+                           outline-none text-sage-800 placeholder:text-sage-400 uppercase"
+                />
+                <p className="text-xs text-sage-500 mt-1">
+                  Calcolato automaticamente, modificare solo in caso di errore
+                </p>
               </div>
 
               <div className="mt-4">

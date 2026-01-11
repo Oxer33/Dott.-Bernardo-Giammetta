@@ -300,6 +300,21 @@
    ```
 3. **Attendi approvazione SES**: produzione (caso #176743190600620)
 
+### 🔧 Miglioramenti Fatturazione e Profilo STS - 11/01/2026 (Sessione 28) ✅ COMPLETATO
+- [x] **Salva Fattura + Download PDF**: salvataggio DB + download automatico PDF con nome file = numero fattura
+- [x] **Preserva stato form**: cambio tab Nuova Fattura ↔ Elenco non cancella dati inseriti
+- [x] **Fix modifica fattura API**: ora salva tutti i campi (numero, data, descrizione, importo, stato, pagamento)
+- [x] **Modal modifica con nature spesa**: selezione prestazioni come in NuovaFattura + aggiunta nuove
+- [x] **Scarica PDF diretto**: download senza aprire nuova scheda visibile
+- [x] **Bottone "Modifica dati fatturazione"**: presente sia in NuovaFattura che ElencoFatture
+- [x] **Form profilo ordine STS**: Dati Anagrafici → Dati Residenza → CF (come screenshot software STS)
+- [x] **Autocomplete comuni**: ricerca comune con dropdown mentre digiti
+- [x] **Province automatiche**: selezionando comune, provincia si compila automaticamente
+- [x] **CAP automatico**: selezionando comune di residenza, CAP si compila (città principali)
+- [x] **CF calcolato automaticamente**: quando compili nome, cognome, data nascita, sesso e comune nascita
+- [x] **Nuovi campi profilo**: birthDate, birthProvince, gender, province aggiunti a schema e form
+- [x] **Componente ComuneAutocomplete**: riutilizzabile per qualsiasi campo comune
+
 ### 🔧 Sistema Fatturazione PDF Professionale - 12/01/2026 (Sessione 27) ✅ COMPLETATO
 - [x] **Fix calcolo fattura**: 100€ inseriti restano 100€ (scorporo corretto di bollo e ENPAB)
 - [x] **Dicitura ENPAB completa**: "Contributo integrativo Enpab 4.0% (art.8, comma 3, Dlgs 103/96)"

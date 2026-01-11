@@ -120,6 +120,12 @@ export function ElencoFatture() {
   const [editSubtotal, setEditSubtotal] = useState('');
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  
+  // Stati per nature di spesa nel modal modifica
+  const [natureSalvate, setNatureSalvate] = useState<{id: string; descrizione: string; importo: number}[]>([]);
+  const [showNuovaNatura, setShowNuovaNatura] = useState(false);
+  const [nuovaDescrizione, setNuovaDescrizione] = useState('');
+  const [nuovoImporto, setNuovoImporto] = useState('');
 
   // Ricarica fatture
   const reloadFatture = async () => {
@@ -225,6 +231,57 @@ export function ElencoFatture() {
     };
     fetchFatture();
   }, []);
+
+  // Carica nature spesa da API
+  useEffect(() => {
+    const fetchExpenseTypes = async () => {
+      try {
+        const res = await fetch('/api/fatture/expense-types');
+        const data = await res.json();
+        if (data.success && data.expenseTypes?.length > 0) {
+          setNatureSalvate(data.expenseTypes.map((e: { id: string; description: string; defaultAmount: number }) => ({
+            id: e.id,
+            descrizione: e.description,
+            importo: e.defaultAmount
+          })));
+        }
+      } catch (err) {
+        console.error('Errore caricamento nature spesa:', err);
+      }
+    };
+    fetchExpenseTypes();
+  }, []);
+
+  // Salva nuova natura spesa
+  const handleSaveNuovaNatura = async () => {
+    if (!nuovaDescrizione || !nuovoImporto) return;
+    
+    try {
+      const res = await fetch('/api/fatture/expense-types', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          description: nuovaDescrizione,
+          defaultAmount: parseFloat(nuovoImporto)
+        })
+      });
+      const data = await res.json();
+      
+      if (data.success) {
+        setNatureSalvate(prev => [...prev, {
+          id: data.expenseType.id,
+          descrizione: data.expenseType.description,
+          importo: data.expenseType.defaultAmount
+        }]);
+      }
+    } catch (err) {
+      console.error('Errore salvataggio natura:', err);
+    }
+    
+    setNuovaDescrizione('');
+    setNuovoImporto('');
+    setShowNuovaNatura(false);
+  };
 
   // Filtra fatture per ricerca (supporta formati data multipli)
   const fattureFiltrate = fatture.filter(f => {
@@ -645,6 +702,78 @@ export function ElencoFatture() {
                 </div>
               </div>
 
+              {/* Nature di spesa disponibili */}
+              <div>
+                <label className="block text-sm font-medium text-sage-700 mb-2">
+                  Seleziona Prestazione (con bollo e ENPAB già inclusi)
+                </label>
+                <div className="grid grid-cols-2 gap-2 max-h-40 overflow-y-auto">
+                  {natureSalvate.map(natura => (
+                    <button
+                      key={natura.id}
+                      type="button"
+                      onClick={() => {
+                        setEditDescription(natura.descrizione);
+                        setEditSubtotal(natura.importo.toFixed(2));
+                      }}
+                      className={`p-2 text-left rounded-lg border transition-colors text-sm ${
+                        editDescription === natura.descrizione 
+                          ? 'bg-lavender-100 border-lavender-400' 
+                          : 'bg-sage-50 border-sage-200 hover:border-sage-400'
+                      }`}
+                    >
+                      <span className="font-medium">{natura.descrizione}</span>
+                      <span className="text-sage-500 ml-2">€{natura.importo}</span>
+                    </button>
+                  ))}
+                </div>
+                
+                {/* Aggiungi nuova natura */}
+                {!showNuovaNatura ? (
+                  <button
+                    type="button"
+                    onClick={() => setShowNuovaNatura(true)}
+                    className="mt-2 text-sm text-lavender-600 hover:text-lavender-700"
+                  >
+                    + Aggiungi nuova prestazione
+                  </button>
+                ) : (
+                  <div className="mt-2 p-3 bg-sage-50 rounded-xl space-y-2">
+                    <input
+                      type="text"
+                      value={nuovaDescrizione}
+                      onChange={(e) => setNuovaDescrizione(e.target.value)}
+                      placeholder="Descrizione prestazione"
+                      className="w-full px-3 py-2 rounded-lg border border-sage-200 text-sm"
+                    />
+                    <div className="flex gap-2">
+                      <input
+                        type="number"
+                        step="0.01"
+                        value={nuovoImporto}
+                        onChange={(e) => setNuovoImporto(e.target.value)}
+                        placeholder="Importo €"
+                        className="flex-1 px-3 py-2 rounded-lg border border-sage-200 text-sm"
+                      />
+                      <button
+                        type="button"
+                        onClick={handleSaveNuovaNatura}
+                        className="px-3 py-2 bg-lavender-500 text-white rounded-lg text-sm"
+                      >
+                        Salva
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setShowNuovaNatura(false)}
+                        className="px-3 py-2 bg-sage-200 rounded-lg text-sm"
+                      >
+                        Annulla
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+
               {/* Descrizione prestazione (modificabile) */}
               <div>
                 <label className="block text-sm font-medium text-sage-700 mb-2">Descrizione Prestazione</label>
@@ -659,7 +788,7 @@ export function ElencoFatture() {
 
               {/* Importo (modificabile) */}
               <div>
-                <label className="block text-sm font-medium text-sage-700 mb-2">Imponibile (€)</label>
+                <label className="block text-sm font-medium text-sage-700 mb-2">Importo Totale (€) - già inclusivo di bollo e ENPAB</label>
                 <input
                   type="number"
                   step="0.01"
@@ -668,7 +797,7 @@ export function ElencoFatture() {
                   className="w-full px-4 py-2 rounded-xl border border-sage-200 focus:border-sage-400 outline-none"
                 />
                 <p className="text-xs text-sage-500 mt-1">
-                  Contributo ENPAB 4% e bollo verranno ricalcolati automaticamente
+                  Contributo ENPAB 4% e bollo verranno scorporati automaticamente
                 </p>
               </div>
 
