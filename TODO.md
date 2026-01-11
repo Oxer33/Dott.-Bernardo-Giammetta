@@ -300,6 +300,19 @@
    ```
 3. **Attendi approvazione SES**: produzione (caso #176743190600620)
 
+### 🔧 Fix Sistema Fatturazione Avanzato - 11/01/2026 (Sessione 25) ✅ COMPLETATO
+- [x] **Rimosso /api/debug/env**: endpoint debug non più accessibile in produzione
+- [x] **Rimossi file obsoleti**: questionnaire-data.ts e QuestionnaireForm.tsx (unificati in questionnaire-config.ts)
+- [x] **API /api/fatture**: GET lista fatture con statistiche, POST crea nuova fattura
+- [x] **API /api/fatture/expense-types**: GET/POST/DELETE per gestione nature spesa persistenti
+- [x] **API /api/fatture/next-number**: genera numero fattura progressivo corretto (es: 1/2026, 2/2026...)
+- [x] **Schema Prisma aggiornato**: aggiunto InvoiceItem (righe fattura) e ExpenseType (nature spesa)
+- [x] **NuovaFattura migliorato**: bottone elimina nature spesa, salvataggio su API, numero incrementale automatico
+- [x] **ElencoFatture migliorato**: statistiche settimana/mese/anno, ricerca data in formati multipli (01/2026, gennaio, etc.)
+- [x] **Bottoni funzionanti**: visualizza, modifica stato, stampa (browser), scarica PDF (in sviluppo)
+- [ ] **TODO: Migrare database**: eseguire `npx prisma db push` per applicare nuovi modelli
+- [ ] **TODO: Generazione PDF professionale**: implementare come in Autofatturazione STS
+
 ### 🔧 Sistema Fatturazione + Fix UI - 10/01/2026 (Sessione 24) ✅ COMPLETATO
 - [x] **Rimossa fascia ridondante /agenda admin**: header "Agenda Appuntamenti" inutile rimosso
 - [x] **Bottone Apri spostato a sinistra**: nelle card pazienti ora è all'estremo sinistro
@@ -311,8 +324,6 @@
 - [x] **Pagina /fatture creata**: con sottosezioni Nuova Fattura e Elenco Fatture
 - [x] **NuovaFattura component**: ricerca paziente, nature spesa, calcolo ENPAB 4%, marca bollo >77.47€
 - [x] **ElencoFatture component**: ricerca, statistiche, visualizza/modifica/stampa fatture
-- [ ] **TODO: API fatture**: implementare salvataggio e recupero fatture dal database
-- [ ] **TODO: Generazione PDF**: implementare generazione PDF fattura per stampa
 
 ### 🔧 UI Admin + Calcolo CF Automatico - 10/01/2026 (Sessione 23) ✅ COMPLETATO
 - [x] **Fix grassetto q17 modal admin**: formatBoldText anche alle risposte textarea
