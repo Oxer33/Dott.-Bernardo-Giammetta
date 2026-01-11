@@ -309,24 +309,27 @@ model Invoice {
   user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   
   // Dati fattura
-  invoiceNumber   String    @unique  // Numero fattura (es: "2025/001")
+  invoiceNumber   String    @unique  // Numero fattura (es: "1/2026")
+  invoiceYear     Int       // Anno fattura per progressivo
   invoiceDate     DateTime  // Data emissione
   
-  // Importi
-  subtotal        Decimal   @db.Decimal(10, 2)  // Imponibile
-  contributo      Decimal   @db.Decimal(10, 2)  // Contributo previdenziale
+  // Importi (calcolati dalle righe)
+  subtotal        Decimal   @db.Decimal(10, 2)  // Imponibile (somma righe)
+  contributo      Decimal   @db.Decimal(10, 2)  // Contributo ENPAB 4%
   bollo           Decimal   @db.Decimal(10, 2)  // Marca da bollo (se > 77.47€)
   total           Decimal   @db.Decimal(10, 2)  // Totale fattura
   
-  // Dettagli
-  description     String    // Descrizione prestazione
-  paymentMethod   String    // MP01=Contanti, MP05=Bonifico, MP08=POS
+  // Metodo pagamento: MP01=Contanti, MP05=Bonifico, MP08=POS
+  paymentMethod   String    @default("MP05")
   
-  // Stato
-  status          String    @default("DRAFT")  // DRAFT, ISSUED, PAID, CANCELLED
+  // Stato: EMESSA, PAGATA, ANNULLATA
+  status          String    @default("EMESSA")
   pdfPath         String?   // Path al file PDF generato
   stsSubmitted    Boolean   @default(false)    // Inviata a Sistema Tessera Sanitaria
   stsSubmittedAt  DateTime?
+  
+  // Righe fattura (prestazioni)
+  items           InvoiceItem[]
   
   // Timestamps
   createdAt       DateTime  @default(now())
@@ -334,7 +337,51 @@ model Invoice {
   
   @@index([userId])
   @@index([invoiceNumber])
+  @@index([invoiceYear])
   @@index([status])
+  @@index([invoiceDate])
+}
+
+// =============================================================================
+// MODELLO RIGA FATTURA
+// Singola prestazione in una fattura
+// =============================================================================
+
+model InvoiceItem {
+  id            String    @id @default(cuid())
+  
+  // Riferimento fattura
+  invoiceId     String
+  invoice       Invoice   @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  
+  // Descrizione prestazione
+  description   String
+  
+  // Importo (senza contributo)
+  amount        Decimal   @db.Decimal(10, 2)
+  
+  // Ordine di visualizzazione
+  order         Int       @default(0)
+  
+  @@index([invoiceId])
+}
+
+// =============================================================================
+// MODELLO NATURA SPESA (PRESTAZIONI SALVATE)
+// Per riutilizzare prestazioni comuni
+// =============================================================================
+
+model ExpenseType {
+  id            String    @id @default(cuid())
+  description   String    // Es: "Prima visita nutrizionale"
+  defaultAmount Decimal   @db.Decimal(10, 2)  // Importo predefinito
+  isActive      Boolean   @default(true)
+  order         Int       @default(0)  // Ordine di visualizzazione
+  
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  
+  @@index([isActive])
 }
 
 // =============================================================================

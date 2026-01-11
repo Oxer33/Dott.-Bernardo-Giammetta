@@ -149,13 +149,13 @@ export const COMMON_QUESTIONS: Question[] = [
   },
   {
     id: 'q17',
-    text: 'Qual è il tuo **obiettivo personale** per cui vuoi iniziare questo percorso? Indicami se:',
+    text: 'Qual è il tuo **obiettivo personale** per cui vuoi iniziare questo percorso? Indicami se è:',
     type: 'radio-with-textarea',
     required: true,
     options: [
-      'Vuoi **ridurre** il grasso corporeo, quindi il peso, migliorando l\'alimentazione?',
-      'Oppure **aumentare** il peso e anche la massa muscolare (valida solo se ci alleniamo) migliorando l\'alimentazione?',
-      'Oppure **mantenere** il peso migliorando solamente l\'alimentazione e anche lo stato di forma fisica (valido solo se ci alleniamo)?'
+      '**ridurre** il grasso corporeo, quindi il peso, migliorando l\'alimentazione?',
+      '**aumentare** il peso e anche la massa muscolare (valida solo se ci alleniamo) migliorando l\'alimentazione?',
+      '**mantenere** il peso migliorando solamente l\'alimentazione e anche lo stato di forma fisica (valido solo se ci alleniamo)?'
     ],
     placeholder: 'Note aggiuntive (opzionale)',
   },

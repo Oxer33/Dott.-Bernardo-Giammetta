@@ -56,14 +56,14 @@ interface RigaFattura {
 }
 
 // =============================================================================
-// NATURE SPESA PREDEFINITE
+// NATURE SPESA PREDEFINITE (fallback se API non disponibile)
 // =============================================================================
 
 const NATURE_SPESA_DEFAULT: NaturaSpesa[] = [
-  { id: '1', descrizione: 'Prima visita nutrizionale', importo: 100 },
-  { id: '2', descrizione: 'Visita di controllo', importo: 60 },
-  { id: '3', descrizione: 'Elaborazione piano alimentare', importo: 80 },
-  { id: '4', descrizione: 'Consulenza nutrizionale online', importo: 50 },
+  { id: 'default-1', descrizione: 'Prima visita nutrizionale', importo: 100 },
+  { id: 'default-2', descrizione: 'Visita di controllo', importo: 60 },
+  { id: 'default-3', descrizione: 'Elaborazione piano alimentare', importo: 80 },
+  { id: 'default-4', descrizione: 'Consulenza nutrizionale online', importo: 50 },
 ];
 
 // =============================================================================
@@ -128,12 +128,47 @@ export function NuovaFattura() {
     return () => clearTimeout(timer);
   }, [searchQuery]);
 
-  // Genera numero fattura progressivo
+  // Carica nature spesa dal server
   useEffect(() => {
-    const anno = new Date().getFullYear();
-    // In produzione questo dovrebbe essere calcolato dal database
-    const progressivo = Math.floor(Math.random() * 1000) + 1;
-    setNumeroFattura(`${progressivo}/${anno}`);
+    const fetchExpenseTypes = async () => {
+      try {
+        const res = await fetch('/api/fatture/expense-types');
+        const data = await res.json();
+        if (data.success && data.expenseTypes?.length > 0) {
+          setNatureSalvate(data.expenseTypes.map((e: { id: string; description: string; defaultAmount: number }) => ({
+            id: e.id,
+            descrizione: e.description,
+            importo: e.defaultAmount
+          })));
+        }
+      } catch (err) {
+        console.error('Errore caricamento nature spesa:', err);
+        // Usa default se API non disponibile
+      }
+    };
+    fetchExpenseTypes();
+  }, []);
+
+  // Genera numero fattura progressivo dal database
+  useEffect(() => {
+    const fetchNextInvoiceNumber = async () => {
+      try {
+        const res = await fetch('/api/fatture/next-number');
+        const data = await res.json();
+        if (data.success) {
+          setNumeroFattura(data.nextNumber);
+        } else {
+          // Fallback
+          const anno = new Date().getFullYear();
+          setNumeroFattura(`1/${anno}`);
+        }
+      } catch (err) {
+        // Fallback
+        const anno = new Date().getFullYear();
+        setNumeroFattura(`1/${anno}`);
+      }
+    };
+    fetchNextInvoiceNumber();
   }, []);
 
   // Seleziona paziente
@@ -157,20 +192,61 @@ export function NuovaFattura() {
     setRighe(prev => prev.filter(r => r.id !== id));
   };
 
-  // Salva nuova natura spesa
-  const handleSaveNuovaNatura = () => {
+  // Salva nuova natura spesa (anche su server)
+  const handleSaveNuovaNatura = async () => {
     if (!nuovaDescrizione || !nuovoImporto) return;
     
-    const nuova: NaturaSpesa = {
-      id: `custom-${Date.now()}`,
-      descrizione: nuovaDescrizione,
-      importo: parseFloat(nuovoImporto)
-    };
+    try {
+      const res = await fetch('/api/fatture/expense-types', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          description: nuovaDescrizione,
+          defaultAmount: parseFloat(nuovoImporto)
+        })
+      });
+      const data = await res.json();
+      
+      if (data.success) {
+        setNatureSalvate(prev => [...prev, {
+          id: data.expenseType.id,
+          descrizione: data.expenseType.description,
+          importo: data.expenseType.defaultAmount
+        }]);
+      } else {
+        // Fallback locale
+        setNatureSalvate(prev => [...prev, {
+          id: `local-${Date.now()}`,
+          descrizione: nuovaDescrizione,
+          importo: parseFloat(nuovoImporto)
+        }]);
+      }
+    } catch (err) {
+      // Fallback locale
+      setNatureSalvate(prev => [...prev, {
+        id: `local-${Date.now()}`,
+        descrizione: nuovaDescrizione,
+        importo: parseFloat(nuovoImporto)
+      }]);
+    }
     
-    setNatureSalvate(prev => [...prev, nuova]);
     setNuovaDescrizione('');
     setNuovoImporto('');
     setShowNuovaNatura(false);
+  };
+
+  // Elimina natura spesa
+  const handleDeleteNatura = async (id: string) => {
+    // Non eliminare le nature predefinite
+    if (id.startsWith('default-')) return;
+    
+    try {
+      await fetch(`/api/fatture/expense-types?id=${id}`, { method: 'DELETE' });
+    } catch (err) {
+      console.error('Errore eliminazione natura:', err);
+    }
+    
+    setNatureSalvate(prev => prev.filter(n => n.id !== id));
   };
 
   // Salva fattura
@@ -182,24 +258,58 @@ export function NuovaFattura() {
 
     setSaving(true);
     setError(null);
+    setSuccess(null);
 
     try {
-      // TODO: Implementare API salvataggio fattura
-      // const res = await fetch('/api/fatture', { ... });
+      const res = await fetch('/api/fatture', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId: selectedPaziente.id,
+          invoiceDate: dataFattura,
+          invoiceNumber: numeroFattura,
+          items: righe.map(r => ({
+            description: r.descrizione,
+            amount: r.importo
+          })),
+          paymentMethod: 'MP05',
+          status: 'EMESSA'
+        })
+      });
       
-      // Simulazione successo
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      const data = await res.json();
       
-      setSuccess('Fattura salvata con successo!');
-      // Reset form
-      setSelectedPaziente(null);
-      setRighe([]);
-      
+      if (data.success) {
+        setSuccess(`Fattura n. ${data.fattura.invoiceNumber} salvata con successo!`);
+        // Reset form
+        setSelectedPaziente(null);
+        setRighe([]);
+        // Rigenera numero fattura
+        const anno = new Date().getFullYear();
+        const match = data.fattura.invoiceNumber.match(/^(\d+)\//);
+        if (match) {
+          setNumeroFattura(`${parseInt(match[1]) + 1}/${anno}`);
+        }
+      } else {
+        setError(data.error || 'Errore nel salvataggio della fattura');
+      }
     } catch (err) {
-      setError('Errore nel salvataggio della fattura');
+      setError('Errore di connessione al server');
     } finally {
       setSaving(false);
     }
+  };
+
+  // Stampa fattura (genera PDF)
+  const handleStampa = async () => {
+    if (!selectedPaziente || righe.length === 0) {
+      setError('Seleziona un paziente e aggiungi almeno una prestazione');
+      return;
+    }
+    
+    // Per ora apre una finestra di stampa del browser
+    // TODO: Implementare generazione PDF professionale
+    window.print();
   };
 
   return (
@@ -380,14 +490,28 @@ export function NuovaFattura() {
             {/* Lista nature salvate */}
             <div className="space-y-2">
               {natureSalvate.map(natura => (
-                <button
+                <div
                   key={natura.id}
-                  onClick={() => handleAddRiga(natura)}
-                  className="w-full flex justify-between items-center p-3 bg-sage-50 rounded-xl hover:bg-sage-100 transition-colors text-left"
+                  className="flex items-center gap-2"
                 >
-                  <span className="text-sage-700">{natura.descrizione}</span>
-                  <span className="font-semibold text-sage-800">€ {natura.importo.toFixed(2)}</span>
-                </button>
+                  <button
+                    onClick={() => handleAddRiga(natura)}
+                    className="flex-1 flex justify-between items-center p-3 bg-sage-50 rounded-xl hover:bg-sage-100 transition-colors text-left"
+                  >
+                    <span className="text-sage-700">{natura.descrizione}</span>
+                    <span className="font-semibold text-sage-800">€ {natura.importo.toFixed(2)}</span>
+                  </button>
+                  {/* Bottone elimina (solo per nature non predefinite) */}
+                  {!natura.id.startsWith('default-') && (
+                    <button
+                      onClick={() => handleDeleteNatura(natura.id)}
+                      className="p-2 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                      title="Elimina natura spesa"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  )}
+                </div>
               ))}
             </div>
           </div>
@@ -479,6 +603,7 @@ export function NuovaFattura() {
               Salva Fattura
             </button>
             <button
+              onClick={handleStampa}
               disabled={!selectedPaziente || righe.length === 0}
               className="flex items-center justify-center gap-2 px-6 py-3 bg-sage-100 text-sage-700 rounded-xl font-medium hover:bg-sage-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >

@@ -28,75 +28,92 @@ import { it } from 'date-fns/locale';
 
 interface Fattura {
   id: string;
-  numero: string;
-  data: string;
-  paziente: {
-    nome: string;
+  invoiceNumber: string;
+  invoiceDate: string;
+  user: {
+    firstName: string | null;
+    lastName: string | null;
+    name: string | null;
     email: string;
-    codiceFiscale: string;
+    codiceFiscale: string | null;
   };
-  totale: number;
-  stato: 'emessa' | 'pagata' | 'annullata';
+  total: number;
+  status: string;
 }
 
-// =============================================================================
-// DATI MOCK (in produzione verranno dal database)
-// =============================================================================
+interface Stats {
+  totale: number;
+  emesse: number;
+  pagate: number;
+  settimana: { count: number; total: number };
+  mese: { count: number; total: number };
+  anno: { count: number; total: number };
+  incassato: number;
+}
 
-const FATTURE_MOCK: Fattura[] = [
-  {
-    id: '1',
-    numero: '1/2026',
-    data: '2026-01-05',
-    paziente: { nome: 'Mario Rossi', email: 'mario.rossi@email.com', codiceFiscale: 'RSSMRA80A01H501Z' },
-    totale: 104.00,
-    stato: 'pagata'
-  },
-  {
-    id: '2',
-    numero: '2/2026',
-    data: '2026-01-08',
-    paziente: { nome: 'Giulia Bianchi', email: 'giulia.bianchi@email.com', codiceFiscale: 'BNCGLI85M41H501X' },
-    totale: 62.40,
-    stato: 'emessa'
-  },
-  {
-    id: '3',
-    numero: '3/2026',
-    data: '2026-01-10',
-    paziente: { nome: 'Luca Verdi', email: 'luca.verdi@email.com', codiceFiscale: 'VRDLCU90B15H501Y' },
-    totale: 104.00,
-    stato: 'emessa'
-  },
-];
+// Helper per formattare nome paziente
+const getNomePaziente = (user: Fattura['user']) => {
+  if (user.firstName && user.lastName) return `${user.firstName} ${user.lastName}`;
+  return user.name || user.email;
+};
 
 // =============================================================================
 // COMPONENTE PRINCIPALE
 // =============================================================================
 
 export function ElencoFatture() {
-  const [fatture, setFatture] = useState<Fattura[]>(FATTURE_MOCK);
+  const [fatture, setFatture] = useState<Fattura[]>([]);
+  const [stats, setStats] = useState<Stats | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [selectedFattura, setSelectedFattura] = useState<Fattura | null>(null);
+  const [editingFattura, setEditingFattura] = useState<Fattura | null>(null);
 
-  // Filtra fatture per ricerca
+  // Carica fatture da API
+  useEffect(() => {
+    const fetchFatture = async () => {
+      try {
+        const res = await fetch('/api/fatture');
+        const data = await res.json();
+        if (data.success) {
+          setFatture(data.fatture || []);
+          setStats(data.stats || null);
+        }
+      } catch (err) {
+        console.error('Errore caricamento fatture:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchFatture();
+  }, []);
+
+  // Filtra fatture per ricerca (supporta formati data multipli)
   const fattureFiltrate = fatture.filter(f => {
     if (!searchQuery) return true;
-    const query = searchQuery.toLowerCase();
+    const query = searchQuery.toLowerCase().trim();
+    const nomePaziente = getNomePaziente(f.user).toLowerCase();
+    
+    // Formatta data in vari modi per ricerca
+    const dataObj = new Date(f.invoiceDate);
+    const dataISO = f.invoiceDate.toLowerCase();
+    const dataIT = format(dataObj, 'dd/MM/yyyy');
+    const dataITShort = format(dataObj, 'd/M/yyyy');
+    const dataMese = format(dataObj, 'MMMM yyyy', { locale: it }).toLowerCase();
+    const dataGiorno = format(dataObj, 'd MMMM yyyy', { locale: it }).toLowerCase();
+    
     return (
-      f.numero.toLowerCase().includes(query) ||
-      f.paziente.nome.toLowerCase().includes(query) ||
-      f.paziente.email.toLowerCase().includes(query) ||
-      f.paziente.codiceFiscale.toLowerCase().includes(query) ||
-      f.data.includes(query)
+      f.invoiceNumber.toLowerCase().includes(query) ||
+      nomePaziente.includes(query) ||
+      f.user.email.toLowerCase().includes(query) ||
+      (f.user.codiceFiscale || '').toLowerCase().includes(query) ||
+      dataISO.includes(query) ||
+      dataIT.includes(query) ||
+      dataITShort.includes(query) ||
+      dataMese.includes(query) ||
+      dataGiorno.includes(query)
     );
   });
-
-  // Statistiche
-  const totaleEmesse = fatture.filter(f => f.stato === 'emessa').length;
-  const totalePagate = fatture.filter(f => f.stato === 'pagata').length;
-  const totaleImporto = fatture.reduce((sum, f) => sum + f.totale, 0);
 
   // Colore stato
   const getStatoColor = (stato: string) => {
@@ -110,19 +127,27 @@ export function ElencoFatture() {
 
   return (
     <div className="space-y-6">
-      {/* Statistiche */}
-      <div className="grid grid-cols-3 gap-4">
+      {/* Statistiche per periodo */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <div className="bg-white rounded-xl p-4 shadow-soft">
-          <p className="text-sm text-sage-500">Fatture totali</p>
-          <p className="text-2xl font-bold text-sage-800">{fatture.length}</p>
+          <p className="text-xs text-sage-500 uppercase tracking-wide">Questa settimana</p>
+          <p className="text-xl font-bold text-sage-800">{stats?.settimana.count || 0}</p>
+          <p className="text-sm text-green-600 font-medium">€ {(stats?.settimana.total || 0).toFixed(2)}</p>
         </div>
         <div className="bg-white rounded-xl p-4 shadow-soft">
-          <p className="text-sm text-sage-500">Da incassare</p>
-          <p className="text-2xl font-bold text-amber-600">{totaleEmesse}</p>
+          <p className="text-xs text-sage-500 uppercase tracking-wide">Questo mese</p>
+          <p className="text-xl font-bold text-sage-800">{stats?.mese.count || 0}</p>
+          <p className="text-sm text-green-600 font-medium">€ {(stats?.mese.total || 0).toFixed(2)}</p>
         </div>
         <div className="bg-white rounded-xl p-4 shadow-soft">
-          <p className="text-sm text-sage-500">Totale incassato</p>
-          <p className="text-2xl font-bold text-green-600">€ {totaleImporto.toFixed(2)}</p>
+          <p className="text-xs text-sage-500 uppercase tracking-wide">Quest'anno</p>
+          <p className="text-xl font-bold text-sage-800">{stats?.anno.count || 0}</p>
+          <p className="text-sm text-green-600 font-medium">€ {(stats?.anno.total || 0).toFixed(2)}</p>
+        </div>
+        <div className="bg-white rounded-xl p-4 shadow-soft">
+          <p className="text-xs text-sage-500 uppercase tracking-wide">Da incassare</p>
+          <p className="text-xl font-bold text-amber-600">{stats?.emesse || 0}</p>
+          <p className="text-sm text-sage-500">su {stats?.totale || 0} totali</p>
         </div>
       </div>
 
@@ -177,20 +202,20 @@ export function ElencoFatture() {
                     <div>
                       <div className="flex items-center gap-2">
                         <span className="font-semibold text-sage-800">
-                          Fattura n. {fattura.numero}
+                          Fattura n. {fattura.invoiceNumber}
                         </span>
-                        <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${getStatoColor(fattura.stato)}`}>
-                          {fattura.stato.charAt(0).toUpperCase() + fattura.stato.slice(1)}
+                        <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${getStatoColor(fattura.status)}`}>
+                          {fattura.status.charAt(0).toUpperCase() + fattura.status.slice(1).toLowerCase()}
                         </span>
                       </div>
                       <div className="flex items-center gap-4 text-sm text-sage-500 mt-1">
                         <span className="flex items-center gap-1">
                           <User className="w-3 h-3" />
-                          {fattura.paziente.nome}
+                          {getNomePaziente(fattura.user)}
                         </span>
                         <span className="flex items-center gap-1">
                           <Calendar className="w-3 h-3" />
-                          {format(new Date(fattura.data), 'd MMM yyyy', { locale: it })}
+                          {format(new Date(fattura.invoiceDate), 'd MMM yyyy', { locale: it })}
                         </span>
                       </div>
                     </div>
@@ -198,7 +223,7 @@ export function ElencoFatture() {
 
                   <div className="flex items-center gap-4">
                     <span className="text-lg font-bold text-sage-800">
-                      € {fattura.totale.toFixed(2)}
+                      € {fattura.total.toFixed(2)}
                     </span>
                     <div className="flex items-center gap-1">
                       <button
@@ -209,18 +234,21 @@ export function ElencoFatture() {
                         <Eye className="w-4 h-4" />
                       </button>
                       <button
+                        onClick={() => setEditingFattura(fattura)}
                         className="p-2 text-sage-400 hover:text-sage-600 hover:bg-sage-100 rounded-lg transition-colors"
-                        title="Modifica"
+                        title="Modifica stato"
                       >
                         <Edit className="w-4 h-4" />
                       </button>
                       <button
+                        onClick={() => window.print()}
                         className="p-2 text-sage-400 hover:text-sage-600 hover:bg-sage-100 rounded-lg transition-colors"
-                        title="Stampa PDF"
+                        title="Stampa"
                       >
                         <Printer className="w-4 h-4" />
                       </button>
                       <button
+                        onClick={() => alert('Generazione PDF in sviluppo')}
                         className="p-2 text-sage-400 hover:text-sage-600 hover:bg-sage-100 rounded-lg transition-colors"
                         title="Scarica PDF"
                       >
@@ -245,7 +273,7 @@ export function ElencoFatture() {
           >
             <div className="flex justify-between items-start mb-4">
               <h3 className="text-xl font-semibold text-sage-900">
-                Fattura n. {selectedFattura.numero}
+                Fattura n. {selectedFattura.invoiceNumber}
               </h3>
               <button
                 onClick={() => setSelectedFattura(null)}
@@ -258,30 +286,43 @@ export function ElencoFatture() {
             <div className="space-y-4">
               <div className="bg-sage-50 rounded-xl p-4">
                 <p className="text-sm text-sage-500 mb-1">Paziente</p>
-                <p className="font-semibold text-sage-800">{selectedFattura.paziente.nome}</p>
-                <p className="text-sm text-sage-600">{selectedFattura.paziente.email}</p>
-                <p className="text-sm font-mono text-sage-500">{selectedFattura.paziente.codiceFiscale}</p>
+                <p className="font-semibold text-sage-800">{getNomePaziente(selectedFattura.user)}</p>
+                <p className="text-sm text-sage-600">{selectedFattura.user.email}</p>
+                <p className="text-sm font-mono text-sage-500">{selectedFattura.user.codiceFiscale || 'N/D'}</p>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="bg-sage-50 rounded-xl p-4">
                   <p className="text-sm text-sage-500 mb-1">Data</p>
                   <p className="font-semibold text-sage-800">
-                    {format(new Date(selectedFattura.data), 'd MMMM yyyy', { locale: it })}
+                    {format(new Date(selectedFattura.invoiceDate), 'd MMMM yyyy', { locale: it })}
                   </p>
                 </div>
                 <div className="bg-sage-50 rounded-xl p-4">
                   <p className="text-sm text-sage-500 mb-1">Totale</p>
-                  <p className="font-bold text-xl text-sage-800">€ {selectedFattura.totale.toFixed(2)}</p>
+                  <p className="font-bold text-xl text-sage-800">€ {selectedFattura.total.toFixed(2)}</p>
                 </div>
               </div>
 
+              <div className="bg-sage-50 rounded-xl p-4">
+                <p className="text-sm text-sage-500 mb-1">Stato</p>
+                <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatoColor(selectedFattura.status)}`}>
+                  {selectedFattura.status}
+                </span>
+              </div>
+
               <div className="flex gap-3 mt-6">
-                <button className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-amber-500 text-white rounded-xl hover:bg-amber-600">
+                <button 
+                  onClick={() => window.print()}
+                  className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-amber-500 text-white rounded-xl hover:bg-amber-600"
+                >
                   <Printer className="w-4 h-4" />
                   Stampa
                 </button>
-                <button className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-sage-100 text-sage-700 rounded-xl hover:bg-sage-200">
+                <button 
+                  onClick={() => alert('Generazione PDF in sviluppo')}
+                  className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-sage-100 text-sage-700 rounded-xl hover:bg-sage-200"
+                >
                   <Download className="w-4 h-4" />
                   Scarica PDF
                 </button>
