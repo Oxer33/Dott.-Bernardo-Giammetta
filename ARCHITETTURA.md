@@ -155,6 +155,29 @@ public/                    # Asset statici (TODO)
 
 6. **ContactMessage** - Messaggi form contatti
 
+7. **Invoice** - Fatture sanitarie
+   - Collegato a User (paziente)
+   - `invoiceNumber`: numero progressivo (es: "1/2026")
+   - `invoiceYear`: anno per progressivo
+   - Calcoli automatici: subtotal, contributo ENPAB 4%, bollo >77.47€, totale
+   - Stati: EMESSA, PAGATA, ANNULLATA
+
+8. **InvoiceItem** - Righe fattura
+   - Collegato a Invoice
+   - `description`: descrizione prestazione
+   - `amount`: importo
+
+9. **ExpenseType** - Nature spesa (prestazioni salvate)
+   - `description`: es "Prima visita nutrizionale"
+   - `defaultAmount`: importo predefinito
+   - Persistenti per riutilizzo
+
+10. **Questionnaire** - Questionari prima visita
+    - Collegato a User (paziente)
+    - `dietType`: ONNIVORO, VEGETARIANO, VEGANO
+    - `commonAnswers`, `dietAnswers`, `billingData`: JSON serializzati
+    - NON modificabili (si crea uno nuovo)
+
 ---
 
 ## 🔐 Sistema Autenticazione
@@ -247,6 +270,46 @@ Il sistema previene abusi nelle prenotazioni contando le cancellazioni di appunt
 ```
 
 ### Codice chiave: `src/app/api/agenda/appointments/route.ts`
+
+---
+
+## 🧾 Sistema Fatturazione
+
+### Componenti:
+- **FattureDashboard** (`/fatture`): dashboard principale con tabs
+- **NuovaFattura**: form creazione fattura con ricerca paziente
+- **ElencoFatture**: lista fatture con statistiche e ricerca
+
+### API Endpoints:
+- `GET /api/fatture`: lista fatture con statistiche periodo
+- `POST /api/fatture`: crea nuova fattura
+- `GET /api/fatture/next-number`: prossimo numero progressivo
+- `GET/POST/DELETE /api/fatture/expense-types`: gestione nature spesa
+
+### Calcoli Automatici:
+1. **Imponibile**: somma righe fattura
+2. **Contributo ENPAB**: 4% dell'imponibile
+3. **Marca da bollo**: €2.00 se totale lordo > €77.47
+4. **Totale**: imponibile + contributo + bollo
+
+### Statistiche:
+- Fatture questa settimana (count + totale €)
+- Fatture questo mese (count + totale €)
+- Fatture quest'anno (count + totale €)
+- Fatture da incassare (stato EMESSA)
+
+### Nature Spesa Predefinite:
+- Prima visita nutrizionale: €100
+- Visita di controllo: €60
+- Elaborazione piano alimentare: €80
+- Consulenza nutrizionale online: €50
+
+### Ricerca Fatture:
+Supporta ricerca parziale per:
+- Numero fattura (es: "1/2026")
+- Nome paziente
+- Email, codice fiscale
+- Data in formati multipli (01/2026, gennaio, 5 gen 2026)
 
 ### Gestione Admin:
 - **Componente**: `src/components/admin/BlacklistManager.tsx`
